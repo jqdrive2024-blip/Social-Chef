@@ -1,0 +1,256 @@
+<!-- ANTES DE </body> añade esto (SDK Firebase v10 compat) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+
+<script>
+// ==================== TU CÓDIGO ORIGINAL + FIREBASE ====================
+
+const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+// === CONFIGURACIÓN FIREBASE (copia la tuya aquí) ===
+const firebaseConfig = {
+  apiKey: "AIzaSyxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+  authDomain: "social-chef-prod.firebaseapp.com",
+  projectId: "social-chef-prod",
+  storageBucket: "social-chef-prod.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "1:123456789:web:xxxxxxxxxxxxxxxx"
+};
+
+let app, auth, db;
+let currentUser = null;
+let currentRestId = null;        // ID del restaurante activo en Firestore
+let GKEY = localStorage.getItem('sc_gkey') || '';
+let AKEY = localStorage.getItem('sc_akey') || ''; // ← Nueva: Anthropic key
+
+// Variables globales (ahora se cargan desde Firestore)
+let proposals = [];
+let scheduled = [];
+let restaurants = []; // lista de restaurantes del usuario
+let selIds = new Set();
+
+// ==================== INICIALIZACIÓN FIREBASE ====================
+async function initFirebase() {
+  if (app) return;
+  app = firebase.initializeApp(firebaseConfig);
+  auth = firebase.auth();
+  db = firebase.firestore();
+
+  // Login anónimo automático (fácil)
+  try {
+    const userCred = await auth.signInAnonymously();
+    currentUser = userCred.user;
+    console.log("✅ Usuario Firebase conectado:", currentUser.uid);
+    await loadUserData();
+  } catch (e) {
+    console.error("Error Firebase", e);
+  }
+}
+
+// Cargar restaurantes y datos del usuario
+async function loadUserData() {
+  if (!currentUser) return;
+
+  // Cargar lista de restaurantes
+  const snap = await db.collection("users").doc(currentUser.uid).collection("restaurants").get();
+  restaurants = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+  if (restaurants.length === 0) {
+    // Crear restaurante por defecto si no tiene ninguno
+    await createDefaultRestaurant();
+  }
+
+  // Renderizar selector
+  renderRestSelector();
+
+  // Cargar el primero por defecto
+  if (!currentRestId) currentRestId = restaurants[0].id;
+  await switchRestaurant(currentRestId);
+}
+
+async function createDefaultRestaurant() {
+  const defaultRest = {
+    name: "La Taberna del Mar",
+    cuisine: "Mediterránea y pescados frescos",
+    desc: "Restaurante familiar con 30 años de historia en el puerto. Cocina honesta, ingredientes locales y ambiente acogedor.",
+    web: "",
+    ig: "@latabernadelmar",
+    lang: "Español",
+    freq: "Diaria",
+    tags: "#tabernadelmar #pescadofresco #mediterránea #gastrocat",
+    cta: "¡Reserva en el link de la bio!",
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  const docRef = await db.collection("users").doc(currentUser.uid).collection("restaurants").add(defaultRest);
+  currentRestId = docRef.id;
+  restaurants.push({ id: docRef.id, ...defaultRest });
+}
+
+// Renderizar selector de restaurantes
+function renderRestSelector() {
+  const sel = document.getElementById('restSel');
+  sel.innerHTML = restaurants.map(r => 
+    `<option value="${r.id}">${r.name}</option>`
+  ).join('');
+  sel.value = currentRestId;
+}
+
+// Cambiar restaurante
+async function changeRest() {
+  const newId = document.getElementById('restSel').value;
+  if (newId === currentRestId) return;
+  await switchRestaurant(newId);
+}
+
+async function switchRestaurant(restId) {
+  currentRestId = restId;
+  const doc = await db.collection("users").doc(currentUser.uid).collection("restaurants").doc(restId).get();
+  if (!doc.exists) return;
+
+  const data = doc.data();
+
+  // Cargar perfil en config
+  document.getElementById('cfgName').value = data.name || '';
+  document.getElementById('cfgCuisine').value = data.cuisine || '';
+  document.getElementById('cfgDesc').value = data.desc || '';
+  document.getElementById('cfgWeb').value = data.web || '';
+  document.getElementById('cfgIG').value = data.ig || '';
+  document.getElementById('cfgLang').value = data.lang || 'Español';
+  document.getElementById('cfgFreq').value = data.freq || 'Diaria';
+  document.getElementById('cfgTags').value = data.tags || '';
+  document.getElementById('cfgCTA').value = data.cta || '';
+
+  // Cargar publicaciones programadas
+  scheduled = data.scheduled || [];
+  updBadge();
+  if (document.getElementById('sec-calendar').style.display !== 'none') renderCal();
+  
+  toast(`✅ Restaurante cambiado a: ${data.name}`);
+}
+
+// Guardar perfil (ahora en Firestore)
+async function saveCfg() {
+  if (!currentUser || !currentRestId) return;
+
+  const data = {
+    name: document.getElementById('cfgName').value,
+    cuisine: document.getElementById('cfgCuisine').value,
+    desc: document.getElementById('cfgDesc').value,
+    web: document.getElementById('cfgWeb').value,
+    ig: document.getElementById('cfgIG').value,
+    lang: document.getElementById('cfgLang').value,
+    freq: document.getElementById('cfgFreq').value,
+    tags: document.getElementById('cfgTags').value,
+    cta: document.getElementById('cfgCTA').value,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  await db.collection("users").doc(currentUser.uid).collection("restaurants").doc(currentRestId).update(data);
+
+  // Actualizar también la lista local
+  const r = restaurants.find(x => x.id === currentRestId);
+  if (r) Object.assign(r, data);
+
+  // Guardar keys (local por seguridad)
+  const gkey = document.getElementById('cfgKey').value.trim();
+  if (gkey) {
+    GKEY = gkey;
+    localStorage.setItem('sc_gkey', GKEY);
+  }
+  toast('✓ Perfil guardado en Firebase');
+}
+
+// Añadir nuevo restaurante
+async function addRest() {
+  const n = prompt('Nombre del nuevo restaurante:');
+  if (!n) return;
+
+  const newRest = {
+    name: n,
+    cuisine: "Cocina del restaurante",
+    desc: "Descripción breve...",
+    web: "",
+    ig: "@" + n.toLowerCase().replace(/\s/g,''),
+    lang: "Español",
+    freq: "Diaria",
+    tags: "#restaurante",
+    cta: "¡Reserva en el link de la bio!",
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  const docRef = await db.collection("users").doc(currentUser.uid).collection("restaurants").add(newRest);
+  restaurants.push({ id: docRef.id, ...newRest });
+  renderRestSelector();
+  document.getElementById('restSel').value = docRef.id;
+  await switchRestaurant(docRef.id);
+  toast(`✓ "${n}" creado y guardado`);
+}
+
+// ==================== ANTHROPIC (Claude) - FIX IMPORTANTE ====================
+async function genProposals() {
+  // ... (tu código original hasta antes del fetch)
+
+  const anthropicKey = AKEY || prompt("Pega tu clave de Anthropic (Claude):");
+  if (!anthropicKey) {
+    toast("❌ Necesitas clave de Anthropic");
+    return;
+  }
+  AKEY = anthropicKey;
+  localStorage.setItem('sc_akey', AKEY);
+
+  // === AQUÍ ESTABA EL ERROR ===
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': anthropicKey,
+      'anthropic-version': '2023-06-01'
+    },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1800,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+
+  // resto de tu código igual...
+}
+
+// ==================== GUARDAR PUBLICACIONES PROGRAMADAS ====================
+async function saveScheduled() {
+  if (!currentUser || !currentRestId) return;
+  await db.collection("users").doc(currentUser.uid)
+    .collection("restaurants").doc(currentRestId)
+    .update({ scheduled: scheduled });
+}
+
+// Llamar a saveScheduled() después de cada confirmSched(), confirmBulk(), remSched()
+
+// En confirmSched():
+// ... después de scheduled.push(...)
+await saveScheduled();
+renderCal();
+
+// En confirmBulk():
+// ... después de forEach
+await saveScheduled();
+renderCal();
+
+// En remSched():
+scheduled.splice(i,1);
+await saveScheduled();
+updBadge();
+renderCal();
+
+// ==================== INICIO ====================
+window.onload = async () => {
+  await initFirebase();
+  // resto de tu código original (renderCal(), etc.)
+  if (GKEY) {
+    document.getElementById('keyInp').value = GKEY;
+    setSt(true);
+  }
+};
+</script>
