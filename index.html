@@ -1,256 +1,575 @@
-<!-- ANTES DE </body> añade esto (SDK Firebase v10 compat) -->
-<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Social Chef — Contenido para Restaurantes</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{--bg:#0e0e0e;--surface:#161616;--surface2:#1e1e1e;--surface3:#272727;--border:#2a2a2a;--border2:#333;--text:#f0ede8;--text2:#a09d98;--text3:#666;--accent:#e8c97e;--accent2:#c4a55a;--accent-bg:rgba(232,201,126,0.08);--red:#e87e7e;--green:#7ec98e;--blue:#7eb3e8;--radius:12px;--radius-sm:8px;--radius-lg:16px}
+  body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.6;min-height:100vh}
+  .app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+  .sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column}
+  .sidebar-logo{padding:28px 24px 20px;border-bottom:1px solid var(--border)}
+  .sidebar-logo h1{font-family:'DM Serif Display',serif;font-size:22px;color:var(--accent);letter-spacing:-0.3px}
+  .sidebar-logo p{font-size:11px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:1px}
+  .nav{padding:16px 12px;flex:1}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-sm);cursor:pointer;font-size:14px;color:var(--text2);transition:all 0.15s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left}
+  .nav-item:hover{background:var(--surface2);color:var(--text)}
+  .nav-item.active{background:var(--accent-bg);color:var(--accent)}
+  .nav-icon{width:18px;height:18px;flex-shrink:0;opacity:0.7}
+  .nav-item.active .nav-icon{opacity:1}
+  .rest-sel{margin:12px;padding:14px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border)}
+  .rest-sel label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.8px;display:block;margin-bottom:8px}
+  .rest-sel select{width:100%;background:var(--surface3);border:1px solid var(--border2);color:var(--text);padding:8px 10px;border-radius:var(--radius-sm);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer}
+  .add-btn{display:block;width:100%;margin-top:8px;padding:8px;background:none;border:1px dashed var(--border2);color:var(--text3);border-radius:var(--radius-sm);font-size:12px;cursor:pointer;transition:all 0.15s;font-family:'DM Sans',sans-serif}
+  .add-btn:hover{border-color:var(--accent);color:var(--accent)}
+  .main{display:flex;flex-direction:column;overflow:hidden}
+  .content{flex:1;padding:32px;overflow-y:auto;display:flex;flex-direction:column}
+  .generate-form{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;margin-bottom:24px}
+  .generate-form h3{font-size:16px;font-weight:500;margin-bottom:20px}
+  .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+  .fg{display:flex;flex-direction:column;gap:6px}
+  .fg.full{grid-column:1/-1}
+  label{font-size:12px;color:var(--text2);text-transform:uppercase;letter-spacing:0.6px}
+  input,select,textarea{background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:10px 14px;border-radius:var(--radius-sm);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:border 0.15s;resize:vertical}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+  select option{background:var(--surface2)}
+  .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
+  .tag{padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--border2);color:var(--text2);background:none;transition:all 0.15s;font-family:'DM Sans',sans-serif}
+  .tag.on{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
+  .btn-p{background:var(--accent);color:#0e0e0e;border:none;padding:12px 24px;border-radius:var(--radius-sm);font-size:14px;font-weight:600;cursor:pointer;transition:all 0.15s;font-family:'DM Sans',sans-serif}
+  .btn-p:hover{background:var(--accent2)}
+  .btn-p:disabled{opacity:0.4;cursor:not-allowed}
+  .btn-s{background:var(--surface2);color:var(--text);border:1px solid var(--border2);padding:10px 18px;border-radius:var(--radius-sm);font-size:13px;cursor:pointer;transition:all 0.15s;font-family:'DM Sans',sans-serif}
+  .btn-s:hover{border-color:var(--accent);color:var(--accent)}
+  .key-bar{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--accent-bg);border:1px solid rgba(232,201,126,0.2);border-radius:var(--radius-sm);margin-bottom:20px}
+  .key-bar span.lbl{font-size:12px;color:var(--accent);white-space:nowrap;font-weight:500}
+  .key-bar input{flex:1;font-size:12px;padding:7px 10px}
+  .key-bar button{padding:7px 14px;font-size:12px;white-space:nowrap}
+  .key-status{font-size:11px;padding:3px 9px;border-radius:20px;white-space:nowrap}
+  .key-status.on{background:rgba(126,201,142,0.15);color:var(--green)}
+  .key-status.off{background:rgba(160,157,152,0.1);color:var(--text3)}
+  .prop-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+  .prop-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:20px}
+  .pcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;transition:all 0.2s;position:relative}
+  .pcard:hover{border-color:var(--border2);transform:translateY(-2px)}
+  .pcard.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+  .sel-badge{position:absolute;top:10px;right:10px;background:var(--accent);color:#0e0e0e;font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;display:none;z-index:2}
+  .pcard.sel .sel-badge{display:block}
+  .cprev{aspect-ratio:1;background:var(--surface2);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;cursor:pointer}
+  .cprev.story{aspect-ratio:9/16;max-height:220px}
+  .cprev img{width:100%;height:100%;object-fit:cover;display:block}
+  .prev-ph{padding:20px;text-align:center}
+  .prev-em{font-size:40px;margin-bottom:10px;display:block}
+  .prev-ti{font-family:'DM Serif Display',serif;font-size:17px;color:var(--text);line-height:1.3;margin-bottom:4px}
+  .prev-su{font-size:11px;color:var(--text3)}
+  .img-load{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--surface2);gap:10px}
+  .img-spin{width:24px;height:24px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite}
+  .img-lt{font-size:11px;color:var(--text3)}
+  .cbody{padding:16px}
+  .tbadge{display:inline-flex;align-items:center;font-size:11px;padding:3px 10px;border-radius:20px;margin-bottom:10px}
+  .tbadge.post{background:rgba(126,179,232,0.15);color:var(--blue)}
+  .tbadge.story{background:rgba(126,201,142,0.15);color:var(--green)}
+  .ccap{font-size:13px;color:var(--text2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .cact{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border)}
+  .cact button{flex:1;padding:7px;border-radius:var(--radius-sm);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s}
+  .bsel{background:var(--accent-bg);border:1px solid var(--accent);color:var(--accent)}
+  .bsel:hover,.pcard.sel .bsel{background:var(--accent);color:#0e0e0e}
+  .bedit{background:var(--surface2);border:1px solid var(--border2);color:var(--text2)}
+  .bedit:hover{border-color:var(--border);color:var(--text)}
+  .cal-area{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start}
+  .cal-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px}
+  .cal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+  .cal-hd h3{font-size:16px;font-weight:500}
+  .cal-nav{display:flex;gap:8px}
+  .cal-nav button{background:var(--surface2);border:1px solid var(--border2);color:var(--text);width:30px;height:30px;border-radius:var(--radius-sm);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all 0.15s}
+  .cal-nav button:hover{border-color:var(--accent);color:var(--accent)}
+  .cal-dh{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:8px}
+  .cdn{text-align:center;font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;padding:4px}
+  .cal-days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+  .cday{border-radius:var(--radius-sm);display:flex;flex-direction:column;align-items:center;padding:6px 4px;font-size:12px;cursor:pointer;transition:all 0.15s;border:1px solid transparent;min-height:52px}
+  .cday:hover{background:var(--surface2)}
+  .cday.today{border-color:var(--accent);color:var(--accent)}
+  .cday.om{opacity:0.3}
+  .cday.hposts{background:var(--surface2)}
+  .pdot{width:6px;height:6px;border-radius:50%;background:var(--accent);margin-top:2px}
+  .pdot.story{background:var(--green)}
+  .cdnum{font-weight:500;font-size:13px}
+  .slist{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px}
+  .slist h4{font-size:14px;font-weight:500;margin-bottom:16px;color:var(--text2)}
+  .sitem{padding:12px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:10px;border-left:3px solid var(--accent)}
+  .sitem.story{border-left-color:var(--green)}
+  .sdate{font-size:11px;color:var(--text3);margin-bottom:3px}
+  .stitle{font-size:13px;font-weight:500;margin-bottom:2px}
+  .stype{font-size:11px;color:var(--text2)}
+  .sthumb{width:36px;height:36px;border-radius:6px;object-fit:cover;flex-shrink:0}
+  .empty{text-align:center;padding:40px 20px;color:var(--text3)}
+  .empty .ei{font-size:32px;display:block;margin-bottom:12px;opacity:0.4}
+  .empty p{font-size:13px}
+  .ov{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:flex;align-items:center;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity 0.2s}
+  .ov.open{opacity:1;pointer-events:all}
+  .modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius-lg);width:540px;max-height:88vh;overflow-y:auto;padding:28px}
+  .modal h3{font-size:18px;font-weight:500;margin-bottom:6px}
+  .msub{font-size:13px;color:var(--text3);margin-bottom:24px}
+  .mact{display:flex;gap:10px;margin-top:24px;justify-content:flex-end}
+  .igprev{border-radius:var(--radius);overflow:hidden;margin-bottom:20px;border:1px solid var(--border)}
+  .ighd{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--surface2)}
+  .igav{width:32px;height:32px;border-radius:50%;background:var(--accent-bg);border:2px solid var(--accent);display:flex;align-items:center;justify-content:center;font-size:14px;overflow:hidden;flex-shrink:0}
+  .igav img{width:100%;height:100%;object-fit:cover}
+  .igun{font-size:13px;font-weight:500}
+  .igti{font-size:11px;color:var(--text3)}
+  .igimg{aspect-ratio:1;background:var(--surface2);display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .igimg img{width:100%;height:100%;object-fit:cover}
+  .igimg.story{aspect-ratio:9/16;max-height:320px}
+  .igca{padding:12px 14px;background:var(--surface2)}
+  .igcatext{font-size:13px;line-height:1.5;color:var(--text)}
+  .ightags{font-size:12px;color:var(--blue);margin-top:6px}
+  .dtp{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+  .cfggrid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  .cfgcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px}
+  .cfgcard h3{font-size:15px;font-weight:500;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+  .lbox{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:40px;text-align:center;display:none}
+  .lbox.vis{display:block}
+  .spin{width:36px;height:36px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .ltext{font-size:14px;color:var(--text2)}
+  .lstep{font-size:12px;color:var(--text3);margin-top:8px}
+  .toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--accent);color:var(--accent);padding:12px 20px;border-radius:var(--radius-sm);font-size:13px;transform:translateY(100px);opacity:0;transition:all 0.3s;z-index:200}
+  .toast.show{transform:translateY(0);opacity:1}
+  ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
+  .cbadge{background:var(--accent-bg);color:var(--accent);font-size:11px;padding:2px 7px;border-radius:20px;margin-left:6px}
+  .hdiv{height:1px;background:var(--border);margin:18px 0}
+  @media(max-width:900px){.app{grid-template-columns:1fr}.sidebar{display:none}.cal-area,.cfggrid,.form-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-logo"><h1>Social Chef</h1><p>Gestión de contenido</p></div>
+    <div class="rest-sel">
+      <label>Restaurante activo</label>
+      <select id="restSel" onchange="changeRest()">
+        <option value="r1">La Taberna del Mar</option>
+        <option value="r2">Bistró Moderno</option>
+        <option value="r3">El Jardín de Rosa</option>
+      </select>
+      <button class="add-btn" onclick="addRest()">+ Añadir restaurante</button>
+    </div>
+    <nav class="nav">
+      <button class="nav-item active" onclick="showSec('generate',this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>Generar contenido
+      </button>
+      <button class="nav-item" onclick="showSec('calendar',this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendario
+        <span class="cbadge" id="calBadge">0</span>
+      </button>
+      <button class="nav-item" onclick="showSec('config',this)">
+        <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M5.34 18.66l-1.41 1.41M21 12h-2M5 12H3M19.07 19.07l-1.41-1.41M5.34 5.34L3.93 3.93M12 21v-2M12 5V3"/></svg>Configuración
+      </button>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <!-- GENERATE -->
+    <div id="sec-generate" class="content">
+      <div class="key-bar" id="keyBar">
+        <span class="lbl">🖼 Gemini Imagen 3</span>
+        <input type="password" id="keyInp" placeholder="API key de Google AI Studio...">
+        <button class="btn-s" onclick="saveKey()" style="padding:7px 14px;font-size:12px">Guardar</button>
+        <span class="key-status off" id="keySt">Sin key</span>
+      </div>
+      <div class="generate-form">
+        <h3>Nueva generación de contenido</h3>
+        <div class="form-grid">
+          <div class="fg">
+            <label>Temática principal</label>
+            <select id="theme">
+              <option>Plato destacado del día</option><option>Evento especial</option>
+              <option>Detrás del escenario</option><option>Testimonio de cliente</option>
+              <option>Temporada / Festividad</option><option>Nuevo producto o menú</option>
+              <option>Historia del restaurante</option>
+            </select>
+          </div>
+          <div class="fg">
+            <label>Tono de comunicación</label>
+            <select id="tone">
+              <option>Cálido y cercano</option><option>Elegante y sofisticado</option>
+              <option>Divertido y joven</option><option>Informativo y profesional</option>
+              <option>Nostálgico y emocional</option>
+            </select>
+          </div>
+          <div class="fg full">
+            <label>Contexto adicional (opcional)</label>
+            <textarea id="ctx" rows="2" placeholder="Ej: Menú especial de trufa negra este finde, 45€ por persona..."></textarea>
+          </div>
+        </div>
+        <div class="fg" style="margin-bottom:20px">
+          <label>Tipo de formato</label>
+          <div class="tags">
+            <button class="tag on" onclick="this.classList.toggle('on')">Post cuadrado</button>
+            <button class="tag on" onclick="this.classList.toggle('on')">Story vertical</button>
+            <button class="tag" onclick="this.classList.toggle('on')">Carrusel</button>
+            <button class="tag" onclick="this.classList.toggle('on')">Reel corto</button>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <button class="btn-p" onclick="genProposals()" id="genBtn">✦ Generar propuestas</button>
+          <span style="font-size:12px;color:var(--text3)">Textos con IA + imágenes con Gemini</span>
+        </div>
+      </div>
+
+      <div class="lbox" id="lbox">
+        <div class="spin"></div>
+        <div class="ltext" id="ltext">Creando propuestas para tu restaurante...</div>
+        <div class="lstep" id="lstep">Analizando estilo y voz del restaurante</div>
+      </div>
+
+      <div id="propArea" style="display:none">
+        <div class="prop-header">
+          <div>
+            <strong id="propCount">6 propuestas</strong>
+            <span style="font-size:13px;color:var(--text3);margin-left:8px" id="selCount">0 seleccionadas</span>
+          </div>
+          <div style="display:flex;gap:10px">
+            <button class="btn-s" onclick="selAll()">Seleccionar todo</button>
+            <button class="btn-p" onclick="schedSel()" id="schedBtn" disabled>Programar seleccionadas →</button>
+          </div>
+        </div>
+        <div class="prop-grid" id="propGrid"></div>
+      </div>
+    </div>
+
+    <!-- CALENDAR -->
+    <div id="sec-calendar" class="content" style="display:none">
+      <div class="cal-area">
+        <div class="cal-box">
+          <div class="cal-hd">
+            <h3 id="calTitle"></h3>
+            <div class="cal-nav">
+              <button onclick="chMonth(-1)">&#8249;</button>
+              <button onclick="chMonth(1)">&#8250;</button>
+            </div>
+          </div>
+          <div class="cal-dh">
+            <div class="cdn">Lun</div><div class="cdn">Mar</div><div class="cdn">Mie</div>
+            <div class="cdn">Jue</div><div class="cdn">Vie</div><div class="cdn">Sab</div><div class="cdn">Dom</div>
+          </div>
+          <div class="cal-days" id="calDays"></div>
+        </div>
+        <div class="slist">
+          <h4>Publicaciones programadas</h4>
+          <div id="schedItems"><div class="empty"><span class="ei">📅</span><p>Sin publicaciones aún.<br>Genera y programa contenido.</p></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIG -->
+    <div id="sec-config" class="content" style="display:none">
+      <div class="cfggrid">
+        <div class="cfgcard">
+          <h3>Perfil del restaurante</h3>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div class="fg"><label>Nombre</label><input type="text" value="La Taberna del Mar" id="cfgName"></div>
+            <div class="fg"><label>Tipo de cocina</label><input type="text" value="Mediterránea y pescados frescos" id="cfgCuisine"></div>
+            <div class="fg"><label>Descripción / voz de marca</label><textarea rows="3" id="cfgDesc">Restaurante familiar con 30 años de historia en el puerto. Cocina honesta, ingredientes locales y ambiente acogedor.</textarea></div>
+            <div class="fg"><label>Web</label><input type="url" placeholder="https://..." id="cfgWeb"></div>
+            <div class="fg"><label>Instagram (@)</label><input type="text" placeholder="@mi_restaurante" id="cfgIG"></div>
+            <button class="btn-p" style="width:fit-content" onclick="saveCfg()">Guardar perfil</button>
+          </div>
+        </div>
+        <div class="cfgcard">
+          <h3>Preferencias de contenido</h3>
+          <div style="display:flex;flex-direction:column;gap:14px">
+            <div class="fg"><label>Idioma</label>
+              <select id="cfgLang"><option>Español</option><option>Catalán</option><option>Inglés</option><option>Bilingüe ES/EN</option></select></div>
+            <div class="fg"><label>Frecuencia ideal</label>
+              <select id="cfgFreq"><option>Diaria</option><option>3 veces por semana</option><option>Semanal</option></select></div>
+            <div class="fg"><label>Hashtags fijos</label><textarea rows="2" id="cfgTags">#tabernadelmar #pescadofresco #mediterránea #gastrocat</textarea></div>
+            <div class="fg"><label>CTA habitual</label><input type="text" value="¡Reserva en el link de la bio!" id="cfgCTA"></div>
+            <div class="fg">
+              <label>API Key Google AI Studio</label>
+              <input type="password" id="cfgKey" placeholder="AIza...">
+              <span style="font-size:11px;color:var(--text3);margin-top:4px">Para generar imágenes con Gemini Imagen 3</span>
+            </div>
+            <button class="btn-p" style="width:fit-content" onclick="saveCfg()">Guardar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Modal Preview -->
+<div class="ov" id="ovPrev" onclick="closeOvIf(event,'ovPrev')">
+  <div class="modal">
+    <h3 id="mpTitle">Previsualizar</h3>
+    <p class="msub" id="mpSub">Vista previa de la publicación</p>
+    <div class="igprev" id="mpPrev"></div>
+    <div class="hdiv"></div>
+    <div class="fg" style="margin-bottom:14px"><label>Editar texto</label><textarea rows="4" id="mpCap"></textarea></div>
+    <div class="fg" style="margin-bottom:14px"><label>Programar</label><div class="dtp"><input type="date" id="mpDate"><input type="time" id="mpTime" value="12:00"></div></div>
+    <div class="mact"><button class="btn-s" onclick="closeOv('ovPrev')">Cancelar</button><button class="btn-p" onclick="confirmSched()">✓ Confirmar programación</button></div>
+  </div>
+</div>
+
+<!-- Modal Bulk -->
+<div class="ov" id="ovBulk" onclick="closeOvIf(event,'ovBulk')">
+  <div class="modal">
+    <h3>Programar publicaciones seleccionadas</h3>
+    <p class="msub">Asigna fecha y hora para cada una</p>
+    <div id="bulkList" style="max-height:300px;overflow-y:auto;margin-bottom:20px"></div>
+    <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:16px">
+      <span style="font-size:12px;color:var(--text2);white-space:nowrap">Aplicar a todas:</span>
+      <input type="date" id="bdDate" style="flex:1">
+      <input type="time" id="bdTime" value="12:00" style="width:100px">
+      <button class="btn-s" onclick="applyBulk()" style="font-size:12px;padding:6px 12px;white-space:nowrap">Aplicar</button>
+    </div>
+    <div class="mact"><button class="btn-s" onclick="closeOv('ovBulk')">Cancelar</button><button class="btn-p" onclick="confirmBulk()">✓ Programar todas</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
 
 <script>
-// ==================== TU CÓDIGO ORIGINAL + FIREBASE ====================
+const MONTHS=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+let GKEY=localStorage.getItem('sc_gkey')||'';
+let proposals=[],scheduled=[],bulkItems=[],selIds=new Set();
+let calMon=new Date().getMonth(),calYr=new Date().getFullYear(),editP=null;
 
-const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+(function(){
+  if(GKEY){document.getElementById('keyInp').value=GKEY;setSt(true);}
+})();
 
-// === CONFIGURACIÓN FIREBASE (copia la tuya aquí) ===
-const firebaseConfig = {
-  apiKey: "AIzaSyxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-  authDomain: "social-chef-prod.firebaseapp.com",
-  projectId: "social-chef-prod",
-  storageBucket: "social-chef-prod.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:xxxxxxxxxxxxxxxx"
-};
+function setSt(on){const el=document.getElementById('keySt');el.textContent=on?'✓ Activa':'Sin key';el.className='key-status '+(on?'on':'off');}
+function saveKey(){const v=document.getElementById('keyInp').value.trim();if(!v){toast('Pega tu API key primero');return;}GKEY=v;localStorage.setItem('sc_gkey',v);setSt(true);toast('✓ API key guardada');}
+function showSec(n,btn){
+  document.querySelectorAll('.content').forEach(s=>s.style.display='none');
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  const s=document.getElementById('sec-'+n);s.style.display='flex';s.style.flexDirection='column';
+  if(btn)btn.classList.add('active');if(n==='calendar')renderCal();
+}
 
-let app, auth, db;
-let currentUser = null;
-let currentRestId = null;        // ID del restaurante activo en Firestore
-let GKEY = localStorage.getItem('sc_gkey') || '';
-let AKEY = localStorage.getItem('sc_akey') || ''; // ← Nueva: Anthropic key
+async function generateImage(prompt,isStory){
+  if(!GKEY)return null;
+  try{
+    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${GKEY}`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({instances:[{prompt}],parameters:{sampleCount:1,aspectRatio:isStory?'9:16':'1:1',safetyFilterLevel:'block_few',personGeneration:'allow_all'}})
+    });
+    const d=await r.json();
+    const b64=d?.predictions?.[0]?.bytesBase64Encoded;
+    const mime=d?.predictions?.[0]?.mimeType||'image/png';
+    return b64?`data:${mime};base64,${b64}`:null;
+  }catch{return null;}
+}
 
-// Variables globales (ahora se cargan desde Firestore)
-let proposals = [];
-let scheduled = [];
-let restaurants = []; // lista de restaurantes del usuario
-let selIds = new Set();
+async function genProposals(){
+  const kv=document.getElementById('keyInp').value.trim();
+  if(kv&&kv!==GKEY){GKEY=kv;localStorage.setItem('sc_gkey',kv);setSt(true);}
+  document.getElementById('genBtn').disabled=true;
+  document.getElementById('propArea').style.display='none';
+  document.getElementById('lbox').classList.add('vis');
+  selIds.clear();
+  const theme=document.getElementById('theme').value;
+  const tone=document.getElementById('tone').value;
+  const ctx=document.getElementById('ctx').value;
+  const restName=document.getElementById('restSel').options[document.getElementById('restSel').selectedIndex].text;
+  const cuisine=document.getElementById('cfgCuisine').value;
+  const desc=document.getElementById('cfgDesc').value;
+  const tags=document.getElementById('cfgTags').value;
+  const cta=document.getElementById('cfgCTA').value;
+  const lang=document.getElementById('cfgLang').value;
+  const steps=['Analizando estilo y voz del restaurante...','Generando ideas y textos creativos...','Creando prompts visuales para Gemini...','Componiendo las 6 propuestas...'];
+  let si=0;const iv=setInterval(()=>{si=(si+1)%steps.length;document.getElementById('lstep').textContent=steps[si];},2000);
+  const prompt=`Eres un experto en marketing digital para restaurantes e Instagram.
+Restaurante: "${restName}"
+Cocina: ${cuisine}
+Voz de marca: ${desc}
+Idioma: ${lang}
+Hashtags: ${tags}
+CTA: ${cta}
+Genera exactamente 6 propuestas Instagram con temática "${theme}" y tono "${tone}".${ctx?'\nContexto: '+ctx:''}
+Responde SOLO con JSON válido sin markdown:
+{"proposals":[{"id":"p1","type":"post","emoji":"🍽️","title":"Título corto atractivo","caption":"Texto natural Instagram 2-4 frases sin hashtags","hashtags":"#tag1 #tag2 #tag3 #tag4 #tag5","imagePrompt":"Very detailed English prompt for Gemini Imagen 3: photorealistic professional food/restaurant photography, specific lighting mood colors composition style"}]}
+Reglas: 3 post y 3 story. caption en tono ${tone}, humano y natural. imagePrompt en inglés muy descriptivo para fotografía gastronómica profesional de alta calidad.`;
+  try{
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1800,messages:[{role:'user',content:prompt}]})});
+    const d=await r.json();
+    const raw=d.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim();
+    proposals=JSON.parse(raw).proposals;
+  }catch{proposals=fallback(restName);}
+  clearInterval(iv);
+  document.getElementById('lbox').classList.remove('vis');
+  document.getElementById('genBtn').disabled=false;
+  renderProps();
+  if(GKEY){
+    toast('Generando imágenes con Gemini Imagen 3...');
+    await Promise.all(proposals.map(async(p,i)=>{
+      const img=await generateImage(p.imagePrompt,p.type==='story');
+      if(img){proposals[i].imageData=img;setImg(p.id,img);}
+      else clearLoad(p.id,p.emoji);
+    }));
+    toast('✓ Imágenes generadas');
+  }else{proposals.forEach(p=>clearLoad(p.id,p.emoji));}
+}
 
-// ==================== INICIALIZACIÓN FIREBASE ====================
-async function initFirebase() {
-  if (app) return;
-  app = firebase.initializeApp(firebaseConfig);
-  auth = firebase.auth();
-  db = firebase.firestore();
+function setImg(id,src){const c=document.getElementById('cprev-'+id);if(c)c.innerHTML=`<img src="${src}" alt="">`;}
+function clearLoad(id,emoji){const c=document.getElementById('cprev-'+id);if(c){const l=c.querySelector('.img-load');if(l)l.innerHTML=`<span style="font-size:36px">${emoji}</span><span style="font-size:11px;color:var(--text3)">Sin imagen</span>`;}}
 
-  // Login anónimo automático (fácil)
-  try {
-    const userCred = await auth.signInAnonymously();
-    currentUser = userCred.user;
-    console.log("✅ Usuario Firebase conectado:", currentUser.uid);
-    await loadUserData();
-  } catch (e) {
-    console.error("Error Firebase", e);
+function fallback(name){
+  return[
+    {id:'p1',type:'post',emoji:'🍽️',title:'El plato del día',caption:`En ${name} hoy te traemos algo especial. Ingredientes frescos, sabor auténtico. ¡Reserva en el link de la bio!`,hashtags:'#gastronomia #restaurante #foodie #comida #sabor',imagePrompt:'Beautiful Mediterranean dish on elegant white plate, overhead shot, natural window light, rustic wooden table, fresh herbs garnish, warm tones, professional food photography, high quality'},
+    {id:'p2',type:'story',emoji:'👨‍🍳',title:'Detrás del fogón',caption:`Cada día empezamos eligiendo los mejores ingredientes. Esto es lo que hay detrás de ${name}.`,hashtags:'#cheflife #cocina #artesanal #km0 #frescos',imagePrompt:'Chef in professional restaurant kitchen, candid action shot, warm ambient lighting, motion blur on hands, authentic culinary atmosphere, documentary photography style'},
+    {id:'p3',type:'post',emoji:'🌿',title:'Sabores de temporada',caption:`La temporada nos trae ingredientes increíbles. Descubre nuestro menú de temporada en ${name}.`,hashtags:'#temporada #km0 #gastronomy #menudeldia #mercado',imagePrompt:'Fresh seasonal vegetables and ingredients flatlay on wooden surface, natural daylight, Mediterranean colors, fresh herbs and olive oil, editorial food photography'},
+    {id:'p4',type:'story',emoji:'❤️',title:'Gracias por venir',caption:`Momentos así nos hacen seguir adelante. Gracias por elegir ${name} para compartir tu mesa.`,hashtags:'#familia #amigos #restaurante #momentos #gracias',imagePrompt:'Happy guests dining at restaurant, warm candlelight, intimate atmosphere, blurred background bokeh, genuine smiles and conversation, lifestyle photography'},
+    {id:'p5',type:'post',emoji:'🥂',title:'Fin de semana especial',caption:`¿Tienes planes este fin de semana? Tenemos una mesa reservada para ti en ${name}.`,hashtags:'#finde #planes #reserva #cena #gastronomia',imagePrompt:'Restaurant exterior at golden hour, warm lights glowing through windows, inviting entrance, Mediterranean facade, elegant atmosphere, lifestyle photography'},
+    {id:'p6',type:'story',emoji:'✨',title:'Novedad en carta',caption:`Algo nuevo llega a ${name}. Una propuesta que os va a encantar. ¡Pasa a descubrirla!`,hashtags:'#nuevacarta #novedad #restaurante #foodstagram #chef',imagePrompt:'New signature dish beautifully plated on dark slate, dramatic studio lighting, fine dining presentation with microgreens sauce art, elegant and moody aesthetic'}
+  ];
+}
+
+function renderProps(){
+  const g=document.getElementById('propGrid');
+  g.innerHTML=proposals.map(p=>`
+    <div class="pcard" id="card-${p.id}">
+      <span class="sel-badge">&#10003; Seleccionada</span>
+      <div class="cprev ${p.type==='story'?'story':''}" id="cprev-${p.id}" onclick="toggleSel('${p.id}')">
+        ${p.imageData?`<img src="${p.imageData}" alt="">`:`<div class="img-load"><div class="img-spin"></div><span class="img-lt">Generando imagen...</span></div>`}
+      </div>
+      <div class="cbody">
+        <span class="tbadge ${p.type}">${p.type==='post'?'&#9723; Post':'&#9723; Story'}</span>
+        <div style="font-size:14px;font-weight:500;margin-bottom:6px">${p.title}</div>
+        <div class="ccap">${p.caption}</div>
+      </div>
+      <div class="cact">
+        <button class="bsel" onclick="toggleSel('${p.id}')">Seleccionar</button>
+        <button class="bedit" onclick="openPrev('${p.id}')">Previsualizar</button>
+      </div>
+    </div>`).join('');
+  document.getElementById('propCount').textContent=proposals.length+' propuestas generadas';
+  document.getElementById('propArea').style.display='block';
+  updSelUI();
+}
+
+function toggleSel(id){
+  const c=document.getElementById('card-'+id);
+  if(selIds.has(id)){selIds.delete(id);c?.classList.remove('sel');}
+  else{selIds.add(id);c?.classList.add('sel');}
+  updSelUI();
+}
+function selAll(){proposals.forEach(p=>{selIds.add(p.id);document.getElementById('card-'+p.id)?.classList.add('sel');});updSelUI();}
+function updSelUI(){
+  const n=selIds.size;document.getElementById('selCount').textContent=n+' seleccionadas';
+  const b=document.getElementById('schedBtn');b.disabled=n===0;
+  b.textContent=n>0?`Programar ${n} publicaci${n>1?'ones':'ón'} →`:'Programar seleccionadas →';
+}
+
+function openPrev(id){
+  const p=proposals.find(x=>x.id===id);if(!p)return;editP=p;
+  const ig=document.getElementById('cfgIG').value||'@mi_restaurante';
+  document.getElementById('mpTitle').textContent=p.title;
+  document.getElementById('mpSub').textContent=p.type==='post'?'Vista previa · Post de Instagram':'Vista previa · Story de Instagram';
+  document.getElementById('mpCap').value=p.caption;
+  document.getElementById('mpDate').value=new Date().toISOString().split('T')[0];
+  const imgH=p.imageData?`<img src="${p.imageData}" alt="">`:`<div style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:10px;padding:20px"><span style="font-size:48px">${p.emoji}</span><span style="font-size:12px;color:var(--text3);text-align:center">${p.title}</span></div>`;
+  document.getElementById('mpPrev').innerHTML=`
+    <div class="ighd"><div class="igav">${p.emoji}</div><div><div class="igun">${ig}</div><div class="igti">Instagram</div></div></div>
+    <div class="igimg ${p.type==='story'?'story':''}">${imgH}</div>
+    <div class="igca"><div class="igcatext">${p.caption}</div><div class="ightags">${p.hashtags}</div></div>`;
+  document.getElementById('ovPrev').classList.add('open');
+}
+function closeOv(id){document.getElementById(id).classList.remove('open');}
+function closeOvIf(e,id){if(e.target.id===id)closeOv(id);}
+
+function confirmSched(){
+  if(!editP)return;
+  const date=document.getElementById('mpDate').value,time=document.getElementById('mpTime').value;
+  if(!date){toast('Selecciona una fecha');return;}
+  editP.caption=document.getElementById('mpCap').value;
+  scheduled.push({...editP,date,time});
+  updBadge();closeOv('ovPrev');
+  toast('✓ Programada para el '+fmtDate(date)+' a las '+time);renderCal();
+}
+
+function schedSel(){
+  bulkItems=proposals.filter(p=>selIds.has(p.id)).map(p=>({...p,date:new Date().toISOString().split('T')[0],time:'12:00'}));
+  document.getElementById('bulkList').innerHTML=bulkItems.map((p,i)=>`
+    <div style="display:grid;grid-template-columns:${p.imageData?'40px ':''} 24px 1fr auto auto;gap:8px;align-items:center;padding:10px;background:var(--surface2);border-radius:var(--radius-sm);margin-bottom:8px">
+      ${p.imageData?`<img src="${p.imageData}" style="width:36px;height:36px;border-radius:6px;object-fit:cover">`:''}<span style="font-size:18px">${p.emoji}</span>
+      <div><div style="font-size:13px;font-weight:500">${p.title}</div><span class="tbadge ${p.type}" style="font-size:10px;padding:1px 6px">${p.type}</span></div>
+      <input type="date" value="${p.date}" onchange="bulkItems[${i}].date=this.value" style="font-size:11px;padding:5px 8px;width:130px">
+      <input type="time" value="${p.time}" onchange="bulkItems[${i}].time=this.value" style="font-size:11px;padding:5px 8px;width:90px">
+    </div>`).join('');
+  document.getElementById('bdDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('ovBulk').classList.add('open');
+}
+function applyBulk(){
+  const d=document.getElementById('bdDate').value,t=document.getElementById('bdTime').value;if(!d)return;
+  bulkItems.forEach((_,i)=>{bulkItems[i].date=d;bulkItems[i].time=t;});
+  document.getElementById('bulkList').querySelectorAll('input[type="date"]').forEach(i=>i.value=d);
+  document.getElementById('bulkList').querySelectorAll('input[type="time"]').forEach(i=>i.value=t);
+}
+function confirmBulk(){
+  bulkItems.forEach(item=>{if(item.date)scheduled.push({...item});});
+  updBadge();closeOv('ovBulk');toast('✓ '+bulkItems.length+' publicaciones programadas');
+  selIds.clear();proposals.forEach(p=>document.getElementById('card-'+p.id)?.classList.remove('sel'));
+  updSelUI();renderCal();
+}
+
+function renderCal(){
+  document.getElementById('calTitle').textContent=MONTHS[calMon]+' '+calYr;
+  const cont=document.getElementById('calDays');
+  const first=new Date(calYr,calMon,1),last=new Date(calYr,calMon+1,0);
+  let sd=first.getDay();sd=sd===0?6:sd-1;
+  const today=new Date();let html='';
+  const pl=new Date(calYr,calMon,0).getDate();
+  for(let i=sd-1;i>=0;i--)html+=`<div class="cday om"><span class="cdnum">${pl-i}</span></div>`;
+  for(let d=1;d<=last.getDate();d++){
+    const ds=`${calYr}-${String(calMon+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const iT=d===today.getDate()&&calMon===today.getMonth()&&calYr===today.getFullYear();
+    const posts=scheduled.filter(s=>s.date===ds);
+    const dots=posts.map(p=>`<div class="pdot ${p.type==='story'?'story':''}"></div>`).join('');
+    html+=`<div class="cday ${iT?'today':''} ${posts.length?'hposts':''}"><span class="cdnum">${d}</span><div style="display:flex;gap:2px;flex-wrap:wrap;margin-top:2px">${dots}</div></div>`;
   }
+  const rem=(sd+last.getDate())%7;const fill=rem===0?0:7-rem;
+  for(let i=1;i<=fill;i++)html+=`<div class="cday om"><span class="cdnum">${i}</span></div>`;
+  cont.innerHTML=html;renderSList();
 }
-
-// Cargar restaurantes y datos del usuario
-async function loadUserData() {
-  if (!currentUser) return;
-
-  // Cargar lista de restaurantes
-  const snap = await db.collection("users").doc(currentUser.uid).collection("restaurants").get();
-  restaurants = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
-  if (restaurants.length === 0) {
-    // Crear restaurante por defecto si no tiene ninguno
-    await createDefaultRestaurant();
-  }
-
-  // Renderizar selector
-  renderRestSelector();
-
-  // Cargar el primero por defecto
-  if (!currentRestId) currentRestId = restaurants[0].id;
-  await switchRestaurant(currentRestId);
+function renderSList(){
+  const c=document.getElementById('schedItems');
+  if(!scheduled.length){c.innerHTML=`<div class="empty"><span class="ei">📅</span><p>Sin publicaciones aún.<br>Genera y programa contenido.</p></div>`;return;}
+  const sorted=[...scheduled].sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  c.innerHTML=sorted.map((s,i)=>`
+    <div class="sitem ${s.type==='story'?'story':''}">
+      <div style="display:flex;align-items:center;gap:10px">
+        ${s.imageData?`<img src="${s.imageData}" class="sthumb" alt="">`:`<span style="font-size:22px">${s.emoji}</span>`}
+        <div style="flex:1;min-width:0">
+          <div class="sdate">${fmtDate(s.date)} · ${s.time}</div>
+          <div class="stitle">${s.title}</div>
+          <div class="stype">${s.type==='post'?'Post':'Story'}</div>
+        </div>
+        <button onclick="remSched(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:4px;flex-shrink:0">&#215;</button>
+      </div>
+    </div>`).join('');
 }
-
-async function createDefaultRestaurant() {
-  const defaultRest = {
-    name: "La Taberna del Mar",
-    cuisine: "Mediterránea y pescados frescos",
-    desc: "Restaurante familiar con 30 años de historia en el puerto. Cocina honesta, ingredientes locales y ambiente acogedor.",
-    web: "",
-    ig: "@latabernadelmar",
-    lang: "Español",
-    freq: "Diaria",
-    tags: "#tabernadelmar #pescadofresco #mediterránea #gastrocat",
-    cta: "¡Reserva en el link de la bio!",
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  };
-
-  const docRef = await db.collection("users").doc(currentUser.uid).collection("restaurants").add(defaultRest);
-  currentRestId = docRef.id;
-  restaurants.push({ id: docRef.id, ...defaultRest });
+function remSched(i){scheduled.splice(i,1);updBadge();renderCal();toast('Publicación eliminada');}
+function chMonth(d){calMon+=d;if(calMon>11){calMon=0;calYr++;}if(calMon<0){calMon=11;calYr--;}renderCal();}
+function updBadge(){document.getElementById('calBadge').textContent=scheduled.length;}
+function saveCfg(){
+  const k=document.getElementById('cfgKey')?.value?.trim();
+  if(k){GKEY=k;localStorage.setItem('sc_gkey',k);document.getElementById('keyInp').value=k;setSt(true);}
+  toast('✓ Configuración guardada');
 }
-
-// Renderizar selector de restaurantes
-function renderRestSelector() {
-  const sel = document.getElementById('restSel');
-  sel.innerHTML = restaurants.map(r => 
-    `<option value="${r.id}">${r.name}</option>`
-  ).join('');
-  sel.value = currentRestId;
+function changeRest(){toast('Restaurante cambiado');}
+function addRest(){
+  const n=prompt('Nombre del nuevo restaurante:');
+  if(n){const s=document.getElementById('restSel');const o=document.createElement('option');o.value='r'+Date.now();o.textContent=n;s.appendChild(o);s.value=o.value;toast('✓ "'+n+'" añadido');}
 }
+function fmtDate(d){if(!d)return'';const[y,m,dd]=d.split('-');return`${dd} ${MONTHS[parseInt(m)-1].slice(0,3)} ${y}`;}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
 
-// Cambiar restaurante
-async function changeRest() {
-  const newId = document.getElementById('restSel').value;
-  if (newId === currentRestId) return;
-  await switchRestaurant(newId);
-}
-
-async function switchRestaurant(restId) {
-  currentRestId = restId;
-  const doc = await db.collection("users").doc(currentUser.uid).collection("restaurants").doc(restId).get();
-  if (!doc.exists) return;
-
-  const data = doc.data();
-
-  // Cargar perfil en config
-  document.getElementById('cfgName').value = data.name || '';
-  document.getElementById('cfgCuisine').value = data.cuisine || '';
-  document.getElementById('cfgDesc').value = data.desc || '';
-  document.getElementById('cfgWeb').value = data.web || '';
-  document.getElementById('cfgIG').value = data.ig || '';
-  document.getElementById('cfgLang').value = data.lang || 'Español';
-  document.getElementById('cfgFreq').value = data.freq || 'Diaria';
-  document.getElementById('cfgTags').value = data.tags || '';
-  document.getElementById('cfgCTA').value = data.cta || '';
-
-  // Cargar publicaciones programadas
-  scheduled = data.scheduled || [];
-  updBadge();
-  if (document.getElementById('sec-calendar').style.display !== 'none') renderCal();
-  
-  toast(`✅ Restaurante cambiado a: ${data.name}`);
-}
-
-// Guardar perfil (ahora en Firestore)
-async function saveCfg() {
-  if (!currentUser || !currentRestId) return;
-
-  const data = {
-    name: document.getElementById('cfgName').value,
-    cuisine: document.getElementById('cfgCuisine').value,
-    desc: document.getElementById('cfgDesc').value,
-    web: document.getElementById('cfgWeb').value,
-    ig: document.getElementById('cfgIG').value,
-    lang: document.getElementById('cfgLang').value,
-    freq: document.getElementById('cfgFreq').value,
-    tags: document.getElementById('cfgTags').value,
-    cta: document.getElementById('cfgCTA').value,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  };
-
-  await db.collection("users").doc(currentUser.uid).collection("restaurants").doc(currentRestId).update(data);
-
-  // Actualizar también la lista local
-  const r = restaurants.find(x => x.id === currentRestId);
-  if (r) Object.assign(r, data);
-
-  // Guardar keys (local por seguridad)
-  const gkey = document.getElementById('cfgKey').value.trim();
-  if (gkey) {
-    GKEY = gkey;
-    localStorage.setItem('sc_gkey', GKEY);
-  }
-  toast('✓ Perfil guardado en Firebase');
-}
-
-// Añadir nuevo restaurante
-async function addRest() {
-  const n = prompt('Nombre del nuevo restaurante:');
-  if (!n) return;
-
-  const newRest = {
-    name: n,
-    cuisine: "Cocina del restaurante",
-    desc: "Descripción breve...",
-    web: "",
-    ig: "@" + n.toLowerCase().replace(/\s/g,''),
-    lang: "Español",
-    freq: "Diaria",
-    tags: "#restaurante",
-    cta: "¡Reserva en el link de la bio!",
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  };
-
-  const docRef = await db.collection("users").doc(currentUser.uid).collection("restaurants").add(newRest);
-  restaurants.push({ id: docRef.id, ...newRest });
-  renderRestSelector();
-  document.getElementById('restSel').value = docRef.id;
-  await switchRestaurant(docRef.id);
-  toast(`✓ "${n}" creado y guardado`);
-}
-
-// ==================== ANTHROPIC (Claude) - FIX IMPORTANTE ====================
-async function genProposals() {
-  // ... (tu código original hasta antes del fetch)
-
-  const anthropicKey = AKEY || prompt("Pega tu clave de Anthropic (Claude):");
-  if (!anthropicKey) {
-    toast("❌ Necesitas clave de Anthropic");
-    return;
-  }
-  AKEY = anthropicKey;
-  localStorage.setItem('sc_akey', AKEY);
-
-  // === AQUÍ ESTABA EL ERROR ===
-  const r = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'x-api-key': anthropicKey,
-      'anthropic-version': '2023-06-01'
-    },
-    body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 1800,
-      messages: [{ role: 'user', content: prompt }]
-    })
-  });
-
-  // resto de tu código igual...
-}
-
-// ==================== GUARDAR PUBLICACIONES PROGRAMADAS ====================
-async function saveScheduled() {
-  if (!currentUser || !currentRestId) return;
-  await db.collection("users").doc(currentUser.uid)
-    .collection("restaurants").doc(currentRestId)
-    .update({ scheduled: scheduled });
-}
-
-// Llamar a saveScheduled() después de cada confirmSched(), confirmBulk(), remSched()
-
-// En confirmSched():
-// ... después de scheduled.push(...)
-await saveScheduled();
 renderCal();
-
-// En confirmBulk():
-// ... después de forEach
-await saveScheduled();
-renderCal();
-
-// En remSched():
-scheduled.splice(i,1);
-await saveScheduled();
-updBadge();
-renderCal();
-
-// ==================== INICIO ====================
-window.onload = async () => {
-  await initFirebase();
-  // resto de tu código original (renderCal(), etc.)
-  if (GKEY) {
-    document.getElementById('keyInp').value = GKEY;
-    setSt(true);
-  }
-};
 </script>
+</body>
+</html>
