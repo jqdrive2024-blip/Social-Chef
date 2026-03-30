@@ -197,7 +197,7 @@ select option{background:var(--surface2)}
   <main class="main">
     <div id="sec-generate" class="content">
       <div class="kbar" style="justify-content:center">
-        <span class="lbl">🖼️ Imágenes: <span id="imgEngineLbl">DALL·E 3 / Tu servidor</span></span>
+        <span class="lbl">🖼️ Imágenes: <span id="imgEngineLbl">DALL·E 3 → Tu servidor</span></span>
         <span class="kst on" id="imgEngineSt">Actiu</span>
       </div>
       <div class="gform">
@@ -313,7 +313,7 @@ select option{background:var(--surface2)}
             </div>
             <div class="fg">
               <label>URL de tu servidor (donde subir imágenes)</label>
-              <input type="url" id="cfgServerUrl" placeholder="https://www.jordiqterrassa.com/upload.php">
+              <input type="url" id="cfgServerUrl" placeholder="https://www.jordiqterrassa.com/upload.php" value="https://www.jordiqterrassa.com/upload.php">
               <span style="font-size:11px;color:var(--text3);margin-top:3px">Ej: https://www.jordiqterrassa.com/upload.php</span>
             </div>
             <button class="bp" style="width:fit-content" onclick="saveCfg()">Guardar</button>
@@ -361,9 +361,9 @@ select option{background:var(--surface2)}
 
 <script>
 // =====================================================
-// CONFIGURACIÓN - MODIFICA ESTO CON TU DOMINIO
+// CONFIGURACIÓN - TU DOMINIO CONFIGURADO
 // =====================================================
-const DEFAULT_UPLOAD_URL = 'https://www.jordiqterrassa.com/upload.php'; // ← CAMBIA ESTO
+const DEFAULT_UPLOAD_URL = 'https://www.jordiqterrassa.com/upload.php';
 
 const firebaseConfig = {
   apiKey: "AIzaSyB1HefWkEqitPqHNE9G_slYDFzf9Z7jf9I",
@@ -450,8 +450,6 @@ async function initApp() {
     const savedServerUrl = localStorage.getItem('sc_server_url');
     if (savedServerUrl && document.getElementById('cfgServerUrl')) {
       document.getElementById('cfgServerUrl').value = savedServerUrl;
-    } else if (DEFAULT_UPLOAD_URL.includes('TUDOMINIO.COM')) {
-      toast('⚠️ Configura tu URL de servidor en Configuración');
     }
     
     updateImgEngineLabel();
@@ -510,7 +508,7 @@ async function loadRestaurant(id) {
   document.getElementById('cfgFreq').value = d.freq || 'Diaria';
   document.getElementById('cfgTags').value = d.tags || '';
   document.getElementById('cfgCTA').value = d.cta || '';
-  document.getElementById('cfgServerUrl').value = d.serverUrl || localStorage.getItem('sc_server_url') || '';
+  document.getElementById('cfgServerUrl').value = d.serverUrl || DEFAULT_UPLOAD_URL;
   scheduled = (d.scheduled || []).map(s => ({...s}));
   updBadge();
   renderCal();
@@ -603,7 +601,7 @@ function updateImgEngineLabel() {
   const key = getOAIKey();
   const lbl = document.getElementById('imgEngineLbl');
   const st  = document.getElementById('imgEngineSt');
-  if (lbl) lbl.textContent = key ? 'DALL·E 3 → Tu servidor' : 'Sin API Key configurada';
+  if (lbl) lbl.textContent = key ? 'DALL·E 3 → www.jordiqterrassa.com' : 'Sin API Key configurada';
   if (st)  st.className = key ? 'kst on' : 'kst off';
 }
 
@@ -934,4 +932,23 @@ function updBadge() { document.getElementById('calBadge').textContent = schedule
 function showSec(n, btn) {
   document.querySelectorAll('.content').forEach(s => s.style.display = 'none');
   document.querySelectorAll('.ni').forEach(b => b.classList.remove('active'));
-  const s = document.getElementById('sec-'+n); s.style.display = 'flex
+  const s = document.getElementById('sec-'+n); s.style.display = 'flex'; s.style.flexDirection = 'column';
+  if (btn) btn.classList.add('active');
+  if (n === 'calendar') renderCal();
+}
+
+function fmtDate(d) { if (!d) return ''; const [y,m,dd] = d.split('-'); return `${dd} ${MONTHS[parseInt(m)-1].slice(0,3)} ${y}`; }
+function toast(msg) { 
+  const t = document.getElementById('toast'); 
+  t.textContent = msg; 
+  t.classList.add('show'); 
+  setTimeout(() => t.classList.remove('show'), 3500); 
+}
+
+// =====================================================
+// BOOT
+// =====================================================
+window.onload = initApp;
+</script>
+</body>
+</html>
