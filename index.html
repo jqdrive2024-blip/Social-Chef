@@ -8,7 +8,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
-<script src="https://js.puter.com/v2/"></script>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -216,7 +215,7 @@ select option{background:var(--surface2)}
     <!-- GENERATE -->
     <div id="sec-generate" class="content">
       <div class="kbar" style="justify-content:center">
-        <span class="lbl">🖼️ Imágenes generadas con Puter.js (FLUX) — gratis, sin API key</span>
+        <span class="lbl">🖼️ Imágenes generadas con Pollinations.ai (FLUX) — gratis, sin API key</span>
         <span class="kst on">Activo</span>
       </div>
       <div class="gform">
@@ -255,7 +254,7 @@ select option{background:var(--surface2)}
         </div>
         <div style="display:flex;align-items:center;gap:12px">
           <button class="bp" onclick="genProposals()" id="genBtn">✦ Generar propuestas</button>
-          <span style="font-size:12px;color:var(--text3)">Textos con Claude + imágenes con Puter.js (FLUX)</span>
+          <span style="font-size:12px;color:var(--text3)">Textos amb Claude + imatges amb Pollinations.ai (FLUX) (FLUX)</span>
         </div>
       </div>
 
@@ -329,7 +328,7 @@ select option{background:var(--surface2)}
             <div class="fg"><label>CTA habitual</label><input type="text" id="cfgCTA"></div>
             <div class="fg">
               <label>Imágenes</label>
-              <input type="text" id="cfgKey" value="Puter.js (FLUX gratis)" readonly style="opacity:.5;cursor:default">
+              <input type="text" id="cfgKey" value="Pollinations.ai (FLUX gratis)" readonly style="opacity:.5;cursor:default">
               <span style="font-size:11px;color:var(--text3);margin-top:3px">Imágenes generadas en el navegador, sin coste</span>
             </div>
             <button class="bp" style="width:fit-content" onclick="saveCfg()">Guardar</button>
@@ -549,27 +548,28 @@ async function saveScheduled() {
 }
 
 // =====================================================
-// GENERACIÓN DE IMÁGENES CON PUTER.JS (ACTUALIZADO)
+// GENERACIÓ D'IMATGES AMB POLLINATIONS.AI (gratuït, sense límit)
 // =====================================================
-async function generateImageUrl(prompt, isStory) {
-  const width = isStory ? 768 : 1024;
-  const height = isStory ? 1365 : 1024;
+function generateImageUrl(prompt, isStory) {
+  const w = isStory ? 768 : 1024;
+  const h = isStory ? 1365 : 1024;
+  const fullPrompt = prompt + ', professional food photography, high quality, appetizing, restaurant, realistic, natural lighting, delicious presentation';
+  const encoded = encodeURIComponent(fullPrompt);
+  const seed = Math.floor(Math.random() * 999999);
+  return `https://image.pollinations.ai/prompt/${encoded}?width=${w}&height=${h}&model=flux&nologo=true&enhance=true&seed=${seed}`;
+}
 
-  try {
-    const fullPrompt = prompt + ", professional food photography, high quality, appetizing, restaurant, realistic, natural lighting, delicious presentation";
-
-    const imageElement = await puter.ai.txt2img(fullPrompt, {
-      model: "black-forest-labs/flux.1-schnell",   // Modelo rápido y de buena calidad
-      width: width,
-      height: height
-    });
-
-    return imageElement.src;
-  } catch (e) {
-    console.error("Error generando imagen con Puter:", e);
-    // Fallback con imagen aleatoria
-    return `https://picsum.photos/id/${Math.floor(Math.random() * 900) + 100}/${width}/${height}`;
-  }
+function setCardImage(id, url) {
+  const prev = document.getElementById('cprev-' + id);
+  if (!prev) return;
+  const img = document.createElement('img');
+  img.style.cssText = 'width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 0.5s';
+  img.onload = () => { img.style.opacity = '1'; };
+  img.onerror = () => { prev.innerHTML = prev._fallback || ''; };
+  prev._fallback = prev.innerHTML;
+  prev.innerHTML = '';
+  prev.appendChild(img);
+  img.src = url;
 }
 
 // =====================================================
@@ -591,7 +591,7 @@ async function genProposals() {
   const cta = document.getElementById('cfgCTA').value;
   const lang = document.getElementById('cfgLang').value;
 
-  const steps = ['Analizando el estilo del restaurante...','Generando ideas creativas...','Redactando textos para Instagram...','Preparando prompts visuales...','Generando imágenes con FLUX...'];
+  const steps = ['Analizando el estilo del restaurante...','Generando ideas creativas...','Redactando textos para Instagram...','Preparando prompts visuales...','Generant imatges amb Pollinations.ai...'];
   let si = 0;
   const iv = setInterval(() => { 
     si = (si+1) % steps.length; 
@@ -627,21 +627,16 @@ Reglas: exactamente 3 tipo post y 3 tipo story. caption humano y natural en tono
   clearInterval(iv);
   document.getElementById('lbox').classList.remove('vis');
 
-  // Generar imágenes con Puter.js
-  document.getElementById('lstep').textContent = "Generando imágenes con FLUX...";
-  document.getElementById('lbox').classList.add('vis');
-
-  for (let i = 0; i < proposals.length; i++) {
-    const p = proposals[i];
-    const url = await generateImageUrl(p.imagePrompt || p.title, p.type === 'story');
-    proposals[i].imageData = url;
-  }
-
-  document.getElementById('lbox').classList.remove('vis');
   document.getElementById('genBtn').disabled = false;
+  document.getElementById('lbox').classList.remove('vis');
+
+  // Assigna URLs i renderitza ja — les imatges carreguen en paral·lel al fons
+  proposals.forEach((p, i) => {
+    proposals[i].imageData = generateImageUrl(p.imagePrompt || p.title, p.type === 'story');
+  });
 
   renderProps();
-  toast('¡Propuestas generadas correctamente con Puter.js!');
+  toast('Propuestas generadas · Imágenes cargando con Pollinations.ai...');
 }
 
 function fallback(name) {
@@ -664,7 +659,7 @@ function renderProps() {
     <div class="pcard" id="card-${p.id}">
       <span class="sbadge">&#10003; Seleccionada</span>
       <div class="cprev ${p.type==='story'?'story':''}" id="cprev-${p.id}" onclick="toggleSel('${p.id}')">
-        ${p.imageData ? `<img src="${p.imageData}" alt="">` : `<div class="iload"><div class="ispin"></div><span class="ilt">Imagen lista</span></div>`}
+        <div class="iload"><div class="ispin"></div><span class="ilt">Carregant...</span></div>
       </div>
       <div class="cbody">
         <span class="tbadge ${p.type}">${p.type==='post'?'&#9723; Post':'&#9723; Story'}</span>
@@ -679,6 +674,8 @@ function renderProps() {
   document.getElementById('propCount').textContent = proposals.length + ' propuestas generadas';
   document.getElementById('propArea').style.display = 'block';
   updSelUI();
+  // Load images after DOM is ready
+  proposals.forEach(p => { if (p.imageData) setCardImage(p.id, p.imageData); });
 }
 
 function toggleSel(id) {
