@@ -21,7 +21,6 @@
   --r:12px;--rs:8px;--rl:16px;
 }
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.6;min-height:100vh}
-/* Layout */
 .app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
 .sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column}
 .logo{padding:28px 24px 20px;border-bottom:1px solid var(--border)}
@@ -38,16 +37,13 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .rsel-box select{width:100%;background:var(--surface3);border:1px solid var(--border2);color:var(--text);padding:8px 10px;border-radius:var(--rs);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer}
 .add-btn{display:block;width:100%;margin-top:8px;padding:8px;background:none;border:1px dashed var(--border2);color:var(--text3);border-radius:var(--rs);font-size:12px;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif}
 .add-btn:hover{border-color:var(--accent);color:var(--accent)}
-/* Sync indicator */
 .sync{padding:10px 14px;font-size:11px;display:flex;align-items:center;gap:6px;border-top:1px solid var(--border)}
 .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text3)}
 .sync-dot.ok{background:var(--green)}
 .sync-dot.spin{background:var(--accent);animation:pulse 1s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
-/* Main */
 .main{display:flex;flex-direction:column;overflow:hidden}
 .content{flex:1;padding:32px;overflow-y:auto;display:flex;flex-direction:column}
-/* Forms */
 .gform{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:28px;margin-bottom:24px}
 .gform h3{font-size:16px;font-weight:500;margin-bottom:20px}
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
@@ -65,7 +61,6 @@ select option{background:var(--surface2)}
 .bp:disabled{opacity:.4;cursor:not-allowed}
 .bs{background:var(--surface2);color:var(--text);border:1px solid var(--border2);padding:10px 18px;border-radius:var(--rs);font-size:13px;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif}
 .bs:hover{border-color:var(--accent);color:var(--accent)}
-/* Key bar */
 .kbar{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--accent-bg);border:1px solid rgba(232,201,126,.2);border-radius:var(--rs);margin-bottom:20px}
 .kbar .lbl{font-size:12px;color:var(--accent);white-space:nowrap;font-weight:500}
 .kbar input{flex:1;font-size:12px;padding:7px 10px}
@@ -73,7 +68,6 @@ select option{background:var(--surface2)}
 .kst{font-size:11px;padding:3px 9px;border-radius:20px;white-space:nowrap}
 .kst.on{background:rgba(126,201,142,.15);color:var(--green)}
 .kst.off{background:rgba(160,157,152,.1);color:var(--text3)}
-/* Proposals */
 .ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:20px}
 .pcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;transition:all .2s;position:relative}
@@ -99,7 +93,6 @@ select option{background:var(--surface2)}
 .bsel:hover,.pcard.sel .bsel{background:var(--accent);color:#0e0e0e}
 .bedit{background:var(--surface2);border:1px solid var(--border2);color:var(--text2)}
 .bedit:hover{border-color:var(--border);color:var(--text)}
-/* Calendar */
 .cal-area{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start}
 .calbox{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:24px}
 .calhd{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
@@ -118,7 +111,6 @@ select option{background:var(--surface2)}
 .pdot{width:6px;height:6px;border-radius:50%;background:var(--accent);margin-top:2px}
 .pdot.story{background:var(--green)}
 .cdnum{font-weight:500;font-size:13px}
-/* Scheduled list */
 .slist{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px}
 .slist h4{font-size:14px;font-weight:500;margin-bottom:16px;color:var(--text2)}
 .sitem{padding:12px;background:var(--surface2);border-radius:var(--rs);margin-bottom:10px;border-left:3px solid var(--accent)}
@@ -130,17 +122,14 @@ select option{background:var(--surface2)}
 .empty{text-align:center;padding:40px 20px;color:var(--text3)}
 .empty .ei{font-size:32px;display:block;margin-bottom:12px;opacity:.4}
 .empty p{font-size:13px}
-/* Config */
 .cfggrid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
 .cfgcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:24px}
 .cfgcard h3{font-size:15px;font-weight:500;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--border)}
-/* Loading */
 .lbox{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:40px;text-align:center;display:none}
 .lbox.vis{display:block}
 .lspin{width:36px;height:36px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
 .ltxt{font-size:14px;color:var(--text2)}
 .lstep{font-size:12px;color:var(--text3);margin-top:8px}
-/* Modals */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s}
 .ov.open{opacity:1;pointer-events:all}
 .modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rl);width:540px;max-height:88vh;overflow-y:auto;padding:28px}
@@ -160,15 +149,12 @@ select option{background:var(--surface2)}
 .ightags{font-size:12px;color:var(--blue);margin-top:6px}
 .dtp{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
 .hdiv{height:1px;background:var(--border);margin:18px 0}
-/* Toast */
 .toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--accent);color:var(--accent);padding:12px 20px;border-radius:var(--rs);font-size:13px;transform:translateY(100px);opacity:0;transition:all .3s;z-index:200;max-width:320px}
 .toast.show{transform:translateY(0);opacity:1}
-/* Init screen */
 .init-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:16px}
 .init-screen h1{font-family:'DM Serif Display',serif;font-size:32px;color:var(--accent)}
 .init-screen p{color:var(--text3);font-size:14px}
 .init-spin{width:40px;height:40px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
-/* Misc */
 .cbadge{background:var(--accent-bg);color:var(--accent);font-size:11px;padding:2px 7px;border-radius:20px;margin-left:6px}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
 @media(max-width:900px){.app{grid-template-columns:1fr}.sidebar{display:none}.cal-area,.cfggrid,.fgrid{grid-template-columns:1fr}}
@@ -176,7 +162,6 @@ select option{background:var(--surface2)}
 </head>
 <body>
 
-<!-- Init screen -->
 <div class="init-screen" id="initScreen">
   <div class="init-spin"></div>
   <h1>Social Chef</h1>
@@ -184,7 +169,6 @@ select option{background:var(--surface2)}
 </div>
 
 <div class="app" id="mainApp" style="display:none">
-  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="logo"><h1>Social Chef</h1><p>Gestión de contenido</p></div>
     <div class="rsel-box">
@@ -210,13 +194,10 @@ select option{background:var(--surface2)}
     </div>
   </aside>
 
-  <!-- MAIN -->
   <main class="main">
-
-    <!-- GENERATE -->
     <div id="sec-generate" class="content">
       <div class="kbar" style="justify-content:center">
-        <span class="lbl">🖼️ Imatges: <span id="imgEngineLbl">Unsplash (sense key)</span></span>
+        <span class="lbl">🖼️ Imágenes: <span id="imgEngineLbl">DALL·E 3 / Tu servidor</span></span>
         <span class="kst on" id="imgEngineSt">Actiu</span>
       </div>
       <div class="gform">
@@ -255,7 +236,7 @@ select option{background:var(--surface2)}
         </div>
         <div style="display:flex;align-items:center;gap:12px">
           <button class="bp" onclick="genProposals()" id="genBtn">✦ Generar propuestas</button>
-          <span style="font-size:12px;color:var(--text3)">Textos con Claude + imágenes con Puter.js (FLUX)</span>
+          <span style="font-size:12px;color:var(--text3)">Textos con Claude + imágenes con DALL·E 3 → Tu servidor</span>
         </div>
       </div>
 
@@ -280,7 +261,6 @@ select option{background:var(--surface2)}
       </div>
     </div>
 
-    <!-- CALENDAR -->
     <div id="sec-calendar" class="content" style="display:none">
       <div class="cal-area">
         <div class="calbox">
@@ -304,7 +284,6 @@ select option{background:var(--surface2)}
       </div>
     </div>
 
-    <!-- CONFIG -->
     <div id="sec-config" class="content" style="display:none">
       <div class="cfggrid">
         <div class="cfgcard">
@@ -330,18 +309,21 @@ select option{background:var(--surface2)}
             <div class="fg">
               <label>API Key OpenAI (DALL·E 3)</label>
               <input type="password" id="cfgOpenAIKey" placeholder="sk-..." autocomplete="off">
-              <span style="font-size:11px;color:var(--text3);margin-top:3px">Per generar imatges amb DALL·E 3 · Si no tens key, s'usen fotos d'Unsplash</span>
+              <span style="font-size:11px;color:var(--text3);margin-top:3px">Per generar imatges amb DALL·E 3</span>
+            </div>
+            <div class="fg">
+              <label>URL de tu servidor (donde subir imágenes)</label>
+              <input type="url" id="cfgServerUrl" placeholder="https://www.jordiqterrassa.com/upload.php">
+              <span style="font-size:11px;color:var(--text3);margin-top:3px">Ej: https://www.jordiqterrassa.com/upload.php</span>
             </div>
             <button class="bp" style="width:fit-content" onclick="saveCfg()">Guardar</button>
           </div>
         </div>
       </div>
     </div>
-
   </main>
 </div>
 
-<!-- Modal: Preview + Schedule -->
 <div class="ov" id="ovPrev" onclick="closeOvIf(event,'ovPrev')">
   <div class="modal">
     <h3 id="mpTitle">Previsualizar</h3>
@@ -357,7 +339,6 @@ select option{background:var(--surface2)}
   </div>
 </div>
 
-<!-- Modal: Bulk Schedule -->
 <div class="ov" id="ovBulk" onclick="closeOvIf(event,'ovBulk')">
   <div class="modal">
     <h3>Programar seleccionadas</h3>
@@ -380,8 +361,10 @@ select option{background:var(--surface2)}
 
 <script>
 // =====================================================
-// FIREBASE CONFIG
+// CONFIGURACIÓN - MODIFICA ESTO CON TU DOMINIO
 // =====================================================
+const DEFAULT_UPLOAD_URL = 'https://www.jordiqterrassa.com/upload.php'; // ← CAMBIA ESTO
+
 const firebaseConfig = {
   apiKey: "AIzaSyB1HefWkEqitPqHNE9G_slYDFzf9Z7jf9I",
   authDomain: "social-chef-55f11.firebaseapp.com",
@@ -393,14 +376,51 @@ const firebaseConfig = {
 
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
-// =====================================================
-// STATE
-// =====================================================
 let db, auth, currentUser, currentRestId;
 let restaurants = [];
 let proposals = [], scheduled = [], bulkItems = [];
 let selIds = new Set();
 let calMon = new Date().getMonth(), calYr = new Date().getFullYear(), editP = null;
+
+// =====================================================
+// UTILIDAD: SUBIR IMAGEN A SERVIDOR
+// =====================================================
+async function uploadImageToServer(imageUrl, filename) {
+  const uploadUrl = document.getElementById('cfgServerUrl')?.value?.trim() || DEFAULT_UPLOAD_URL;
+  
+  try {
+    // Descargar imagen como blob
+    const response = await fetch(imageUrl);
+    const blob = await response.blob();
+    
+    // Convertir a base64
+    const base64 = await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+    
+    // Subir a tu servidor
+    const uploadResponse = await fetch(uploadUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image: base64 })
+    });
+    
+    const result = await uploadResponse.json();
+    
+    if (!result.success) {
+      throw new Error(result.error || 'Error al subir imagen');
+    }
+    
+    return result.url;
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    toast('⚠️ Error al subir imagen al servidor, usando URL temporal');
+    return imageUrl; // Fallback a URL original si falla
+  }
+}
 
 // =====================================================
 // FIREBASE INIT
@@ -421,11 +441,19 @@ async function initApp() {
     document.getElementById('initScreen').style.display = 'none';
     document.getElementById('mainApp').style.display = 'grid';
     renderCal();
-    // Recupera key OpenAI guardada
+    
     const savedKey = localStorage.getItem('sc_oai_key');
     if (savedKey && document.getElementById('cfgOpenAIKey')) {
       document.getElementById('cfgOpenAIKey').value = savedKey;
     }
+    
+    const savedServerUrl = localStorage.getItem('sc_server_url');
+    if (savedServerUrl && document.getElementById('cfgServerUrl')) {
+      document.getElementById('cfgServerUrl').value = savedServerUrl;
+    } else if (DEFAULT_UPLOAD_URL.includes('TUDOMINIO.COM')) {
+      toast('⚠️ Configura tu URL de servidor en Configuración');
+    }
+    
     updateImgEngineLabel();
   } catch (err) {
     setInitMsg('Error al conectar: ' + err.message);
@@ -441,7 +469,7 @@ function setSyncState(state, txt) {
 }
 
 // =====================================================
-// LOAD USER DATA (sin cambios)
+// LOAD USER DATA
 // =====================================================
 async function loadUserData() {
   const snap = await db.collection('users').doc(currentUser.uid).collection('restaurants').orderBy('createdAt').get();
@@ -482,6 +510,7 @@ async function loadRestaurant(id) {
   document.getElementById('cfgFreq').value = d.freq || 'Diaria';
   document.getElementById('cfgTags').value = d.tags || '';
   document.getElementById('cfgCTA').value = d.cta || '';
+  document.getElementById('cfgServerUrl').value = d.serverUrl || localStorage.getItem('sc_server_url') || '';
   scheduled = (d.scheduled || []).map(s => ({...s}));
   updBadge();
   renderCal();
@@ -533,6 +562,7 @@ async function saveCfg() {
     freq: document.getElementById('cfgFreq').value,
     tags: document.getElementById('cfgTags').value,
     cta: document.getElementById('cfgCTA').value,
+    serverUrl: document.getElementById('cfgServerUrl').value,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
   setSyncState('spin', 'Guardando...');
@@ -541,9 +571,13 @@ async function saveCfg() {
   if (r) Object.assign(r, data);
   renderRestSelector();
   document.getElementById('restSel').value = currentRestId;
-  // Guarda la key d'OpenAI localment (no a Firebase per seguretat)
+  
   const oaiKey = document.getElementById('cfgOpenAIKey').value.trim();
   if (oaiKey) localStorage.setItem('sc_oai_key', oaiKey);
+  
+  const serverUrl = document.getElementById('cfgServerUrl').value.trim();
+  if (serverUrl) localStorage.setItem('sc_server_url', serverUrl);
+  
   updateImgEngineLabel();
   setSyncState('ok', 'Guardado ✓');
   toast('✓ Perfil guardado en Firebase');
@@ -559,8 +593,7 @@ async function saveScheduled() {
 }
 
 // =====================================================
-// =====================================================
-// IMATGES: DALL·E 3 (si hi ha key) o Unsplash (fallback gratuït)
+// IMÁGENES: DALL·E 3 → TU SERVIDOR
 // =====================================================
 function getOAIKey() {
   return localStorage.getItem('sc_oai_key') || document.getElementById('cfgOpenAIKey')?.value?.trim() || '';
@@ -570,11 +603,10 @@ function updateImgEngineLabel() {
   const key = getOAIKey();
   const lbl = document.getElementById('imgEngineLbl');
   const st  = document.getElementById('imgEngineSt');
-  if (lbl) lbl.textContent = key ? 'DALL·E 3 (OpenAI)' : 'Unsplash (sense key)';
-  if (st)  st.className = 'kst on';
+  if (lbl) lbl.textContent = key ? 'DALL·E 3 → Tu servidor' : 'Sin API Key configurada';
+  if (st)  st.className = key ? 'kst on' : 'kst off';
 }
 
-// DALL·E 3 via OpenAI API
 async function generateWithDalle(prompt, isStory) {
   const key = getOAIKey();
   if (!key) return null;
@@ -600,7 +632,6 @@ async function generateWithDalle(prompt, isStory) {
   }
 }
 
-// Unsplash: foto real instantània (fallback sense key)
 function makeUnsplashUrl(prompt, isStory, index) {
   const w = isStory ? 768 : 1024;
   const h = isStory ? 1365 : 1024;
@@ -617,7 +648,6 @@ function injectImg(cardId, url) {
   img.style.cssText = 'width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s;position:absolute;inset:0';
   img.onload  = () => { img.style.opacity = '1'; };
   img.onerror = () => {
-    // Si falla DALL-E, prova Unsplash
     const fallbackUrl = makeUnsplashUrl('food restaurant', false, Math.random() * 100);
     const img2 = new Image();
     img2.style.cssText = img.style.cssText;
@@ -632,7 +662,7 @@ function injectImg(cardId, url) {
 }
 
 // =====================================================
-// GENERAR PROPOSTES: Puter (gpt-4o-mini) + DALL·E 3 / Unsplash
+// GENERAR PROPUESTAS CON UPLOAD AUTOMÁTICO
 // =====================================================
 async function genProposals() {
   document.getElementById('genBtn').disabled = true;
@@ -658,7 +688,6 @@ async function genProposals() {
     document.getElementById('lstep').textContent = steps[++si % steps.length];
   }, 1800);
 
-  // ── Textos amb Puter (gpt-4o-mini) ─────────────────────────────────────
   const systemMsg = 'Ets un expert en marketing de restaurants per Instagram. Respon SEMPRE amb JSON vàlid i res més.';
   let userMsg = 'Genera 6 propostes de contingut per Instagram (3 post + 3 story) per aquest restaurant:\n\n';
   userMsg += 'Restaurant: ' + restName + '\n';
@@ -698,33 +727,40 @@ async function genProposals() {
   document.getElementById('lbox').classList.remove('vis');
   document.getElementById('genBtn').disabled = false;
 
-  // ── Imatges: DALL·E 3 (seqüencial per no sobrepassar rate limit) o Unsplash (paral·lel) ──
+  // Generar imágenes y subirlas automáticamente al servidor
   if (hasKey) {
-    // Amb DALL·E: renderitza primer, genera seqüencialment
     proposals.forEach((p,i) => { proposals[i].imageData = makeUnsplashUrl(p.imagePrompt||p.title, p.type==='story', i); });
     renderProps();
-    toast('✓ Textos generats · Generant imatges amb DALL·E 3...');
+    toast('✓ Textos generats · Generant imatges i pujant al servidor...');
+    
     for (let i = 0; i < proposals.length; i++) {
       const p = proposals[i];
-      document.getElementById('lstep').textContent = `Generant imatge ${i+1}/6 amb DALL·E 3...`;
-      const url = await generateWithDalle(p.imagePrompt || p.title, p.type === 'story');
-      if (url) {
-        proposals[i].imageData = url;
-        injectImg(p.id, url);
+      document.getElementById('lstep').textContent = `Generant imatge ${i+1}/6...`;
+      
+      // Generar con DALL-E
+      const dalleUrl = await generateWithDalle(p.imagePrompt || p.title, p.type === 'story');
+      
+      if (dalleUrl) {
+        document.getElementById('lstep').textContent = `Pujant imatge ${i+1}/6 al servidor...`;
+        // Subir a tu servidor
+        const permanentUrl = await uploadImageToServer(dalleUrl, `${p.id}_${Date.now()}.png`);
+        proposals[i].imageData = permanentUrl;
+        proposals[i].originalDalleUrl = dalleUrl; // Guardar referencia
+        injectImg(p.id, permanentUrl);
       } else {
-        injectImg(p.id, makeUnsplashUrl(p.imagePrompt||p.title, p.type==='story', i));
+        const fallbackUrl = makeUnsplashUrl(p.imagePrompt||p.title, p.type==='story', i);
+        proposals[i].imageData = fallbackUrl;
+        injectImg(p.id, fallbackUrl);
       }
     }
-    toast('✓ Imatges generades amb DALL·E 3!');
+    toast('✓ Totes les imatges pujades al teu servidor!');
   } else {
-    // Sense key: Unsplash instantani
     proposals.forEach((p,i) => { proposals[i].imageData = makeUnsplashUrl(p.imagePrompt||p.title, p.type==='story', i); });
     renderProps();
     proposals.forEach((p,i) => injectImg(p.id, proposals[i].imageData));
-    toast('✓ Propostes generades · Afegeix key OpenAI per DALL·E 3');
+    toast('⚠️ Afegeix API Key d\'OpenAI per generar imatges amb DALL·E 3');
   }
 }
-
 
 function fallback(name) {
   return [
@@ -738,7 +774,7 @@ function fallback(name) {
 }
 
 // =====================================================
-// RENDER PROPOSALS (sin cambios importantes)
+// RENDER PROPOSALS
 // =====================================================
 function renderProps() {
   const g = document.getElementById('propGrid');
@@ -779,7 +815,7 @@ function updSelUI() {
 }
 
 // =====================================================
-// PREVIEW, SCHEDULE, CALENDAR, etc. (sin cambios)
+// PREVIEW, SCHEDULE, CALENDAR
 // =====================================================
 function openPrev(id) {
   const p = proposals.find(x => x.id === id); if (!p) return;
@@ -898,23 +934,4 @@ function updBadge() { document.getElementById('calBadge').textContent = schedule
 function showSec(n, btn) {
   document.querySelectorAll('.content').forEach(s => s.style.display = 'none');
   document.querySelectorAll('.ni').forEach(b => b.classList.remove('active'));
-  const s = document.getElementById('sec-'+n); s.style.display = 'flex'; s.style.flexDirection = 'column';
-  if (btn) btn.classList.add('active');
-  if (n === 'calendar') renderCal();
-}
-
-function fmtDate(d) { if (!d) return ''; const [y,m,dd] = d.split('-'); return `${dd} ${MONTHS[parseInt(m)-1].slice(0,3)} ${y}`; }
-function toast(msg) { 
-  const t = document.getElementById('toast'); 
-  t.textContent = msg; 
-  t.classList.add('show'); 
-  setTimeout(() => t.classList.remove('show'), 3500); 
-}
-
-// =====================================================
-// BOOT
-// =====================================================
-window.onload = initApp;
-</script>
-</body>
-</html>
+  const s = document.getElementById('sec-'+n); s.style.display = 'flex
