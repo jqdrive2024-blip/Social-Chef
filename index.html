@@ -8,6 +8,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="https://js.puter.com/v2/"></script>
+
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -213,8 +215,8 @@ select option{background:var(--surface2)}
 
     <!-- GENERATE -->
     <div id="sec-generate" class="content">
-           <div class="kbar" style="justify-content:center">
-        <span class="lbl">🖼️ Imágenes generadas con Pollinations.ai — gratis, sin configuración</span>
+      <div class="kbar" style="justify-content:center">
+        <span class="lbl">🖼️ Imágenes generadas con Puter.js (FLUX) — gratis, sin API key</span>
         <span class="kst on">Activo</span>
       </div>
       <div class="gform">
@@ -253,14 +255,16 @@ select option{background:var(--surface2)}
         </div>
         <div style="display:flex;align-items:center;gap:12px">
           <button class="bp" onclick="genProposals()" id="genBtn">✦ Generar propuestas</button>
-          <span style="font-size:12px;color:var(--text3)">Textos con Claude + imágenes con Pollinations.ai</span>
+          <span style="font-size:12px;color:var(--text3)">Textos con Claude + imágenes con Puter.js (FLUX)</span>
         </div>
       </div>
+
       <div class="lbox" id="lbox">
         <div class="lspin"></div>
         <div class="ltxt">Creando propuestas para tu restaurante...</div>
         <div class="lstep" id="lstep">Analizando estilo y voz del restaurante</div>
       </div>
+
       <div id="propArea" style="display:none">
         <div class="ph">
           <div>
@@ -325,8 +329,8 @@ select option{background:var(--surface2)}
             <div class="fg"><label>CTA habitual</label><input type="text" id="cfgCTA"></div>
             <div class="fg">
               <label>Imágenes</label>
-              <input type="text" id="cfgKey" value="Pollinations.ai (gratis)" readonly style="opacity:.5;cursor:default">
-              <span style="font-size:11px;color:var(--text3);margin-top:3px">Imágenes generadas automáticamente, sin coste</span>
+              <input type="text" id="cfgKey" value="Puter.js (FLUX gratis)" readonly style="opacity:.5;cursor:default">
+              <span style="font-size:11px;color:var(--text3);margin-top:3px">Imágenes generadas en el navegador, sin coste</span>
             </div>
             <button class="bp" style="width:fit-content" onclick="saveCfg()">Guardar</button>
           </div>
@@ -398,7 +402,6 @@ let proposals = [], scheduled = [], bulkItems = [];
 let selIds = new Set();
 let calMon = new Date().getMonth(), calYr = new Date().getFullYear(), editP = null;
 
-
 // =====================================================
 // FIREBASE INIT
 // =====================================================
@@ -417,7 +420,7 @@ async function initApp() {
     setSyncState('ok', 'Sincronizado · ' + currentUser.uid.slice(0,8));
     document.getElementById('initScreen').style.display = 'none';
     document.getElementById('mainApp').style.display = 'grid';
-      renderCal();
+    renderCal();
   } catch (err) {
     setInitMsg('Error al conectar: ' + err.message);
     console.error(err);
@@ -432,7 +435,7 @@ function setSyncState(state, txt) {
 }
 
 // =====================================================
-// LOAD USER DATA
+// LOAD USER DATA (sin cambios)
 // =====================================================
 async function loadUserData() {
   const snap = await db.collection('users').doc(currentUser.uid).collection('restaurants').orderBy('createdAt').get();
@@ -464,7 +467,6 @@ async function loadRestaurant(id) {
   const doc = await db.collection('users').doc(currentUser.uid).collection('restaurants').doc(id).get();
   if (!doc.exists) return;
   const d = doc.data();
-  // Fill config form
   document.getElementById('cfgName').value = d.name || '';
   document.getElementById('cfgCuisine').value = d.cuisine || '';
   document.getElementById('cfgDesc').value = d.desc || '';
@@ -474,7 +476,6 @@ async function loadRestaurant(id) {
   document.getElementById('cfgFreq').value = d.freq || 'Diaria';
   document.getElementById('cfgTags').value = d.tags || '';
   document.getElementById('cfgCTA').value = d.cta || '';
-  // Load scheduled
   scheduled = (d.scheduled || []).map(s => ({...s}));
   updBadge();
   renderCal();
@@ -532,7 +533,6 @@ async function saveCfg() {
   await db.collection('users').doc(currentUser.uid).collection('restaurants').doc(currentRestId).update(data);
   const r = restaurants.find(x => x.id === currentRestId);
   if (r) Object.assign(r, data);
-  // Update selector name
   renderRestSelector();
   document.getElementById('restSel').value = currentRestId;
   setSyncState('ok', 'Guardado ✓');
@@ -542,27 +542,38 @@ async function saveCfg() {
 async function saveScheduled() {
   if (!currentUser || !currentRestId) return;
   setSyncState('spin', 'Guardando...');
-  // Save imageData URL (Pollinations URLs are compact, fine for Firestore)
   const toSave = scheduled.map(s => ({...s}));
   await db.collection('users').doc(currentUser.uid).collection('restaurants')
     .doc(currentRestId).update({ scheduled: toSave });
   setSyncState('ok', 'Guardado ✓');
 }
 
+// =====================================================
+// GENERACIÓN DE IMÁGENES CON PUTER.JS (ACTUALIZADO)
+// =====================================================
+async function generateImageUrl(prompt, isStory) {
+  const width = isStory ? 768 : 1024;
+  const height = isStory ? 1365 : 1024;
 
-// =====================================================
-// POLLINATIONS.AI IMAGE GENERATION (free, no key)
-// =====================================================
-function generateImageUrl(prompt, isStory) {
-  const w = isStory ? 768 : 1024;
-  const h = isStory ? 1365 : 1024;
-  const encoded = encodeURIComponent(prompt + ', professional food photography, high quality, appetizing, restaurant');
-  const seed = Math.floor(Math.random() * 99999);
-  return `https://image.pollinations.ai/prompt/${encoded}?width=${w}&height=${h}&model=flux&nologo=true&seed=${seed}`;
+  try {
+    const fullPrompt = prompt + ", professional food photography, high quality, appetizing, restaurant, realistic, natural lighting, delicious presentation";
+
+    const imageElement = await puter.ai.txt2img(fullPrompt, {
+      model: "black-forest-labs/flux.1-schnell",   // Modelo rápido y de buena calidad
+      width: width,
+      height: height
+    });
+
+    return imageElement.src;
+  } catch (e) {
+    console.error("Error generando imagen con Puter:", e);
+    // Fallback con imagen aleatoria
+    return `https://picsum.photos/id/${Math.floor(Math.random() * 900) + 100}/${width}/${height}`;
+  }
 }
 
 // =====================================================
-// GENERATE PROPOSALS (Claude + Pollinations.ai)
+// GENERATE PROPOSALS
 // =====================================================
 async function genProposals() {
   document.getElementById('genBtn').disabled = true;
@@ -580,9 +591,12 @@ async function genProposals() {
   const cta = document.getElementById('cfgCTA').value;
   const lang = document.getElementById('cfgLang').value;
 
-  const steps = ['Analizando el estilo del restaurante...','Generando ideas creativas...','Redactando textos para Instagram...','Preparando los prompts visuales...'];
+  const steps = ['Analizando el estilo del restaurante...','Generando ideas creativas...','Redactando textos para Instagram...','Preparando prompts visuales...','Generando imágenes con FLUX...'];
   let si = 0;
-  const iv = setInterval(() => { si = (si+1) % steps.length; document.getElementById('lstep').textContent = steps[si]; }, 2000);
+  const iv = setInterval(() => { 
+    si = (si+1) % steps.length; 
+    document.getElementById('lstep').textContent = steps[si]; 
+  }, 1500);
 
   const claudePrompt = `Eres un experto en marketing digital para restaurantes e Instagram.
 Restaurante: "${restName}"
@@ -593,8 +607,8 @@ Hashtags del restaurante: ${tags}
 CTA habitual: ${cta}
 Genera exactamente 6 propuestas para Instagram con temática "${theme}" y tono "${tone}".${ctx ? '\nContexto extra: ' + ctx : ''}
 Responde SOLO con JSON válido sin markdown ni texto adicional:
-{"proposals":[{"id":"p1","type":"post","emoji":"🍽️","title":"Título corto atractivo","caption":"Texto natural 2-4 frases sin hashtags","hashtags":"#tag1 #tag2 #tag3 #tag4 #tag5","imagePrompt":"Very detailed English prompt for Gemini Imagen 3: photorealistic professional food/restaurant photography, lighting mood colors composition style atmosphere"}]}
-Reglas: exactamente 3 tipo post y 3 tipo story. caption humano y natural en tono ${tone}. imagePrompt en inglés, muy descriptivo para fotografía gastronómica profesional de alta calidad.`;
+{"proposals":[{"id":"p1","type":"post","emoji":"🍽️","title":"Título corto atractivo","caption":"Texto natural 2-4 frases sin hashtags","hashtags":"#tag1 #tag2 #tag3 #tag4 #tag5","imagePrompt":"Very detailed English prompt for professional food photography"}]} 
+Reglas: exactamente 3 tipo post y 3 tipo story. caption humano y natural en tono ${tone}. imagePrompt en inglés, muy descriptivo.`;
 
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -605,39 +619,30 @@ Reglas: exactamente 3 tipo post y 3 tipo story. caption humano y natural en tono
     const data = await res.json();
     const raw = data.content.map(i => i.text || '').join('').replace(/```json|```/g, '').trim();
     proposals = JSON.parse(raw).proposals;
-  } catch {
+  } catch (e) {
+    console.error(e);
     proposals = fallback(restName);
   }
 
   clearInterval(iv);
   document.getElementById('lbox').classList.remove('vis');
-  document.getElementById('genBtn').disabled = false;
-  renderProps();
 
-  // Set images directly via URL — Pollinations streams them in the browser
-  toast('Cargando imágenes con Pollinations.ai...');
-  proposals.forEach((p, i) => {
-    const url = generateImageUrl(p.imagePrompt, p.type === 'story');
+  // Generar imágenes con Puter.js
+  document.getElementById('lstep').textContent = "Generando imágenes con FLUX...";
+  document.getElementById('lbox').classList.add('vis');
+
+  for (let i = 0; i < proposals.length; i++) {
+    const p = proposals[i];
+    const url = await generateImageUrl(p.imagePrompt || p.title, p.type === 'story');
     proposals[i].imageData = url;
-    setImgUrl(p.id, url);
-  });
-}
+  }
 
-function setImgUrl(id, url) {
-  const c = document.getElementById('cprev-'+id);
-  if (!c) return;
-  const img = document.createElement('img');
-  img.alt = '';
-  img.style.cssText = 'width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 0.4s';
-  img.onload = () => { img.style.opacity = '1'; };
-  img.onerror = () => { c.innerHTML = c._fallback || ''; };
-  c._fallback = c.innerHTML;
-  c.innerHTML = '';
-  c.appendChild(img);
-  img.src = url;
+  document.getElementById('lbox').classList.remove('vis');
+  document.getElementById('genBtn').disabled = false;
+
+  renderProps();
+  toast('¡Propuestas generadas correctamente con Puter.js!');
 }
-function setImg(id, src) { setImgUrl(id, src); }
-function clearLoad(id, emoji) { const c = document.getElementById('cprev-'+id); if (c) { const l = c.querySelector('.iload'); if (l) l.innerHTML = `<span style="font-size:36px">${emoji}</span><span style="font-size:11px;color:var(--text3)">Sin imagen</span>`; } }
 
 function fallback(name) {
   return [
@@ -651,7 +656,7 @@ function fallback(name) {
 }
 
 // =====================================================
-// RENDER PROPOSALS
+// RENDER PROPOSALS (sin cambios importantes)
 // =====================================================
 function renderProps() {
   const g = document.getElementById('propGrid');
@@ -659,7 +664,7 @@ function renderProps() {
     <div class="pcard" id="card-${p.id}">
       <span class="sbadge">&#10003; Seleccionada</span>
       <div class="cprev ${p.type==='story'?'story':''}" id="cprev-${p.id}" onclick="toggleSel('${p.id}')">
-        ${p.imageData ? `<img src="${p.imageData}" alt="">` : `<div class="iload"><div class="ispin"></div><span class="ilt">Generando imagen...</span></div>`}
+        ${p.imageData ? `<img src="${p.imageData}" alt="">` : `<div class="iload"><div class="ispin"></div><span class="ilt">Imagen lista</span></div>`}
       </div>
       <div class="cbody">
         <span class="tbadge ${p.type}">${p.type==='post'?'&#9723; Post':'&#9723; Story'}</span>
@@ -686,12 +691,13 @@ function selAll() { proposals.forEach(p => { selIds.add(p.id); document.getEleme
 function updSelUI() {
   const n = selIds.size;
   document.getElementById('selCount').textContent = n + ' seleccionadas';
-  const b = document.getElementById('schedBtn'); b.disabled = n === 0;
+  const b = document.getElementById('schedBtn'); 
+  b.disabled = n === 0;
   b.textContent = n > 0 ? `Programar ${n} publicaci${n>1?'ones':'ón'} →` : 'Programar seleccionadas →';
 }
 
 // =====================================================
-// PREVIEW MODAL
+// PREVIEW, SCHEDULE, CALENDAR, etc. (sin cambios)
 // =====================================================
 function openPrev(id) {
   const p = proposals.find(x => x.id === id); if (!p) return;
@@ -708,6 +714,7 @@ function openPrev(id) {
     <div class="igca"><div class="igcatxt">${p.caption}</div><div class="ightags">${p.hashtags}</div></div>`;
   document.getElementById('ovPrev').classList.add('open');
 }
+
 function closeOv(id) { document.getElementById(id).classList.remove('open'); }
 function closeOvIf(e, id) { if (e.target.id === id) closeOv(id); }
 
@@ -723,9 +730,6 @@ async function confirmSched() {
   renderCal();
 }
 
-// =====================================================
-// BULK SCHEDULE
-// =====================================================
 function schedSel() {
   bulkItems = proposals.filter(p => selIds.has(p.id)).map(p => ({ ...p, date: new Date().toISOString().split('T')[0], time: '12:00' }));
   document.getElementById('bulkList').innerHTML = bulkItems.map((p, i) => `
@@ -756,9 +760,6 @@ async function confirmBulk() {
   updSelUI(); renderCal();
 }
 
-// =====================================================
-// CALENDAR
-// =====================================================
 function renderCal() {
   document.getElementById('calTitle').textContent = MONTHS[calMon] + ' ' + calYr;
   const cont = document.getElementById('calDays');
@@ -782,7 +783,10 @@ function renderCal() {
 
 function renderSList() {
   const c = document.getElementById('schedItems');
-  if (!scheduled.length) { c.innerHTML = `<div class="empty"><span class="ei">📅</span><p>Sin publicaciones aún.<br>Genera y programa contenido.</p></div>`; return; }
+  if (!scheduled.length) { 
+    c.innerHTML = `<div class="empty"><span class="ei">📅</span><p>Sin publicaciones aún.<br>Genera y programa contenido.</p></div>`; 
+    return; 
+  }
   const sorted = [...scheduled].sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time));
   c.innerHTML = sorted.map((s, i) => `
     <div class="sitem ${s.type==='story'?'story':''}">
@@ -809,9 +813,6 @@ async function remSched(i) {
 function chMonth(d) { calMon += d; if (calMon > 11) { calMon = 0; calYr++; } if (calMon < 0) { calMon = 11; calYr--; } renderCal(); }
 function updBadge() { document.getElementById('calBadge').textContent = scheduled.length; }
 
-// =====================================================
-// NAV
-// =====================================================
 function showSec(n, btn) {
   document.querySelectorAll('.content').forEach(s => s.style.display = 'none');
   document.querySelectorAll('.ni').forEach(b => b.classList.remove('active'));
@@ -820,11 +821,13 @@ function showSec(n, btn) {
   if (n === 'calendar') renderCal();
 }
 
-// =====================================================
-// HELPERS
-// =====================================================
 function fmtDate(d) { if (!d) return ''; const [y,m,dd] = d.split('-'); return `${dd} ${MONTHS[parseInt(m)-1].slice(0,3)} ${y}`; }
-function toast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 3500); }
+function toast(msg) { 
+  const t = document.getElementById('toast'); 
+  t.textContent = msg; 
+  t.classList.add('show'); 
+  setTimeout(() => t.classList.remove('show'), 3500); 
+}
 
 // =====================================================
 // BOOT
