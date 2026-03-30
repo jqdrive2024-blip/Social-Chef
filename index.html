@@ -253,7 +253,7 @@ select option{background:var(--surface2)}
         </div>
         <div style="display:flex;align-items:center;gap:12px">
           <button class="bp" onclick="genProposals()" id="genBtn">✦ Generar propuestas</button>
-          <span style="font-size:12px;color:var(--text3)">Textos con Claude + imágenes con Gemini</span>
+          <span style="font-size:12px;color:var(--text3)">Textos con Claude + imágenes con Pollinations.ai</span>
         </div>
       </div>
       <div class="lbox" id="lbox">
@@ -542,11 +542,8 @@ async function saveCfg() {
 async function saveScheduled() {
   if (!currentUser || !currentRestId) return;
   setSyncState('spin', 'Guardando...');
-  // Strip imageData from Firestore (too large, keep locally only)
-  const toSave = scheduled.map(s => {
-    const {imageData, ...rest} = s;
-    return rest;
-  });
+  // Save imageData URL (Pollinations URLs are compact, fine for Firestore)
+  const toSave = scheduled.map(s => ({...s}));
   await db.collection('users').doc(currentUser.uid).collection('restaurants')
     .doc(currentRestId).update({ scheduled: toSave });
   setSyncState('ok', 'Guardado ✓');
@@ -556,22 +553,12 @@ async function saveScheduled() {
 // =====================================================
 // POLLINATIONS.AI IMAGE GENERATION (free, no key)
 // =====================================================
-async function generateImage(prompt, isStory) {
-  try {
-    const w = isStory ? 768 : 1024;
-    const h = isStory ? 1365 : 1024;
-    const encoded = encodeURIComponent(prompt + ', professional food photography, high quality, appetizing, restaurant');
-    const seed = Math.floor(Math.random() * 99999);
-    const url = `https://image.pollinations.ai/prompt/${encoded}?width=${w}&height=${h}&model=flux&nologo=true&seed=${seed}`;
-    return await new Promise((resolve) => {
-      const img = new Image();
-      img.crossOrigin = 'anonymous';
-      img.onload = () => resolve(url);
-      img.onerror = () => resolve(null);
-      setTimeout(() => resolve(url), 5000);
-      img.src = url;
-    });
-  } catch { return null; }
+function generateImageUrl(prompt, isStory) {
+  const w = isStory ? 768 : 1024;
+  const h = isStory ? 1365 : 1024;
+  const encoded = encodeURIComponent(prompt + ', professional food photography, high quality, appetizing, restaurant');
+  const seed = Math.floor(Math.random() * 99999);
+  return `https://image.pollinations.ai/prompt/${encoded}?width=${w}&height=${h}&model=flux&nologo=true&seed=${seed}`;
 }
 
 // =====================================================
@@ -627,17 +614,29 @@ Reglas: exactamente 3 tipo post y 3 tipo story. caption humano y natural en tono
   document.getElementById('genBtn').disabled = false;
   renderProps();
 
-  // Generate images in parallel with Pollinations.ai (free)
-  toast('Generando imágenes con Pollinations.ai...');
-  await Promise.all(proposals.map(async (p, i) => {
-    const img = await generateImage(p.imagePrompt, p.type === 'story');
-    if (img) { proposals[i].imageData = img; setImg(p.id, img); }
-    else clearLoad(p.id, p.emoji);
-  }));
-  toast('✓ Imágenes generadas');
+  // Set images directly via URL — Pollinations streams them in the browser
+  toast('Cargando imágenes con Pollinations.ai...');
+  proposals.forEach((p, i) => {
+    const url = generateImageUrl(p.imagePrompt, p.type === 'story');
+    proposals[i].imageData = url;
+    setImgUrl(p.id, url);
+  });
 }
 
-function setImg(id, src) { const c = document.getElementById('cprev-'+id); if (c) c.innerHTML = `<img src="${src}" alt="">`; }
+function setImgUrl(id, url) {
+  const c = document.getElementById('cprev-'+id);
+  if (!c) return;
+  const img = document.createElement('img');
+  img.alt = '';
+  img.style.cssText = 'width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 0.4s';
+  img.onload = () => { img.style.opacity = '1'; };
+  img.onerror = () => { c.innerHTML = c._fallback || ''; };
+  c._fallback = c.innerHTML;
+  c.innerHTML = '';
+  c.appendChild(img);
+  img.src = url;
+}
+function setImg(id, src) { setImgUrl(id, src); }
 function clearLoad(id, emoji) { const c = document.getElementById('cprev-'+id); if (c) { const l = c.querySelector('.iload'); if (l) l.innerHTML = `<span style="font-size:36px">${emoji}</span><span style="font-size:11px;color:var(--text3)">Sin imagen</span>`; } }
 
 function fallback(name) {
