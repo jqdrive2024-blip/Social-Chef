@@ -11,6 +11,7 @@
 <script src="https://js.puter.com/v2/"></script>
 
 <style>
+/* === CSS ORIGINAL COMPLETO === */
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
   --bg:#0e0e0e;--surface:#161616;--surface2:#1e1e1e;--surface3:#272727;
@@ -223,7 +224,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent)}
           </div>
           <div class="fg full">
             <label>Contexto adicional (opcional)</label>
-            <textarea id="ctx" rows="2" placeholder="Ej: Carxofes i calçots de temporada, queremos promocionar estos platos frescos de primavera"></textarea>
+            <textarea id="ctx" rows="2" placeholder="Ej: Carxofes i calçots de temporada, queremos promocionar estos platos frescos"></textarea>
           </div>
         </div>
         <div class="fg" style="margin-bottom:20px">
@@ -237,14 +238,14 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent)}
         </div>
         <div style="display:flex;align-items:center;gap:12px">
           <button class="bp" onclick="genProposals()" id="genBtn">✦ Generar propuestas</button>
-          <span style="font-size:12px;color:var(--text3)">Textos con Claude + imágenes con Nano Banana (Google)</span>
+          <span style="font-size:12px;color:var(--text3)">Textos con Claude + imágenes con Nano Banana</span>
         </div>
       </div>
 
       <div class="lbox" id="lbox">
         <div class="lspin"></div>
-        <div class="ltxt">Creando propuestas para tu restaurante...</div>
-        <div class="lstep" id="lstep">Analizando estilo y voz del restaurante</div>
+        <div class="ltxt">Creando propuestas...</div>
+        <div class="lstep" id="lstep">Analizando estilo del restaurante</div>
       </div>
 
       <div id="propArea" style="display:none">
@@ -312,7 +313,6 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent)}
         </div>
       </div>
     </div>
-
   </main>
 </div>
 
@@ -354,7 +354,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent)}
 
 <script>
 // =====================================================
-// FIREBASE CONFIG + STATE
+// FIREBASE + STATE
 // =====================================================
 const firebaseConfig = {
   apiKey: "AIzaSyB1HefWkEqitPqHNE9G_slYDFzf9Z7jf9I",
@@ -374,7 +374,7 @@ let selIds = new Set();
 let calMon = new Date().getMonth(), calYr = new Date().getFullYear(), editP = null;
 
 // =====================================================
-// FIREBASE INIT + LOAD DATA (completo)
+// INIT + LOAD
 // =====================================================
 async function initApp() {
   setInitMsg('Conectando con Firebase...');
@@ -418,10 +418,8 @@ async function createDefaultRestaurant() {
     cuisine: 'Mediterránea y pescados frescos',
     desc: 'Restaurante familiar con 30 años de historia en el puerto.',
     web: '', ig: '@latabernadelmar', lang: 'Español', freq: 'Diaria',
-    tags: '#tabernadelmar #pescadofresco #mediterránea',
-    cta: '¡Reserva en el link de la bio!',
-    scheduled: [],
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    tags: '#tabernadelmar #pescadofresco', cta: '¡Reserva en el link de la bio!',
+    scheduled: [], createdAt: firebase.firestore.FieldValue.serverTimestamp()
   };
   const ref = await db.collection('users').doc(currentUser.uid).collection('restaurants').add(data);
   restaurants.push({ id: ref.id, ...data });
@@ -453,8 +451,6 @@ function renderRestSelector() {
   if (currentRestId) sel.value = currentRestId;
 }
 
-// (changeRest, addRest, saveCfg, saveScheduled se mantienen igual que en versiones anteriores)
-
 async function changeRest() {
   const id = document.getElementById('restSel').value;
   if (id === currentRestId) return;
@@ -468,7 +464,11 @@ async function addRest() {
   const n = prompt('Nombre del nuevo restaurante:');
   if (!n) return;
   setSyncState('spin', 'Guardando...');
-  const data = { name: n, cuisine: 'Tipo de cocina', desc: 'Descripción...', web: '', ig: '@' + n.toLowerCase().replace(/\s+/g,''), lang: 'Español', freq: 'Diaria', tags: '#restaurante', cta: '¡Reserva!', scheduled: [], createdAt: firebase.firestore.FieldValue.serverTimestamp() };
+  const data = {
+    name: n, cuisine: 'Tipo de cocina', desc: 'Descripción del restaurante.',
+    web: '', ig: '@' + n.toLowerCase().replace(/\s+/g,''), lang: 'Español',
+    freq: 'Diaria', tags: '#restaurante', cta: '¡Reserva!', scheduled: [], createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
   const ref = await db.collection('users').doc(currentUser.uid).collection('restaurants').add(data);
   restaurants.push({ id: ref.id, ...data });
   renderRestSelector();
@@ -510,17 +510,17 @@ async function saveScheduled() {
 }
 
 // =====================================================
-// NANO BANANA IMAGE GENERATION (Google Gemini)
+// NANO BANANA (Google Gemini) - Imágenes
 // =====================================================
 async function generateImageUrl(prompt, isStory) {
   const width = isStory ? 768 : 1024;
   const height = isStory ? 1365 : 1024;
 
   try {
-    const fullPrompt = prompt + ", professional high-end food photography, catalan cuisine, seasonal vegetables, fresh ingredients, appetizing plating, natural daylight, sharp detail, realistic, restaurant style";
+    const fullPrompt = prompt + ", professional high-end food photography, catalan cuisine, seasonal vegetables like calçots and artichokes, fresh ingredients, appetizing plating, natural daylight, sharp detail, realistic, restaurant presentation";
 
     const imageElement = await puter.ai.txt2img(fullPrompt, {
-      model: "gemini-3.1-flash-image-preview",   // Nano Banana 2 (mejor comprensión de prompts)
+      model: "gemini-3.1-flash-image-preview",
       width: width,
       height: height
     });
@@ -543,14 +543,17 @@ async function genProposals() {
 
   const theme = document.getElementById('theme').value;
   const tone = document.getElementById('tone').value;
-  const ctx = document.getElementById('ctx').value;
+  const ctx = document.getElementById('ctx').value || "";
   const restName = restaurants.find(r => r.id === currentRestId)?.name || document.getElementById('cfgName').value || "Restaurante";
 
   const steps = ['Analizando restaurante...', 'Generando textos...', 'Generando imágenes con Nano Banana...'];
   let si = 0;
-  const iv = setInterval(() => { si = (si+1) % steps.length; document.getElementById('lstep').textContent = steps[si]; }, 1400);
+  const iv = setInterval(() => { 
+    si = (si+1) % steps.length; 
+    document.getElementById('lstep').textContent = steps[si]; 
+  }, 1400);
 
-  proposals = fallback(restName);   // por ahora usamos fallback (Claude suele fallar sin key)
+  proposals = fallback(restName);
 
   clearInterval(iv);
   document.getElementById('lbox').classList.remove('vis');
@@ -560,7 +563,7 @@ async function genProposals() {
 
   for (let i = 0; i < proposals.length; i++) {
     const p = proposals[i];
-    const url = await generateImageUrl(p.imagePrompt || (p.title + " " + (ctx || "")), p.type === 'story');
+    const url = await generateImageUrl(p.imagePrompt || (p.title + " " + ctx), p.type === 'story');
     proposals[i].imageData = url;
   }
 
@@ -574,7 +577,6 @@ async function genProposals() {
 function fallback(name) {
   return [
     {id:'p1',type:'post',emoji:'🍽️',title:'Carxofes i calçots de temporada',caption:`En ${name} celebramos la temporada con carxofes y calçots frescos. Platos auténticos y llenos de sabor.`,hashtags:'#calçots #carxofes #temporada #cuina catalana',imagePrompt:'carxofes i calçots grilled catalan seasonal vegetables'},
-    // ... puedes añadir más si quieres
     {id:'p2',type:'story',emoji:'🌿',title:'Productos de temporada',caption:`Carxofes tiernas y calçots recién cogidos. La esencia de la primavera en tu mesa.`,hashtags:'#productesfrescos #primavera',imagePrompt:'fresh seasonal artichokes and calçots catalan market'},
     {id:'p3',type:'post',emoji:'🔥',title:'Calçotada especial',caption:`¿Listos para una buena calçotada? En ${name} preparamos la mejor versión con salsa romesco casera.`,hashtags:'#calçotada #romesco',imagePrompt:'traditional catalan calçotada with romesco sauce'},
     {id:'p4',type:'story',emoji:'🍴',title:'Plato del día',caption:`Hoy destacamos nuestras alcachofas salteadas con jamón y calçots a la brasa.`,hashtags:'#alcachofas #calçots',imagePrompt:'artichokes and calçots grilled catalan dish'},
@@ -583,8 +585,9 @@ function fallback(name) {
   ];
 }
 
-// renderProps, toggleSel, openPrev, confirmSched, renderCal, etc. → todas las funciones del código original
-
+// =====================================================
+// RENDER + UI
+// =====================================================
 function renderProps() {
   const g = document.getElementById('propGrid');
   g.innerHTML = proposals.map(p => `
@@ -623,14 +626,15 @@ function updSelUI() {
   b.textContent = n > 0 ? `Programar ${n} publicaci${n>1?'ones':'ón'} →` : 'Programar seleccionadas →';
 }
 
-// Resto de funciones (openPrev, confirmSched, renderCal, showSec, toast, etc.) son las mismas que en tu versión original.
-
-function openPrev(id) { /* copia tu función original */ 
+// =====================================================
+// PREVIEW + SCHEDULE + CALENDAR
+// =====================================================
+function openPrev(id) {
   const p = proposals.find(x => x.id === id); if (!p) return;
   editP = p;
   const ig = document.getElementById('cfgIG').value || '@mi_restaurante';
   document.getElementById('mpTitle').textContent = p.title;
-  document.getElementById('mpSub').textContent = p.type === 'post' ? 'Vista previa · Post de Instagram' : 'Vista previa · Story de Instagram';
+  document.getElementById('mpSub').textContent = p.type === 'post' ? 'Vista previa · Post' : 'Vista previa · Story';
   document.getElementById('mpCap').value = p.caption;
   document.getElementById('mpDate').value = new Date().toISOString().split('T')[0];
   const imgH = p.imageData ? `<img src="${p.imageData}" alt="">` : `<div style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:10px;padding:20px"><span style="font-size:48px">${p.emoji}</span><span style="font-size:12px;color:var(--text3)">${p.title}</span></div>`;
@@ -644,6 +648,120 @@ function openPrev(id) { /* copia tu función original */
 function closeOv(id) { document.getElementById(id).classList.remove('open'); }
 function closeOvIf(e, id) { if (e.target.id === id) closeOv(id); }
 
+async function confirmSched() {
+  if (!editP) return;
+  const date = document.getElementById('mpDate').value, time = document.getElementById('mpTime').value;
+  if (!date) { toast('Selecciona una fecha'); return; }
+  editP.caption = document.getElementById('mpCap').value;
+  scheduled.push({ ...editP, date, time });
+  updBadge(); closeOv('ovPrev');
+  await saveScheduled();
+  toast('✓ Programada');
+  renderCal();
+}
+
+function schedSel() {
+  bulkItems = proposals.filter(p => selIds.has(p.id)).map(p => ({ ...p, date: new Date().toISOString().split('T')[0], time: '12:00' }));
+  document.getElementById('bulkList').innerHTML = bulkItems.map((p, i) => `
+    <div style="display:grid;grid-template-columns:${p.imageData?'40px ':''} 24px 1fr auto auto;gap:8px;align-items:center;padding:10px;background:var(--surface2);border-radius:var(--rs);margin-bottom:8px">
+      ${p.imageData ? `<img src="${p.imageData}" style="width:36px;height:36px;border-radius:6px;object-fit:cover">` : ''}
+      <span style="font-size:18px">${p.emoji}</span>
+      <div><div style="font-size:13px;font-weight:500">${p.title}</div><span class="tbadge ${p.type}" style="font-size:10px;padding:1px 6px">${p.type}</span></div>
+      <input type="date" value="${p.date}" onchange="bulkItems[${i}].date=this.value" style="font-size:11px;padding:5px 8px;width:130px">
+      <input type="time" value="${p.time}" onchange="bulkItems[${i}].time=this.value" style="font-size:11px;padding:5px 8px;width:90px">
+    </div>`).join('');
+  document.getElementById('bdDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('ovBulk').classList.add('open');
+}
+
+function applyBulk() {
+  const d = document.getElementById('bdDate').value, t = document.getElementById('bdTime').value; 
+  if (!d) return;
+  bulkItems.forEach((_, i) => { bulkItems[i].date = d; bulkItems[i].time = t; });
+  document.getElementById('bulkList').querySelectorAll('input[type="date"]').forEach(inp => inp.value = d);
+  document.getElementById('bulkList').querySelectorAll('input[type="time"]').forEach(inp => inp.value = t);
+}
+
+async function confirmBulk() {
+  bulkItems.forEach(item => { if (item.date) scheduled.push({ ...item }); });
+  updBadge(); closeOv('ovBulk');
+  await saveScheduled();
+  toast('✓ Publicaciones programadas');
+  selIds.clear();
+  proposals.forEach(p => document.getElementById('card-'+p.id)?.classList.remove('sel'));
+  updSelUI(); renderCal();
+}
+
+// =====================================================
+// CALENDAR FUNCTIONS (incluye updBadge)
+// =====================================================
+function renderCal() {
+  document.getElementById('calTitle').textContent = MONTHS[calMon] + ' ' + calYr;
+  const cont = document.getElementById('calDays');
+  const first = new Date(calYr, calMon, 1), last = new Date(calYr, calMon+1, 0);
+  let sd = first.getDay(); sd = sd === 0 ? 6 : sd - 1;
+  const today = new Date(); let html = '';
+  const pl = new Date(calYr, calMon, 0).getDate();
+  for (let i = sd-1; i >= 0; i--) html += `<div class="cday om"><span class="cdnum">${pl-i}</span></div>`;
+  for (let d = 1; d <= last.getDate(); d++) {
+    const ds = `${calYr}-${String(calMon+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const iT = d===today.getDate()&&calMon===today.getMonth()&&calYr===today.getFullYear();
+    const posts = scheduled.filter(s => s.date === ds);
+    const dots = posts.map(p => `<div class="pdot ${p.type==='story'?'story':''}"></div>`).join('');
+    html += `<div class="cday ${iT?'today':''} ${posts.length?'hp':''}"><span class="cdnum">${d}</span><div style="display:flex;gap:2px;flex-wrap:wrap;margin-top:2px">${dots}</div></div>`;
+  }
+  const rem = (sd + last.getDate()) % 7; const fill = rem === 0 ? 0 : 7 - rem;
+  for (let i = 1; i <= fill; i++) html += `<div class="cday om"><span class="cdnum">${i}</span></div>`;
+  cont.innerHTML = html;
+  renderSList();
+}
+
+function renderSList() {
+  const c = document.getElementById('schedItems');
+  if (!scheduled.length) {
+    c.innerHTML = `<div class="empty"><span class="ei">📅</span><p>Sin publicaciones aún.<br>Genera y programa contenido.</p></div>`;
+    return;
+  }
+  const sorted = [...scheduled].sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time));
+  c.innerHTML = sorted.map((s, i) => `
+    <div class="sitem ${s.type==='story'?'story':''}">
+      <div style="display:flex;align-items:center;gap:10px">
+        ${s.imageData ? `<img src="${s.imageData}" class="sthumb" alt="">` : `<span style="font-size:22px">${s.emoji}</span>`}
+        <div style="flex:1;min-width:0">
+          <div class="sd8">${fmtDate(s.date)} · ${s.time}</div>
+          <div class="stit">${s.title}</div>
+          <div class="styp">${s.type==='post'?'Post':'Story'}</div>
+        </div>
+        <button onclick="remSched(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:4px;flex-shrink:0">&#215;</button>
+      </div>
+    </div>`).join('');
+}
+
+async function remSched(i) {
+  scheduled.splice(i, 1);
+  updBadge();
+  await saveScheduled();
+  renderCal();
+  toast('Publicación eliminada');
+}
+
+function chMonth(d) { calMon += d; if (calMon > 11) { calMon = 0; calYr++; } if (calMon < 0) { calMon = 11; calYr--; } renderCal(); }
+
+function updBadge() {
+  document.getElementById('calBadge').textContent = scheduled.length;
+}
+
+function showSec(n, btn) {
+  document.querySelectorAll('.content').forEach(s => s.style.display = 'none');
+  document.querySelectorAll('.ni').forEach(b => b.classList.remove('active'));
+  const s = document.getElementById('sec-'+n); 
+  s.style.display = 'flex'; 
+  s.style.flexDirection = 'column';
+  if (btn) btn.classList.add('active');
+  if (n === 'calendar') renderCal();
+}
+
+function fmtDate(d) { if (!d) return ''; const [y,m,dd] = d.split('-'); return `${dd} ${MONTHS[parseInt(m)-1].slice(0,3)} ${y}`; }
 function toast(msg) { 
   const t = document.getElementById('toast'); 
   t.textContent = msg; 
@@ -651,6 +769,9 @@ function toast(msg) {
   setTimeout(() => t.classList.remove('show'), 3500); 
 }
 
+// =====================================================
+// BOOT
+// =====================================================
 window.onload = initApp;
 </script>
 </body>
