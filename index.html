@@ -215,7 +215,7 @@ select option{background:var(--surface2)}
     <!-- GENERATE -->
     <div id="sec-generate" class="content">
       <div class="kbar" style="justify-content:center">
-        <span class="lbl">🖼️ Imágenes generadas con Pollinations.ai (FLUX) — gratis, sin API key</span>
+        <span class="lbl">🖼️ Imágenes con Pollinations.ai (FLUX) — gratuito, sin límite</span>
         <span class="kst on">Activo</span>
       </div>
       <div class="gform">
@@ -254,7 +254,7 @@ select option{background:var(--surface2)}
         </div>
         <div style="display:flex;align-items:center;gap:12px">
           <button class="bp" onclick="genProposals()" id="genBtn">✦ Generar propuestas</button>
-          <span style="font-size:12px;color:var(--text3)">Textos amb Claude + imatges amb Pollinations.ai (FLUX) (FLUX)</span>
+          <span style="font-size:12px;color:var(--text3)">Textos con Claude + imágenes con Pollinations.ai</span>
         </div>
       </div>
 
@@ -328,7 +328,7 @@ select option{background:var(--surface2)}
             <div class="fg"><label>CTA habitual</label><input type="text" id="cfgCTA"></div>
             <div class="fg">
               <label>Imágenes</label>
-              <input type="text" id="cfgKey" value="Pollinations.ai (FLUX gratis)" readonly style="opacity:.5;cursor:default">
+              <input type="text" id="cfgKey" value="Puter.js (FLUX gratis)" readonly style="opacity:.5;cursor:default">
               <span style="font-size:11px;color:var(--text3);margin-top:3px">Imágenes generadas en el navegador, sin coste</span>
             </div>
             <button class="bp" style="width:fit-content" onclick="saveCfg()">Guardar</button>
@@ -548,32 +548,30 @@ async function saveScheduled() {
 }
 
 // =====================================================
-// GENERACIÓ D'IMATGES AMB POLLINATIONS.AI (gratuït, sense límit)
+// IMATGES AMB POLLINATIONS.AI — gratuït, sense límit, FLUX
 // =====================================================
-function generateImageUrl(prompt, isStory) {
+function makePollinationsUrl(prompt, isStory) {
   const w = isStory ? 768 : 1024;
   const h = isStory ? 1365 : 1024;
-  const fullPrompt = prompt + ', professional food photography, high quality, appetizing, restaurant, realistic, natural lighting, delicious presentation';
-  const encoded = encodeURIComponent(fullPrompt);
+  const full = prompt + ', professional food photography, high quality, appetizing, natural lighting, delicious presentation';
   const seed = Math.floor(Math.random() * 999999);
-  return `https://image.pollinations.ai/prompt/${encoded}?width=${w}&height=${h}&model=flux&nologo=true&enhance=true&seed=${seed}`;
+  return 'https://image.pollinations.ai/prompt/' + encodeURIComponent(full)
+    + '?width=' + w + '&height=' + h + '&model=flux&nologo=true&seed=' + seed;
 }
 
-function setCardImage(id, url) {
-  const prev = document.getElementById('cprev-' + id);
-  if (!prev) return;
+function injectImage(cardId, url) {
+  const box = document.getElementById('cprev-' + cardId);
+  if (!box) return;
   const img = document.createElement('img');
-  img.style.cssText = 'width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 0.5s';
-  img.onload = () => { img.style.opacity = '1'; };
-  img.onerror = () => { prev.innerHTML = prev._fallback || ''; };
-  prev._fallback = prev.innerHTML;
-  prev.innerHTML = '';
-  prev.appendChild(img);
-  img.src = url;
+  img.style.cssText = 'width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s;position:absolute;inset:0';
+  img.onload  = () => { img.style.opacity = '1'; };
+  img.onerror = () => { img.remove(); }; // deixa el spinner si falla
+  box.appendChild(img);
+  img.src = url; // el navegador la carrega sense CORS perquè és <img src>, no fetch
 }
 
 // =====================================================
-// GENERATE PROPOSALS
+// GENERAR PROPOSTES (Claude + Pollinations)
 // =====================================================
 async function genProposals() {
   document.getElementById('genBtn').disabled = true;
@@ -581,62 +579,84 @@ async function genProposals() {
   document.getElementById('lbox').classList.add('vis');
   selIds.clear();
 
-  const theme = document.getElementById('theme').value;
-  const tone = document.getElementById('tone').value;
-  const ctx = document.getElementById('ctx').value;
-  const restName = restaurants.find(r => r.id === currentRestId)?.name || document.getElementById('cfgName').value;
-  const cuisine = document.getElementById('cfgCuisine').value;
-  const desc = document.getElementById('cfgDesc').value;
-  const tags = document.getElementById('cfgTags').value;
-  const cta = document.getElementById('cfgCTA').value;
-  const lang = document.getElementById('cfgLang').value;
+  const theme    = document.getElementById('theme').value;
+  const tone     = document.getElementById('tone').value;
+  const ctx      = document.getElementById('ctx').value;
+  const restName = restaurants.find(r => r.id === currentRestId)?.name
+                   || document.getElementById('cfgName').value;
+  const cuisine  = document.getElementById('cfgCuisine').value;
+  const desc     = document.getElementById('cfgDesc').value;
+  const tags     = document.getElementById('cfgTags').value;
+  const cta      = document.getElementById('cfgCTA').value;
+  const lang     = document.getElementById('cfgLang').value;
 
-  const steps = ['Analizando el estilo del restaurante...','Generando ideas creativas...','Redactando textos para Instagram...','Preparando prompts visuales...','Generant imatges amb Pollinations.ai...'];
+  const steps = [
+    'Analitzant l\'estil del restaurant...',
+    'Generant idees creatives...',
+    'Redactant textos per Instagram...',
+    'Preparant prompts visuals...'
+  ];
   let si = 0;
-  const iv = setInterval(() => { 
-    si = (si+1) % steps.length; 
-    document.getElementById('lstep').textContent = steps[si]; 
-  }, 1500);
+  const iv = setInterval(() => {
+    si = (si + 1) % steps.length;
+    document.getElementById('lstep').textContent = steps[si];
+  }, 1800);
 
-  const claudePrompt = `Eres un experto en marketing digital para restaurantes e Instagram.
-Restaurante: "${restName}"
-Cocina: ${cuisine}
-Voz de marca: ${desc}
-Idioma: ${lang}
-Hashtags del restaurante: ${tags}
-CTA habitual: ${cta}
-Genera exactamente 6 propuestas para Instagram con temática "${theme}" y tono "${tone}".${ctx ? '\nContexto extra: ' + ctx : ''}
-Responde SOLO con JSON válido sin markdown ni texto adicional:
-{"proposals":[{"id":"p1","type":"post","emoji":"🍽️","title":"Título corto atractivo","caption":"Texto natural 2-4 frases sin hashtags","hashtags":"#tag1 #tag2 #tag3 #tag4 #tag5","imagePrompt":"Very detailed English prompt for professional food photography"}]} 
-Reglas: exactamente 3 tipo post y 3 tipo story. caption humano y natural en tono ${tone}. imagePrompt en inglés, muy descriptivo.`;
+  // ── Claude genera els textos ─────────────────────────────────────────────
+  const claudePrompt = [
+    'Eres un experto en marketing digital para restaurantes e Instagram.',
+    'Restaurante: "' + restName + '"',
+    'Cocina: ' + cuisine,
+    'Voz de marca: ' + desc,
+    'Idioma de publicaciones: ' + lang,
+    'Hashtags del restaurante: ' + tags,
+    'CTA habitual: ' + cta,
+    'Genera exactamente 6 propuestas para Instagram con temática "' + theme + '" y tono "' + tone + '".',
+    ctx ? 'Contexto extra: ' + ctx : '',
+    'Responde SOLO con JSON válido, sin markdown, sin texto adicional:',
+    '{"proposals":[{"id":"p1","type":"post","emoji":"🍽️","title":"Título corto","caption":"Texto natural 2-4 frases sin hashtags","hashtags":"#tag1 #tag2 #tag3 #tag4 #tag5","imagePrompt":"Detailed English prompt for food photography, specific dish, lighting, mood, colors"}]}',
+    'Reglas: exactamente 3 tipo post y 3 tipo story (alterna). caption humano en tono ' + tone + '. imagePrompt en inglés muy específico sobre el plato o escena concreta del contexto dado.'
+  ].filter(Boolean).join('\n');
 
   try {
     const res = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1800, messages: [{ role: 'user', content: claudePrompt }] })
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': '',           // la clau la posa el proxy d'Anthropic automàticament
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2000,
+        messages: [{ role: 'user', content: claudePrompt }]
+      })
     });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
     const raw = data.content.map(i => i.text || '').join('').replace(/```json|```/g, '').trim();
     proposals = JSON.parse(raw).proposals;
   } catch (e) {
-    console.error(e);
+    console.error('Claude error:', e);
     proposals = fallback(restName);
+    toast('⚠ Claude no disponible — usant contingut de mostra');
   }
 
   clearInterval(iv);
-  document.getElementById('lbox').classList.remove('vis');
 
-  document.getElementById('genBtn').disabled = false;
-  document.getElementById('lbox').classList.remove('vis');
-
-  // Assigna URLs i renderitza ja — les imatges carreguen en paral·lel al fons
+  // ── Pre-assigna les URLs de Pollinations (síncron, instantani) ───────────
   proposals.forEach((p, i) => {
-    proposals[i].imageData = generateImageUrl(p.imagePrompt || p.title, p.type === 'story');
+    proposals[i].imageData = makePollinationsUrl(p.imagePrompt || p.title, p.type === 'story');
   });
 
+  document.getElementById('lbox').classList.remove('vis');
+  document.getElementById('genBtn').disabled = false;
   renderProps();
-  toast('Propuestas generadas · Imágenes cargando con Pollinations.ai...');
+
+  // ── Injecta les imatges ara que el DOM existeix ──────────────────────────
+  proposals.forEach(p => injectImage(p.id, p.imageData));
+  toast('✓ Propostes generades · Les imatges estan carregant...');
 }
 
 function fallback(name) {
@@ -674,8 +694,6 @@ function renderProps() {
   document.getElementById('propCount').textContent = proposals.length + ' propuestas generadas';
   document.getElementById('propArea').style.display = 'block';
   updSelUI();
-  // Load images after DOM is ready
-  proposals.forEach(p => { if (p.imageData) setCardImage(p.id, p.imageData); });
 }
 
 function toggleSel(id) {
