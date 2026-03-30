@@ -8,10 +8,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
-<script src="https://js.puter.com/v2/"></script>
 
 <style>
-/* === CSS ORIGINAL COMPLETO === */
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
   --bg:#0e0e0e;--surface:#161616;--surface2:#1e1e1e;--surface3:#272727;
@@ -199,7 +197,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent)}
     <!-- GENERATE -->
     <div id="sec-generate" class="content">
       <div class="kbar" style="justify-content:center">
-        <span class="lbl">🖼️ Imágenes con Nano Banana (Google Gemini) — más inteligente y variado</span>
+        <span class="lbl">🖼️ Imágenes generadas con Pollinations.ai (Flux) — Tu clave integrada</span>
         <span class="kst on">Activo</span>
       </div>
       <div class="gform">
@@ -238,7 +236,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent)}
         </div>
         <div style="display:flex;align-items:center;gap:12px">
           <button class="bp" onclick="genProposals()" id="genBtn">✦ Generar propuestas</button>
-          <span style="font-size:12px;color:var(--text3)">Textos con Claude + imágenes con Nano Banana</span>
+          <span style="font-size:12px;color:var(--text3)">Textos con Claude + imágenes con Pollinations.ai</span>
         </div>
       </div>
 
@@ -354,7 +352,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent)}
 
 <script>
 // =====================================================
-// FIREBASE + STATE
+// FIREBASE CONFIG
 // =====================================================
 const firebaseConfig = {
   apiKey: "AIzaSyB1HefWkEqitPqHNE9G_slYDFzf9Z7jf9I",
@@ -367,6 +365,9 @@ const firebaseConfig = {
 
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
+// =====================================================
+// STATE
+// =====================================================
 let db, auth, currentUser, currentRestId;
 let restaurants = [];
 let proposals = [], scheduled = [], bulkItems = [];
@@ -374,7 +375,11 @@ let selIds = new Set();
 let calMon = new Date().getMonth(), calYr = new Date().getFullYear(), editP = null;
 
 // =====================================================
-// INIT + LOAD
+// POLLINATIONS API KEY (TU CLAVE)
+const POLLINATIONS_API_KEY = "sk_yVn3DIBGCPFDYwZAgPeg8wvVpB5G4NpL";
+
+// =====================================================
+// FIREBASE INIT
 // =====================================================
 async function initApp() {
   setInitMsg('Conectando con Firebase...');
@@ -403,6 +408,7 @@ function setSyncState(state, txt) {
   document.getElementById('syncTxt').textContent = txt;
 }
 
+// Load User Data
 async function loadUserData() {
   const snap = await db.collection('users').doc(currentUser.uid).collection('restaurants').orderBy('createdAt').get();
   restaurants = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -450,6 +456,8 @@ function renderRestSelector() {
   sel.innerHTML = restaurants.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
   if (currentRestId) sel.value = currentRestId;
 }
+
+// Resto de funciones Firebase (changeRest, addRest, saveCfg, saveScheduled) son estándar y están incluidas más abajo.
 
 async function changeRest() {
   const id = document.getElementById('restSel').value;
@@ -510,24 +518,19 @@ async function saveScheduled() {
 }
 
 // =====================================================
-// NANO BANANA (Google Gemini) - Imágenes
+// POLLINATIONS.AI CON TU CLAVE
 // =====================================================
 async function generateImageUrl(prompt, isStory) {
   const width = isStory ? 768 : 1024;
   const height = isStory ? 1365 : 1024;
 
   try {
-    const fullPrompt = prompt + ", professional high-end food photography, catalan cuisine, seasonal vegetables like calçots and artichokes, fresh ingredients, appetizing plating, natural daylight, sharp detail, realistic, restaurant presentation";
+    const fullPrompt = (prompt || "delicious restaurant food") + ", professional food photography, high quality, appetizing, restaurant plating, natural lighting, realistic, sharp detail, catalan cuisine";
 
-    const imageElement = await puter.ai.txt2img(fullPrompt, {
-      model: "gemini-3.1-flash-image-preview",
-      width: width,
-      height: height
-    });
-
-    return imageElement.src;
+    const encoded = encodeURIComponent(fullPrompt);
+    return `https://gen.pollinations.ai/image/${encoded}?width=${width}&height=${height}&model=flux&nologo=true&key=${POLLINATIONS_API_KEY}`;
   } catch (e) {
-    console.error("Error Nano Banana:", e);
+    console.error("Error Pollinations:", e);
     return `https://picsum.photos/id/${Math.floor(Math.random()*900)+100}/${width}/${height}`;
   }
 }
@@ -546,19 +549,16 @@ async function genProposals() {
   const ctx = document.getElementById('ctx').value || "";
   const restName = restaurants.find(r => r.id === currentRestId)?.name || document.getElementById('cfgName').value || "Restaurante";
 
-  const steps = ['Analizando restaurante...', 'Generando textos...', 'Generando imágenes con Nano Banana...'];
+  const steps = ['Analizando restaurante...', 'Generando textos...', 'Generando imágenes...'];
   let si = 0;
-  const iv = setInterval(() => { 
-    si = (si+1) % steps.length; 
-    document.getElementById('lstep').textContent = steps[si]; 
-  }, 1400);
+  const iv = setInterval(() => { si = (si+1) % steps.length; document.getElementById('lstep').textContent = steps[si]; }, 1400);
 
   proposals = fallback(restName);
 
   clearInterval(iv);
   document.getElementById('lbox').classList.remove('vis');
 
-  document.getElementById('lstep').textContent = "Generando imágenes con Nano Banana (Google)...";
+  document.getElementById('lstep').textContent = "Generando imágenes con Pollinations.ai...";
   document.getElementById('lbox').classList.add('vis');
 
   for (let i = 0; i < proposals.length; i++) {
@@ -571,23 +571,21 @@ async function genProposals() {
   document.getElementById('genBtn').disabled = false;
 
   renderProps();
-  toast('¡Propuestas generadas con Nano Banana!');
+  toast('¡Propuestas generadas con Pollinations.ai!');
 }
 
 function fallback(name) {
   return [
-    {id:'p1',type:'post',emoji:'🍽️',title:'Carxofes i calçots de temporada',caption:`En ${name} celebramos la temporada con carxofes y calçots frescos. Platos auténticos y llenos de sabor.`,hashtags:'#calçots #carxofes #temporada #cuina catalana',imagePrompt:'carxofes i calçots grilled catalan seasonal vegetables'},
-    {id:'p2',type:'story',emoji:'🌿',title:'Productos de temporada',caption:`Carxofes tiernas y calçots recién cogidos. La esencia de la primavera en tu mesa.`,hashtags:'#productesfrescos #primavera',imagePrompt:'fresh seasonal artichokes and calçots catalan market'},
-    {id:'p3',type:'post',emoji:'🔥',title:'Calçotada especial',caption:`¿Listos para una buena calçotada? En ${name} preparamos la mejor versión con salsa romesco casera.`,hashtags:'#calçotada #romesco',imagePrompt:'traditional catalan calçotada with romesco sauce'},
-    {id:'p4',type:'story',emoji:'🍴',title:'Plato del día',caption:`Hoy destacamos nuestras alcachofas salteadas con jamón y calçots a la brasa.`,hashtags:'#alcachofas #calçots',imagePrompt:'artichokes and calçots grilled catalan dish'},
-    {id:'p5',type:'post',emoji:'🌱',title:'Sabor a primavera',caption:`Ingredientes de proximidad, temporada y mucho cariño. Ven y pruébalos en ${name}.`,hashtags:'#km0 #cuina catalana',imagePrompt:'seasonal catalan vegetables restaurant plating'},
-    {id:'p6',type:'story',emoji:'❤️',title:'De la tierra a la mesa',caption:`Carxofes y calçots directos del campo a tu plato. Auténtico sabor catalán.`,hashtags:'#productelocal #temporada',imagePrompt:'fresh harvested artichokes and calçots farm to table'}
+    {id:'p1',type:'post',emoji:'🍽️',title:'Carxofes i calçots de temporada',caption:`En ${name} celebramos la temporada con carxofes y calçots frescos.`,hashtags:'#calçots #carxofes #temporada',imagePrompt:'carxofes i calçots grilled catalan seasonal vegetables'},
+    {id:'p2',type:'story',emoji:'🌿',title:'Productos de temporada',caption:`Carxofes tiernas y calçots recién cogidos.`,hashtags:'#productesfrescos #primavera',imagePrompt:'fresh seasonal artichokes and calçots catalan market'},
+    {id:'p3',type:'post',emoji:'🔥',title:'Calçotada especial',caption:`¿Listos para una buena calçotada?`,hashtags:'#calçotada #romesco',imagePrompt:'traditional catalan calçotada with romesco sauce'},
+    {id:'p4',type:'story',emoji:'🍴',title:'Plato del día',caption:`Alcachofas salteadas con jamón y calçots a la brasa.`,hashtags:'#alcachofas #calçots',imagePrompt:'artichokes and calçots grilled catalan dish'},
+    {id:'p5',type:'post',emoji:'🌱',title:'Sabor a primavera',caption:`Ingredientes de proximidad y temporada.`,hashtags:'#km0 #cuina catalana',imagePrompt:'seasonal catalan vegetables restaurant plating'},
+    {id:'p6',type:'story',emoji:'❤️',title:'De la tierra a la mesa',caption:`Carxofes y calçots directos del campo.`,hashtags:'#productelocal #temporada',imagePrompt:'fresh harvested artichokes and calçots farm to table'}
   ];
 }
 
-// =====================================================
-// RENDER + UI
-// =====================================================
+// Render Proposals
 function renderProps() {
   const g = document.getElementById('propGrid');
   g.innerHTML = proposals.map(p => `
@@ -626,15 +624,13 @@ function updSelUI() {
   b.textContent = n > 0 ? `Programar ${n} publicaci${n>1?'ones':'ón'} →` : 'Programar seleccionadas →';
 }
 
-// =====================================================
-// PREVIEW + SCHEDULE + CALENDAR
-// =====================================================
+// Preview Modal
 function openPrev(id) {
   const p = proposals.find(x => x.id === id); if (!p) return;
   editP = p;
   const ig = document.getElementById('cfgIG').value || '@mi_restaurante';
   document.getElementById('mpTitle').textContent = p.title;
-  document.getElementById('mpSub').textContent = p.type === 'post' ? 'Vista previa · Post' : 'Vista previa · Story';
+  document.getElementById('mpSub').textContent = p.type === 'post' ? 'Vista previa · Post de Instagram' : 'Vista previa · Story de Instagram';
   document.getElementById('mpCap').value = p.caption;
   document.getElementById('mpDate').value = new Date().toISOString().split('T')[0];
   const imgH = p.imageData ? `<img src="${p.imageData}" alt="">` : `<div style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:10px;padding:20px"><span style="font-size:48px">${p.emoji}</span><span style="font-size:12px;color:var(--text3)">${p.title}</span></div>`;
@@ -648,6 +644,7 @@ function openPrev(id) {
 function closeOv(id) { document.getElementById(id).classList.remove('open'); }
 function closeOvIf(e, id) { if (e.target.id === id) closeOv(id); }
 
+// Schedule functions
 async function confirmSched() {
   if (!editP) return;
   const date = document.getElementById('mpDate').value, time = document.getElementById('mpTime').value;
@@ -692,9 +689,7 @@ async function confirmBulk() {
   updSelUI(); renderCal();
 }
 
-// =====================================================
-// CALENDAR FUNCTIONS (incluye updBadge)
-// =====================================================
+// Calendar functions
 function renderCal() {
   document.getElementById('calTitle').textContent = MONTHS[calMon] + ' ' + calYr;
   const cont = document.getElementById('calDays');
@@ -746,10 +741,7 @@ async function remSched(i) {
 }
 
 function chMonth(d) { calMon += d; if (calMon > 11) { calMon = 0; calYr++; } if (calMon < 0) { calMon = 11; calYr--; } renderCal(); }
-
-function updBadge() {
-  document.getElementById('calBadge').textContent = scheduled.length;
-}
+function updBadge() { document.getElementById('calBadge').textContent = scheduled.length; }
 
 function showSec(n, btn) {
   document.querySelectorAll('.content').forEach(s => s.style.display = 'none');
