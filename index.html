@@ -21,6 +21,7 @@
   --r:12px;--rs:8px;--rl:16px;
 }
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.6;min-height:100vh}
+/* Layout */
 .app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
 .sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column}
 .logo{padding:28px 24px 20px;border-bottom:1px solid var(--border)}
@@ -37,13 +38,16 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .rsel-box select{width:100%;background:var(--surface3);border:1px solid var(--border2);color:var(--text);padding:8px 10px;border-radius:var(--rs);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer}
 .add-btn{display:block;width:100%;margin-top:8px;padding:8px;background:none;border:1px dashed var(--border2);color:var(--text3);border-radius:var(--rs);font-size:12px;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif}
 .add-btn:hover{border-color:var(--accent);color:var(--accent)}
+/* Sync indicator */
 .sync{padding:10px 14px;font-size:11px;display:flex;align-items:center;gap:6px;border-top:1px solid var(--border)}
 .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text3)}
 .sync-dot.ok{background:var(--green)}
 .sync-dot.spin{background:var(--accent);animation:pulse 1s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+/* Main */
 .main{display:flex;flex-direction:column;overflow:hidden}
 .content{flex:1;padding:32px;overflow-y:auto;display:flex;flex-direction:column}
+/* Forms */
 .gform{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:28px;margin-bottom:24px}
 .gform h3{font-size:16px;font-weight:500;margin-bottom:20px}
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
@@ -61,10 +65,15 @@ select option{background:var(--surface2)}
 .bp:disabled{opacity:.4;cursor:not-allowed}
 .bs{background:var(--surface2);color:var(--text);border:1px solid var(--border2);padding:10px 18px;border-radius:var(--rs);font-size:13px;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif}
 .bs:hover{border-color:var(--accent);color:var(--accent)}
+/* Key bar */
 .kbar{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--accent-bg);border:1px solid rgba(232,201,126,.2);border-radius:var(--rs);margin-bottom:20px}
 .kbar .lbl{font-size:12px;color:var(--accent);white-space:nowrap;font-weight:500}
+.kbar input{flex:1;font-size:12px;padding:7px 10px}
+.kbar button{padding:7px 14px;font-size:12px;white-space:nowrap}
 .kst{font-size:11px;padding:3px 9px;border-radius:20px;white-space:nowrap}
 .kst.on{background:rgba(126,201,142,.15);color:var(--green)}
+.kst.off{background:rgba(160,157,152,.1);color:var(--text3)}
+/* Proposals */
 .ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:20px}
 .pcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;transition:all .2s;position:relative}
@@ -90,6 +99,7 @@ select option{background:var(--surface2)}
 .bsel:hover,.pcard.sel .bsel{background:var(--accent);color:#0e0e0e}
 .bedit{background:var(--surface2);border:1px solid var(--border2);color:var(--text2)}
 .bedit:hover{border-color:var(--border);color:var(--text)}
+/* Calendar */
 .cal-area{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start}
 .calbox{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:24px}
 .calhd{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
@@ -108,6 +118,7 @@ select option{background:var(--surface2)}
 .pdot{width:6px;height:6px;border-radius:50%;background:var(--accent);margin-top:2px}
 .pdot.story{background:var(--green)}
 .cdnum{font-weight:500;font-size:13px}
+/* Scheduled list */
 .slist{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px}
 .slist h4{font-size:14px;font-weight:500;margin-bottom:16px;color:var(--text2)}
 .sitem{padding:12px;background:var(--surface2);border-radius:var(--rs);margin-bottom:10px;border-left:3px solid var(--accent)}
@@ -119,14 +130,17 @@ select option{background:var(--surface2)}
 .empty{text-align:center;padding:40px 20px;color:var(--text3)}
 .empty .ei{font-size:32px;display:block;margin-bottom:12px;opacity:.4}
 .empty p{font-size:13px}
+/* Config */
 .cfggrid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
 .cfgcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:24px}
 .cfgcard h3{font-size:15px;font-weight:500;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+/* Loading */
 .lbox{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:40px;text-align:center;display:none}
 .lbox.vis{display:block}
 .lspin{width:36px;height:36px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
 .ltxt{font-size:14px;color:var(--text2)}
 .lstep{font-size:12px;color:var(--text3);margin-top:8px}
+/* Modals */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s}
 .ov.open{opacity:1;pointer-events:all}
 .modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rl);width:540px;max-height:88vh;overflow-y:auto;padding:28px}
@@ -146,12 +160,15 @@ select option{background:var(--surface2)}
 .ightags{font-size:12px;color:var(--blue);margin-top:6px}
 .dtp{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
 .hdiv{height:1px;background:var(--border);margin:18px 0}
+/* Toast */
 .toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--accent);color:var(--accent);padding:12px 20px;border-radius:var(--rs);font-size:13px;transform:translateY(100px);opacity:0;transition:all .3s;z-index:200;max-width:320px}
 .toast.show{transform:translateY(0);opacity:1}
+/* Init screen */
 .init-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:16px}
 .init-screen h1{font-family:'DM Serif Display',serif;font-size:32px;color:var(--accent)}
 .init-screen p{color:var(--text3);font-size:14px}
 .init-spin{width:40px;height:40px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+/* Misc */
 .cbadge{background:var(--accent-bg);color:var(--accent);font-size:11px;padding:2px 7px;border-radius:20px;margin-left:6px}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
 @media(max-width:900px){.app{grid-template-columns:1fr}.sidebar{display:none}.cal-area,.cfggrid,.fgrid{grid-template-columns:1fr}}
@@ -167,6 +184,7 @@ select option{background:var(--surface2)}
 </div>
 
 <div class="app" id="mainApp" style="display:none">
+  <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="logo"><h1>Social Chef</h1><p>Gestión de contenido</p></div>
     <div class="rsel-box">
@@ -192,7 +210,9 @@ select option{background:var(--surface2)}
     </div>
   </aside>
 
+  <!-- MAIN -->
   <main class="main">
+
     <!-- GENERATE -->
     <div id="sec-generate" class="content">
       <div class="kbar" style="justify-content:center">
@@ -235,14 +255,14 @@ select option{background:var(--surface2)}
         </div>
         <div style="display:flex;align-items:center;gap:12px">
           <button class="bp" onclick="genProposals()" id="genBtn">✦ Generar propuestas</button>
-          <span style="font-size:12px;color:var(--text3)">Textos con Claude + imágenes con Puter.js</span>
+          <span style="font-size:12px;color:var(--text3)">Textos con Claude + imágenes con Puter.js (FLUX)</span>
         </div>
       </div>
 
       <div class="lbox" id="lbox">
         <div class="lspin"></div>
-        <div class="ltxt">Creando propuestas...</div>
-        <div class="lstep" id="lstep">Analizando estilo del restaurante</div>
+        <div class="ltxt">Creando propuestas para tu restaurante...</div>
+        <div class="lstep" id="lstep">Analizando estilo y voz del restaurante</div>
       </div>
 
       <div id="propArea" style="display:none">
@@ -260,7 +280,7 @@ select option{background:var(--surface2)}
       </div>
     </div>
 
-    <!-- Calendar y Config (sin cambios) -->
+    <!-- CALENDAR -->
     <div id="sec-calendar" class="content" style="display:none">
       <div class="cal-area">
         <div class="calbox">
@@ -284,6 +304,7 @@ select option{background:var(--surface2)}
       </div>
     </div>
 
+    <!-- CONFIG -->
     <div id="sec-config" class="content" style="display:none">
       <div class="cfggrid">
         <div class="cfgcard">
@@ -300,19 +321,27 @@ select option{background:var(--surface2)}
         <div class="cfgcard">
           <h3>Preferencias de contenido</h3>
           <div style="display:flex;flex-direction:column;gap:14px">
-            <div class="fg"><label>Idioma</label><select id="cfgLang"><option>Español</option><option>Catalán</option><option>Inglés</option><option>Bilingüe ES/EN</option></select></div>
-            <div class="fg"><label>Frecuencia ideal</label><select id="cfgFreq"><option>Diaria</option><option>3 veces por semana</option><option>Semanal</option></select></div>
+            <div class="fg"><label>Idioma</label>
+              <select id="cfgLang"><option>Español</option><option>Catalán</option><option>Inglés</option><option>Bilingüe ES/EN</option></select></div>
+            <div class="fg"><label>Frecuencia ideal</label>
+              <select id="cfgFreq"><option>Diaria</option><option>3 veces por semana</option><option>Semanal</option></select></div>
             <div class="fg"><label>Hashtags fijos</label><textarea rows="2" id="cfgTags"></textarea></div>
             <div class="fg"><label>CTA habitual</label><input type="text" id="cfgCTA"></div>
+            <div class="fg">
+              <label>Imágenes</label>
+              <input type="text" id="cfgKey" value="Puter.js (FLUX gratis)" readonly style="opacity:.5;cursor:default">
+              <span style="font-size:11px;color:var(--text3);margin-top:3px">Imágenes generadas en el navegador, sin coste</span>
+            </div>
             <button class="bp" style="width:fit-content" onclick="saveCfg()">Guardar</button>
           </div>
         </div>
       </div>
     </div>
+
   </main>
 </div>
 
-<!-- Modales -->
+<!-- Modal: Preview + Schedule -->
 <div class="ov" id="ovPrev" onclick="closeOvIf(event,'ovPrev')">
   <div class="modal">
     <h3 id="mpTitle">Previsualizar</h3>
@@ -328,6 +357,7 @@ select option{background:var(--surface2)}
   </div>
 </div>
 
+<!-- Modal: Bulk Schedule -->
 <div class="ov" id="ovBulk" onclick="closeOvIf(event,'ovBulk')">
   <div class="modal">
     <h3>Programar seleccionadas</h3>
@@ -349,7 +379,9 @@ select option{background:var(--surface2)}
 <div class="toast" id="toast"></div>
 
 <script>
+// =====================================================
 // FIREBASE CONFIG
+// =====================================================
 const firebaseConfig = {
   apiKey: "AIzaSyB1HefWkEqitPqHNE9G_slYDFzf9Z7jf9I",
   authDomain: "social-chef-55f11.firebaseapp.com",
@@ -361,29 +393,36 @@ const firebaseConfig = {
 
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
+// =====================================================
+// STATE
+// =====================================================
 let db, auth, currentUser, currentRestId;
 let restaurants = [];
 let proposals = [], scheduled = [], bulkItems = [];
 let selIds = new Set();
 let calMon = new Date().getMonth(), calYr = new Date().getFullYear(), editP = null;
 
-// ==================== FIREBASE INIT ====================
+// =====================================================
+// FIREBASE INIT
+// =====================================================
 async function initApp() {
   setInitMsg('Conectando con Firebase...');
   try {
     firebase.initializeApp(firebaseConfig);
     auth = firebase.auth();
     db = firebase.firestore();
+    setInitMsg('Autenticando usuario...');
     const cred = await auth.signInAnonymously();
     currentUser = cred.user;
     setSyncState('spin', 'Cargando datos...');
+    setInitMsg('Cargando tus restaurantes...');
     await loadUserData();
-    setSyncState('ok', 'Sincronizado');
+    setSyncState('ok', 'Sincronizado · ' + currentUser.uid.slice(0,8));
     document.getElementById('initScreen').style.display = 'none';
     document.getElementById('mainApp').style.display = 'grid';
     renderCal();
   } catch (err) {
-    setInitMsg('Error: ' + err.message);
+    setInitMsg('Error al conectar: ' + err.message);
     console.error(err);
   }
 }
@@ -395,7 +434,9 @@ function setSyncState(state, txt) {
   document.getElementById('syncTxt').textContent = txt;
 }
 
-// ==================== LOAD DATA (sin cambios) ====================
+// =====================================================
+// LOAD USER DATA (sin cambios)
+// =====================================================
 async function loadUserData() {
   const snap = await db.collection('users').doc(currentUser.uid).collection('restaurants').orderBy('createdAt').get();
   restaurants = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -405,16 +446,23 @@ async function loadUserData() {
   await loadRestaurant(currentRestId);
 }
 
-async function createDefaultRestaurant() { /* sin cambios */ 
-  // ... (código original)
-  const data = { name: 'La Taberna del Mar', /* ... */ };
+async function createDefaultRestaurant() {
+  const data = {
+    name: 'La Taberna del Mar',
+    cuisine: 'Mediterránea y pescados frescos',
+    desc: 'Restaurante familiar con 30 años de historia en el puerto. Cocina honesta, ingredientes locales y ambiente acogedor.',
+    web: '', ig: '@latabernadelmar', lang: 'Español', freq: 'Diaria',
+    tags: '#tabernadelmar #pescadofresco #mediterránea #gastrocat',
+    cta: '¡Reserva en el link de la bio!',
+    scheduled: [],
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
   const ref = await db.collection('users').doc(currentUser.uid).collection('restaurants').add(data);
   restaurants.push({ id: ref.id, ...data });
   currentRestId = ref.id;
 }
 
-async function loadRestaurant(id) { /* sin cambios */ 
-  // ... (código original completo)
+async function loadRestaurant(id) {
   currentRestId = id;
   const doc = await db.collection('users').doc(currentUser.uid).collection('restaurants').doc(id).get();
   if (!doc.exists) return;
@@ -433,27 +481,100 @@ async function loadRestaurant(id) { /* sin cambios */
   renderCal();
 }
 
-// Resto de funciones de Firebase (renderRestSelector, changeRest, addRest, saveCfg, saveScheduled) se mantienen igual que en tu versión anterior.
+function renderRestSelector() {
+  const sel = document.getElementById('restSel');
+  sel.innerHTML = restaurants.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
+  if (currentRestId) sel.value = currentRestId;
+}
 
-// ==================== PUTER.JS - IMÁGENES (CORREGIDO) ====================
+async function changeRest() {
+  const id = document.getElementById('restSel').value;
+  if (id === currentRestId) return;
+  setSyncState('spin', 'Cargando restaurante...');
+  await loadRestaurant(id);
+  setSyncState('ok', 'Sincronizado');
+  toast('Restaurante cambiado');
+}
+
+async function addRest() {
+  const n = prompt('Nombre del nuevo restaurante:');
+  if (!n) return;
+  setSyncState('spin', 'Guardando...');
+  const data = {
+    name: n, cuisine: 'Tipo de cocina', desc: 'Descripción del restaurante.',
+    web: '', ig: '@' + n.toLowerCase().replace(/\s+/g,''), lang: 'Español',
+    freq: 'Diaria', tags: '#restaurante', cta: '¡Reserva en el link de la bio!',
+    scheduled: [], createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  const ref = await db.collection('users').doc(currentUser.uid).collection('restaurants').add(data);
+  restaurants.push({ id: ref.id, ...data });
+  renderRestSelector();
+  document.getElementById('restSel').value = ref.id;
+  await loadRestaurant(ref.id);
+  setSyncState('ok', 'Sincronizado');
+  toast(`✓ "${n}" creado y guardado`);
+}
+
+async function saveCfg() {
+  if (!currentUser || !currentRestId) return;
+  const data = {
+    name: document.getElementById('cfgName').value,
+    cuisine: document.getElementById('cfgCuisine').value,
+    desc: document.getElementById('cfgDesc').value,
+    web: document.getElementById('cfgWeb').value,
+    ig: document.getElementById('cfgIG').value,
+    lang: document.getElementById('cfgLang').value,
+    freq: document.getElementById('cfgFreq').value,
+    tags: document.getElementById('cfgTags').value,
+    cta: document.getElementById('cfgCTA').value,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+  setSyncState('spin', 'Guardando...');
+  await db.collection('users').doc(currentUser.uid).collection('restaurants').doc(currentRestId).update(data);
+  const r = restaurants.find(x => x.id === currentRestId);
+  if (r) Object.assign(r, data);
+  renderRestSelector();
+  document.getElementById('restSel').value = currentRestId;
+  setSyncState('ok', 'Guardado ✓');
+  toast('✓ Perfil guardado en Firebase');
+}
+
+async function saveScheduled() {
+  if (!currentUser || !currentRestId) return;
+  setSyncState('spin', 'Guardando...');
+  const toSave = scheduled.map(s => ({...s}));
+  await db.collection('users').doc(currentUser.uid).collection('restaurants')
+    .doc(currentRestId).update({ scheduled: toSave });
+  setSyncState('ok', 'Guardado ✓');
+}
+
+// =====================================================
+// GENERACIÓN DE IMÁGENES CON PUTER.JS (ACTUALIZADO)
+// =====================================================
 async function generateImageUrl(prompt, isStory) {
   const width = isStory ? 768 : 1024;
   const height = isStory ? 1365 : 1024;
 
   try {
-    const fullPrompt = (prompt || "delicious restaurant food") + ", professional food photography, high quality, appetizing, realistic, natural lighting, sharp detail";
+    const fullPrompt = prompt + ", professional food photography, high quality, appetizing, restaurant, realistic, natural lighting, delicious presentation";
 
-    // testMode = true → más rápido y sin gastar créditos
-    const imageElement = await puter.ai.txt2img(fullPrompt, true);
+    const imageElement = await puter.ai.txt2img(fullPrompt, {
+      model: "black-forest-labs/flux.1-schnell",   // Modelo rápido y de buena calidad
+      width: width,
+      height: height
+    });
 
     return imageElement.src;
   } catch (e) {
-    console.error("Error Puter.js:", e);
-    return `https://picsum.photos/id/${Math.floor(Math.random()*900)+100}/${width}/${height}`;
+    console.error("Error generando imagen con Puter:", e);
+    // Fallback con imagen aleatoria
+    return `https://picsum.photos/id/${Math.floor(Math.random() * 900) + 100}/${width}/${height}`;
   }
 }
 
-// ==================== GEN PROPOSALS (corregido) ====================
+// =====================================================
+// GENERATE PROPOSALS
+// =====================================================
 async function genProposals() {
   document.getElementById('genBtn').disabled = true;
   document.getElementById('propArea').style.display = 'none';
@@ -463,30 +584,51 @@ async function genProposals() {
   const theme = document.getElementById('theme').value;
   const tone = document.getElementById('tone').value;
   const ctx = document.getElementById('ctx').value;
-  const restName = restaurants.find(r => r.id === currentRestId)?.name || document.getElementById('cfgName').value || "Restaurante";
+  const restName = restaurants.find(r => r.id === currentRestId)?.name || document.getElementById('cfgName').value;
+  const cuisine = document.getElementById('cfgCuisine').value;
+  const desc = document.getElementById('cfgDesc').value;
+  const tags = document.getElementById('cfgTags').value;
+  const cta = document.getElementById('cfgCTA').value;
+  const lang = document.getElementById('cfgLang').value;
 
-  const steps = ['Analizando restaurante...', 'Generando textos...', 'Preparando imágenes...'];
+  const steps = ['Analizando el estilo del restaurante...','Generando ideas creativas...','Redactando textos para Instagram...','Preparando prompts visuales...','Generando imágenes con FLUX...'];
   let si = 0;
-  const iv = setInterval(() => {
-    si = (si + 1) % steps.length;
-    document.getElementById('lstep').textContent = steps[si];
-  }, 1400);
+  const iv = setInterval(() => { 
+    si = (si+1) % steps.length; 
+    document.getElementById('lstep').textContent = steps[si]; 
+  }, 1500);
 
-  // Claude (puede fallar → fallback)
-  let claudeOk = false;
+  const claudePrompt = `Eres un experto en marketing digital para restaurantes e Instagram.
+Restaurante: "${restName}"
+Cocina: ${cuisine}
+Voz de marca: ${desc}
+Idioma: ${lang}
+Hashtags del restaurante: ${tags}
+CTA habitual: ${cta}
+Genera exactamente 6 propuestas para Instagram con temática "${theme}" y tono "${tone}".${ctx ? '\nContexto extra: ' + ctx : ''}
+Responde SOLO con JSON válido sin markdown ni texto adicional:
+{"proposals":[{"id":"p1","type":"post","emoji":"🍽️","title":"Título corto atractivo","caption":"Texto natural 2-4 frases sin hashtags","hashtags":"#tag1 #tag2 #tag3 #tag4 #tag5","imagePrompt":"Very detailed English prompt for professional food photography"}]} 
+Reglas: exactamente 3 tipo post y 3 tipo story. caption humano y natural en tono ${tone}. imagePrompt en inglés, muy descriptivo.`;
+
   try {
-    // ... tu código original de Claude aquí (mantengo el fallback por si falla)
-    proposals = fallback(restName);
-    claudeOk = true;
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1800, messages: [{ role: 'user', content: claudePrompt }] })
+    });
+    const data = await res.json();
+    const raw = data.content.map(i => i.text || '').join('').replace(/```json|```/g, '').trim();
+    proposals = JSON.parse(raw).proposals;
   } catch (e) {
+    console.error(e);
     proposals = fallback(restName);
   }
 
   clearInterval(iv);
   document.getElementById('lbox').classList.remove('vis');
 
-  // Generar imágenes
-  document.getElementById('lstep').textContent = "Generando imágenes con FLUX (puede tardar 10-40 seg por imagen)...";
+  // Generar imágenes con Puter.js
+  document.getElementById('lstep').textContent = "Generando imágenes con FLUX...";
   document.getElementById('lbox').classList.add('vis');
 
   for (let i = 0; i < proposals.length; i++) {
@@ -499,20 +641,197 @@ async function genProposals() {
   document.getElementById('genBtn').disabled = false;
 
   renderProps();
-  toast('¡Propuestas listas! Imágenes generadas con Puter.js');
+  toast('¡Propuestas generadas correctamente con Puter.js!');
 }
 
 function fallback(name) {
-  return [ /* tus 6 propuestas fallback originales */ 
-    {id:'p1',type:'post',emoji:'🍽️',title:'El plato del día',caption:`En ${name} hoy te traemos algo especial...`,hashtags:'#gastronomia #restaurante',imagePrompt:'Beautiful Mediterranean dish...'},
-    // ... añade las otras 5 como en tu código original
+  return [
+    {id:'p1',type:'post',emoji:'🍽️',title:'El plato del día',caption:`En ${name} hoy te traemos algo especial. Ingredientes frescos, sabor auténtico. ¡Reserva en el link de la bio!`,hashtags:'#gastronomia #restaurante #foodie #comida #sabor',imagePrompt:'Beautiful Mediterranean dish on elegant white plate, overhead shot, natural window light, rustic wooden table, fresh herbs, warm tones, professional food photography'},
+    {id:'p2',type:'story',emoji:'👨‍🍳',title:'Detrás del fogón',caption:`Cada día empezamos eligiendo los mejores ingredientes. Esto es lo que hay detrás de ${name}.`,hashtags:'#cheflife #cocina #artesanal #km0 #frescos',imagePrompt:'Chef in professional restaurant kitchen, candid action shot, warm ambient lighting, motion blur on hands, authentic culinary atmosphere'},
+    {id:'p3',type:'post',emoji:'🌿',title:'Sabores de temporada',caption:`La temporada nos trae ingredientes increíbles. Descubre nuestro menú de temporada en ${name}.`,hashtags:'#temporada #km0 #gastronomy #menudeldia #mercado',imagePrompt:'Fresh seasonal vegetables flatlay on wooden surface, natural daylight, Mediterranean colors, fresh herbs and olive oil, editorial food photography'},
+    {id:'p4',type:'story',emoji:'❤️',title:'Gracias por venir',caption:`Momentos así nos hacen seguir. Gracias por elegir ${name} para compartir tu mesa.`,hashtags:'#familia #amigos #restaurante #momentos #gracias',imagePrompt:'Happy guests dining at restaurant, warm candlelight, intimate atmosphere, blurred background bokeh, lifestyle photography'},
+    {id:'p5',type:'post',emoji:'🥂',title:'Fin de semana especial',caption:`¿Tienes planes este finde? Tenemos una mesa para ti en ${name}. Déjanos sorprenderte.`,hashtags:'#finde #planes #reserva #cena #gastronomia',imagePrompt:'Restaurant exterior at golden hour, warm lights through windows, inviting entrance, Mediterranean facade, lifestyle photography'},
+    {id:'p6',type:'story',emoji:'✨',title:'Novedad en carta',caption:`Algo nuevo llega a ${name}. Una propuesta que os va a encantar. ¡Pasa a descubrirla!`,hashtags:'#nuevacarta #novedad #restaurante #foodstagram #chef',imagePrompt:'New signature dish beautifully plated on dark slate, dramatic studio lighting, fine dining presentation with microgreens and sauce art, elegant moody aesthetic'}
   ];
 }
 
-// renderProps, toggleSel, openPrev, confirmSched, etc. → copia las mismas funciones de tu versión anterior
+// =====================================================
+// RENDER PROPOSALS (sin cambios importantes)
+// =====================================================
+function renderProps() {
+  const g = document.getElementById('propGrid');
+  g.innerHTML = proposals.map(p => `
+    <div class="pcard" id="card-${p.id}">
+      <span class="sbadge">&#10003; Seleccionada</span>
+      <div class="cprev ${p.type==='story'?'story':''}" id="cprev-${p.id}" onclick="toggleSel('${p.id}')">
+        ${p.imageData ? `<img src="${p.imageData}" alt="">` : `<div class="iload"><div class="ispin"></div><span class="ilt">Imagen lista</span></div>`}
+      </div>
+      <div class="cbody">
+        <span class="tbadge ${p.type}">${p.type==='post'?'&#9723; Post':'&#9723; Story'}</span>
+        <div style="font-size:14px;font-weight:500;margin-bottom:6px">${p.title}</div>
+        <div class="ccap">${p.caption}</div>
+      </div>
+      <div class="cact">
+        <button class="bsel" onclick="toggleSel('${p.id}')">Seleccionar</button>
+        <button class="bedit" onclick="openPrev('${p.id}')">Previsualizar</button>
+      </div>
+    </div>`).join('');
+  document.getElementById('propCount').textContent = proposals.length + ' propuestas generadas';
+  document.getElementById('propArea').style.display = 'block';
+  updSelUI();
+}
 
-// (Por brevedad no repito todo el código de calendar, modales y helpers. Si falta alguna función, avísame y la añado.)
+function toggleSel(id) {
+  const c = document.getElementById('card-'+id);
+  if (selIds.has(id)) { selIds.delete(id); c?.classList.remove('sel'); }
+  else { selIds.add(id); c?.classList.add('sel'); }
+  updSelUI();
+}
+function selAll() { proposals.forEach(p => { selIds.add(p.id); document.getElementById('card-'+p.id)?.classList.add('sel'); }); updSelUI(); }
+function updSelUI() {
+  const n = selIds.size;
+  document.getElementById('selCount').textContent = n + ' seleccionadas';
+  const b = document.getElementById('schedBtn'); 
+  b.disabled = n === 0;
+  b.textContent = n > 0 ? `Programar ${n} publicaci${n>1?'ones':'ón'} →` : 'Programar seleccionadas →';
+}
 
+// =====================================================
+// PREVIEW, SCHEDULE, CALENDAR, etc. (sin cambios)
+// =====================================================
+function openPrev(id) {
+  const p = proposals.find(x => x.id === id); if (!p) return;
+  editP = p;
+  const ig = document.getElementById('cfgIG').value || '@mi_restaurante';
+  document.getElementById('mpTitle').textContent = p.title;
+  document.getElementById('mpSub').textContent = p.type === 'post' ? 'Vista previa · Post de Instagram' : 'Vista previa · Story de Instagram';
+  document.getElementById('mpCap').value = p.caption;
+  document.getElementById('mpDate').value = new Date().toISOString().split('T')[0];
+  const imgH = p.imageData ? `<img src="${p.imageData}" alt="">` : `<div style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:10px;padding:20px"><span style="font-size:48px">${p.emoji}</span><span style="font-size:12px;color:var(--text3)">${p.title}</span></div>`;
+  document.getElementById('mpPrev').innerHTML = `
+    <div class="ighd"><div class="igav">${p.emoji}</div><div><div class="igun">${ig}</div><div class="igti">Instagram</div></div></div>
+    <div class="igimg ${p.type==='story'?'story':''}">${imgH}</div>
+    <div class="igca"><div class="igcatxt">${p.caption}</div><div class="ightags">${p.hashtags}</div></div>`;
+  document.getElementById('ovPrev').classList.add('open');
+}
+
+function closeOv(id) { document.getElementById(id).classList.remove('open'); }
+function closeOvIf(e, id) { if (e.target.id === id) closeOv(id); }
+
+async function confirmSched() {
+  if (!editP) return;
+  const date = document.getElementById('mpDate').value, time = document.getElementById('mpTime').value;
+  if (!date) { toast('Selecciona una fecha'); return; }
+  editP.caption = document.getElementById('mpCap').value;
+  scheduled.push({ ...editP, date, time });
+  updBadge(); closeOv('ovPrev');
+  await saveScheduled();
+  toast('✓ Programada para el ' + fmtDate(date) + ' a las ' + time);
+  renderCal();
+}
+
+function schedSel() {
+  bulkItems = proposals.filter(p => selIds.has(p.id)).map(p => ({ ...p, date: new Date().toISOString().split('T')[0], time: '12:00' }));
+  document.getElementById('bulkList').innerHTML = bulkItems.map((p, i) => `
+    <div style="display:grid;grid-template-columns:${p.imageData?'40px ':''} 24px 1fr auto auto;gap:8px;align-items:center;padding:10px;background:var(--surface2);border-radius:var(--rs);margin-bottom:8px">
+      ${p.imageData ? `<img src="${p.imageData}" style="width:36px;height:36px;border-radius:6px;object-fit:cover">` : ''}
+      <span style="font-size:18px">${p.emoji}</span>
+      <div><div style="font-size:13px;font-weight:500">${p.title}</div><span class="tbadge ${p.type}" style="font-size:10px;padding:1px 6px">${p.type}</span></div>
+      <input type="date" value="${p.date}" onchange="bulkItems[${i}].date=this.value" style="font-size:11px;padding:5px 8px;width:130px">
+      <input type="time" value="${p.time}" onchange="bulkItems[${i}].time=this.value" style="font-size:11px;padding:5px 8px;width:90px">
+    </div>`).join('');
+  document.getElementById('bdDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('ovBulk').classList.add('open');
+}
+
+function applyBulk() {
+  const d = document.getElementById('bdDate').value, t = document.getElementById('bdTime').value; if (!d) return;
+  bulkItems.forEach((_, i) => { bulkItems[i].date = d; bulkItems[i].time = t; });
+  document.getElementById('bulkList').querySelectorAll('input[type="date"]').forEach(inp => inp.value = d);
+  document.getElementById('bulkList').querySelectorAll('input[type="time"]').forEach(inp => inp.value = t);
+}
+
+async function confirmBulk() {
+  bulkItems.forEach(item => { if (item.date) scheduled.push({ ...item }); });
+  updBadge(); closeOv('ovBulk');
+  await saveScheduled();
+  toast('✓ ' + bulkItems.length + ' publicaciones programadas');
+  selIds.clear(); proposals.forEach(p => document.getElementById('card-'+p.id)?.classList.remove('sel'));
+  updSelUI(); renderCal();
+}
+
+function renderCal() {
+  document.getElementById('calTitle').textContent = MONTHS[calMon] + ' ' + calYr;
+  const cont = document.getElementById('calDays');
+  const first = new Date(calYr, calMon, 1), last = new Date(calYr, calMon+1, 0);
+  let sd = first.getDay(); sd = sd === 0 ? 6 : sd - 1;
+  const today = new Date(); let html = '';
+  const pl = new Date(calYr, calMon, 0).getDate();
+  for (let i = sd-1; i >= 0; i--) html += `<div class="cday om"><span class="cdnum">${pl-i}</span></div>`;
+  for (let d = 1; d <= last.getDate(); d++) {
+    const ds = `${calYr}-${String(calMon+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const iT = d===today.getDate()&&calMon===today.getMonth()&&calYr===today.getFullYear();
+    const posts = scheduled.filter(s => s.date === ds);
+    const dots = posts.map(p => `<div class="pdot ${p.type==='story'?'story':''}"></div>`).join('');
+    html += `<div class="cday ${iT?'today':''} ${posts.length?'hp':''}"><span class="cdnum">${d}</span><div style="display:flex;gap:2px;flex-wrap:wrap;margin-top:2px">${dots}</div></div>`;
+  }
+  const rem = (sd + last.getDate()) % 7; const fill = rem === 0 ? 0 : 7 - rem;
+  for (let i = 1; i <= fill; i++) html += `<div class="cday om"><span class="cdnum">${i}</span></div>`;
+  cont.innerHTML = html;
+  renderSList();
+}
+
+function renderSList() {
+  const c = document.getElementById('schedItems');
+  if (!scheduled.length) { 
+    c.innerHTML = `<div class="empty"><span class="ei">📅</span><p>Sin publicaciones aún.<br>Genera y programa contenido.</p></div>`; 
+    return; 
+  }
+  const sorted = [...scheduled].sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time));
+  c.innerHTML = sorted.map((s, i) => `
+    <div class="sitem ${s.type==='story'?'story':''}">
+      <div style="display:flex;align-items:center;gap:10px">
+        ${s.imageData ? `<img src="${s.imageData}" class="sthumb" alt="">` : `<span style="font-size:22px">${s.emoji}</span>`}
+        <div style="flex:1;min-width:0">
+          <div class="sd8">${fmtDate(s.date)} · ${s.time}</div>
+          <div class="stit">${s.title}</div>
+          <div class="styp">${s.type==='post'?'Post':'Story'}</div>
+        </div>
+        <button onclick="remSched(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:4px;flex-shrink:0">&#215;</button>
+      </div>
+    </div>`).join('');
+}
+
+async function remSched(i) {
+  scheduled.splice(i, 1);
+  updBadge();
+  await saveScheduled();
+  renderCal();
+  toast('Publicación eliminada');
+}
+
+function chMonth(d) { calMon += d; if (calMon > 11) { calMon = 0; calYr++; } if (calMon < 0) { calMon = 11; calYr--; } renderCal(); }
+function updBadge() { document.getElementById('calBadge').textContent = scheduled.length; }
+
+function showSec(n, btn) {
+  document.querySelectorAll('.content').forEach(s => s.style.display = 'none');
+  document.querySelectorAll('.ni').forEach(b => b.classList.remove('active'));
+  const s = document.getElementById('sec-'+n); s.style.display = 'flex'; s.style.flexDirection = 'column';
+  if (btn) btn.classList.add('active');
+  if (n === 'calendar') renderCal();
+}
+
+function fmtDate(d) { if (!d) return ''; const [y,m,dd] = d.split('-'); return `${dd} ${MONTHS[parseInt(m)-1].slice(0,3)} ${y}`; }
+function toast(msg) { 
+  const t = document.getElementById('toast'); 
+  t.textContent = msg; 
+  t.classList.add('show'); 
+  setTimeout(() => t.classList.remove('show'), 3500); 
+}
+
+// =====================================================
+// BOOT
+// =====================================================
 window.onload = initApp;
 </script>
 </body>
