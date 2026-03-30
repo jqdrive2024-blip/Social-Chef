@@ -213,11 +213,9 @@ select option{background:var(--surface2)}
 
     <!-- GENERATE -->
     <div id="sec-generate" class="content">
-      <div class="kbar">
-        <span class="lbl">🖼 Gemini Imagen 3</span>
-        <input type="password" id="keyInp" placeholder="API key de Google AI Studio...">
-        <button class="bs" onclick="saveKey()" style="padding:7px 14px;font-size:12px">Guardar</button>
-        <span class="kst off" id="keySt">Sin key</span>
+           <div class="kbar" style="justify-content:center">
+        <span class="lbl">🖼️ Imágenes generadas con Pollinations.ai — gratis, sin configuración</span>
+        <span class="kst on">Activo</span>
       </div>
       <div class="gform">
         <h3>Nueva generación de contenido</h3>
@@ -326,9 +324,9 @@ select option{background:var(--surface2)}
             <div class="fg"><label>Hashtags fijos</label><textarea rows="2" id="cfgTags"></textarea></div>
             <div class="fg"><label>CTA habitual</label><input type="text" id="cfgCTA"></div>
             <div class="fg">
-              <label>API Key Google AI Studio (Imagen)</label>
-              <input type="password" id="cfgKey" placeholder="AIza...">
-              <span style="font-size:11px;color:var(--text3);margin-top:3px">Para generar imágenes con Gemini</span>
+              <label>Imágenes</label>
+              <input type="text" id="cfgKey" value="Pollinations.ai (gratis)" readonly style="opacity:.5;cursor:default">
+              <span style="font-size:11px;color:var(--text3);margin-top:3px">Imágenes generadas automáticamente, sin coste</span>
             </div>
             <button class="bp" style="width:fit-content" onclick="saveCfg()">Guardar</button>
           </div>
@@ -399,7 +397,7 @@ let restaurants = [];
 let proposals = [], scheduled = [], bulkItems = [];
 let selIds = new Set();
 let calMon = new Date().getMonth(), calYr = new Date().getFullYear(), editP = null;
-let GKEY = localStorage.getItem('sc_gkey') || '';
+
 
 // =====================================================
 // FIREBASE INIT
@@ -419,8 +417,7 @@ async function initApp() {
     setSyncState('ok', 'Sincronizado · ' + currentUser.uid.slice(0,8));
     document.getElementById('initScreen').style.display = 'none';
     document.getElementById('mainApp').style.display = 'grid';
-    if (GKEY) { document.getElementById('keyInp').value = GKEY; setSt(true); }
-    renderCal();
+      renderCal();
   } catch (err) {
     setInitMsg('Error al conectar: ' + err.message);
     console.error(err);
@@ -519,8 +516,6 @@ async function addRest() {
 
 async function saveCfg() {
   if (!currentUser || !currentRestId) return;
-  const gk = document.getElementById('cfgKey').value.trim();
-  if (gk) { GKEY = gk; localStorage.setItem('sc_gkey', gk); document.getElementById('keyInp').value = gk; setSt(true); }
   const data = {
     name: document.getElementById('cfgName').value,
     cuisine: document.getElementById('cfgCuisine').value,
@@ -557,43 +552,32 @@ async function saveScheduled() {
   setSyncState('ok', 'Guardado ✓');
 }
 
-// =====================================================
-// GEMINI IMAGE GENERATION
-// =====================================================
-function saveKey() {
-  const v = document.getElementById('keyInp').value.trim();
-  if (!v) { toast('Pega tu API key primero'); return; }
-  GKEY = v; localStorage.setItem('sc_gkey', v); setSt(true); toast('✓ API key guardada');
-}
-function setSt(on) {
-  const el = document.getElementById('keySt');
-  el.textContent = on ? '✓ Activa' : 'Sin key';
-  el.className = 'kst ' + (on ? 'on' : 'off');
-}
 
+// =====================================================
+// POLLINATIONS.AI IMAGE GENERATION (free, no key)
+// =====================================================
 async function generateImage(prompt, isStory) {
-  if (!GKEY) return null;
   try {
-    const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${GKEY}`,
-      { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ instances: [{ prompt }], parameters: { sampleCount: 1, aspectRatio: isStory ? '9:16' : '1:1', safetyFilterLevel: 'block_few', personGeneration: 'allow_all' } })
-      }
-    );
-    const d = await res.json();
-    const b64 = d?.predictions?.[0]?.bytesBase64Encoded;
-    const mime = d?.predictions?.[0]?.mimeType || 'image/png';
-    return b64 ? `data:${mime};base64,${b64}` : null;
+    const w = isStory ? 768 : 1024;
+    const h = isStory ? 1365 : 1024;
+    const encoded = encodeURIComponent(prompt + ', professional food photography, high quality, appetizing, restaurant');
+    const seed = Math.floor(Math.random() * 99999);
+    const url = `https://image.pollinations.ai/prompt/${encoded}?width=${w}&height=${h}&model=flux&nologo=true&seed=${seed}`;
+    return await new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.onload = () => resolve(url);
+      img.onerror = () => resolve(null);
+      setTimeout(() => resolve(url), 5000);
+      img.src = url;
+    });
   } catch { return null; }
 }
 
 // =====================================================
-// GENERATE PROPOSALS (Claude + Gemini)
+// GENERATE PROPOSALS (Claude + Pollinations.ai)
 // =====================================================
 async function genProposals() {
-  const kv = document.getElementById('keyInp').value.trim();
-  if (kv && kv !== GKEY) { GKEY = kv; localStorage.setItem('sc_gkey', kv); setSt(true); }
-
   document.getElementById('genBtn').disabled = true;
   document.getElementById('propArea').style.display = 'none';
   document.getElementById('lbox').classList.add('vis');
@@ -643,18 +627,14 @@ Reglas: exactamente 3 tipo post y 3 tipo story. caption humano y natural en tono
   document.getElementById('genBtn').disabled = false;
   renderProps();
 
-  // Generate images in parallel
-  if (GKEY) {
-    toast('Generando imágenes con Gemini Imagen 3...');
-    await Promise.all(proposals.map(async (p, i) => {
-      const img = await generateImage(p.imagePrompt, p.type === 'story');
-      if (img) { proposals[i].imageData = img; setImg(p.id, img); }
-      else clearLoad(p.id, p.emoji);
-    }));
-    toast('✓ Imágenes generadas');
-  } else {
-    proposals.forEach(p => clearLoad(p.id, p.emoji));
-  }
+  // Generate images in parallel with Pollinations.ai (free)
+  toast('Generando imágenes con Pollinations.ai...');
+  await Promise.all(proposals.map(async (p, i) => {
+    const img = await generateImage(p.imagePrompt, p.type === 'story');
+    if (img) { proposals[i].imageData = img; setImg(p.id, img); }
+    else clearLoad(p.id, p.emoji);
+  }));
+  toast('✓ Imágenes generadas');
 }
 
 function setImg(id, src) { const c = document.getElementById('cprev-'+id); if (c) c.innerHTML = `<img src="${src}" alt="">`; }
