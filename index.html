@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Social Chef</title>
+<title>Social Chef - Debug</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
@@ -17,7 +17,7 @@
   --border:#2a2a2a;--border2:#333;
   --text:#f0ede8;--text2:#a09d98;--text3:#666;
   --accent:#e8c97e;--accent2:#c4a55a;--accent-bg:rgba(232,201,126,0.08);
-  --green:#7ec98e;--blue:#7eb3e8;
+  --green:#7ec98e;--blue:#7eb3e8;--red:#e87e7e;
   --r:12px;--rs:8px;--rl:16px;
 }
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.6;min-height:100vh}
@@ -41,6 +41,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text3)}
 .sync-dot.ok{background:var(--green)}
 .sync-dot.spin{background:var(--accent);animation:pulse 1s infinite}
+.sync-dot.error{background:var(--red)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .main{display:flex;flex-direction:column;overflow:hidden}
 .content{flex:1;padding:32px;overflow-y:auto;display:flex;flex-direction:column}
@@ -68,6 +69,7 @@ select option{background:var(--surface2)}
 .kst{font-size:11px;padding:3px 9px;border-radius:20px;white-space:nowrap}
 .kst.on{background:rgba(126,201,142,.15);color:var(--green)}
 .kst.off{background:rgba(160,157,152,.1);color:var(--text3)}
+.kst.error{background:rgba(232,126,126,.15);color:var(--red)}
 .ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:20px}
 .pcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;transition:all .2s;position:relative}
@@ -151,11 +153,16 @@ select option{background:var(--surface2)}
 .hdiv{height:1px;background:var(--border);margin:18px 0}
 .toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--accent);color:var(--accent);padding:12px 20px;border-radius:var(--rs);font-size:13px;transform:translateY(100px);opacity:0;transition:all .3s;z-index:200;max-width:320px}
 .toast.show{transform:translateY(0);opacity:1}
+.toast.error{border-color:var(--red);color:var(--red)}
 .init-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:16px}
 .init-screen h1{font-family:'DM Serif Display',serif;font-size:32px;color:var(--accent)}
 .init-screen p{color:var(--text3);font-size:14px}
 .init-spin{width:40px;height:40px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
 .cbadge{background:var(--accent-bg);color:var(--accent);font-size:11px;padding:2px 7px;border-radius:20px;margin-left:6px}
+.debug-log{background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);padding:12px;margin-top:20px;font-family:monospace;font-size:11px;color:var(--text2);max-height:300px;overflow-y:auto}
+.debug-log .error{color:var(--red)}
+.debug-log .success{color:var(--green)}
+.debug-log .warning{color:var(--accent)}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
 @media(max-width:900px){.app{grid-template-columns:1fr}.sidebar{display:none}.cal-area,.cfggrid,.fgrid{grid-template-columns:1fr}}
 </style>
@@ -236,7 +243,7 @@ select option{background:var(--surface2)}
         </div>
         <div style="display:flex;align-items:center;gap:12px">
           <button class="bp" onclick="genProposals()" id="genBtn">✦ Generar propuestas</button>
-          <span style="font-size:12px;color:var(--text3)">Textos con Claude + imágenes con FLUX.1 → Tu servidor</span>
+          <span style="font-size:12px;color:var(--text3)">Textos con Claude + imágenes con FLUX.1</span>
         </div>
       </div>
 
@@ -244,6 +251,12 @@ select option{background:var(--surface2)}
         <div class="lspin"></div>
         <div class="ltxt">Creando propuestas para tu restaurante...</div>
         <div class="lstep" id="lstep">Analizando estilo y voz del restaurante</div>
+      </div>
+
+      <!-- DEBUG LOG VISIBLE -->
+      <div class="debug-log" id="debugLog">
+        <strong>📋 Log de depuración (tiempo real):</strong>
+        <div id="debugContent" style="margin-top:8px"></div>
       </div>
 
       <div id="propArea" style="display:none">
@@ -308,7 +321,7 @@ select option{background:var(--surface2)}
             <div class="fg"><label>CTA habitual</label><input type="text" id="cfgCTA"></div>
             <div class="fg">
               <label>API Key Replicate (FLUX.1)</label>
-              <input type="password" id="cfgReplicateKey" placeholder="r8_..." autocomplete="off" value="r8_e1KCvK21l1VWdHhanVOM5lmUPMn6EJI3Xncv4">
+              <input type="text" id="cfgReplicateKey" placeholder="r8_..." autocomplete="off" value="r8_e1KCvK21l1VWdHhanVOM5lmUPMn6EJI3Xncv4">
               <span style="font-size:11px;color:var(--text3);margin-top:3px">Token de Replicate para FLUX.1</span>
             </div>
             <div class="fg">
@@ -316,7 +329,8 @@ select option{background:var(--surface2)}
               <input type="url" id="cfgServerUrl" placeholder="https://www.jordiqterrassa.com/upload.php" value="https://www.jordiqterrassa.com/upload.php">
               <span style="font-size:11px;color:var(--text3);margin-top:3px">Ej: https://www.jordiqterrassa.com/upload.php</span>
             </div>
-            <button class="bp" style="width:fit-content" onclick="saveCfg()">Guardar</button>
+            <button class="bp" style="width:fit-content" onclick="testConnections()">🧪 Probar conexiones</button>
+            <button class="bs" style="width:fit-content;margin-top:8px" onclick="saveCfg()">Guardar configuración</button>
           </div>
         </div>
       </div>
@@ -384,15 +398,86 @@ let selIds = new Set();
 let calMon = new Date().getMonth(), calYr = new Date().getFullYear(), editP = null;
 
 // =====================================================
-// UTILIDAD: SUBIR IMAGEN A SERVIDOR
+// DEBUG LOGGING MEJORADO
+// =====================================================
+function logDebug(message, type = 'info') {
+  const timestamp = new Date().toLocaleTimeString();
+  const logEntry = `[${timestamp}] ${message}`;
+  console.log(logEntry);
+  
+  const debugDiv = document.getElementById('debugContent');
+  if (debugDiv) {
+    const div = document.createElement('div');
+    div.className = type;
+    div.style.cssText = 'margin:2px 0;padding:2px 0;border-bottom:1px solid var(--border)';
+    div.textContent = logEntry;
+    debugDiv.appendChild(div);
+    debugDiv.scrollTop = debugDiv.scrollHeight;
+  }
+}
+
+function clearDebug() {
+  const debugDiv = document.getElementById('debugContent');
+  if (debugDiv) debugDiv.innerHTML = '';
+}
+
+// =====================================================
+// TEST DE CONEXIONES (nuevo botón en config)
+// =====================================================
+async function testConnections() {
+  clearDebug();
+  logDebug('=== INICIANDO TEST DE CONEXIONES ===', 'warning');
+  
+  const token = document.getElementById('cfgReplicateKey').value.trim();
+  const uploadUrl = document.getElementById('cfgServerUrl').value.trim();
+  
+  // Test 1: Replicate
+  logDebug('Test 1: Verificando token de Replicate...');
+  try {
+    const response = await fetch('https://api.replicate.com/v1/models', {
+      headers: { 'Authorization': `Token ${token}` }
+    });
+    if (response.ok) {
+      logDebug('✅ Token de Replicate VÁLIDO', 'success');
+    } else {
+      logDebug(`❌ Token inválido: HTTP ${response.status}`, 'error');
+    }
+  } catch(e) {
+    logDebug(`❌ Error conectando a Replicate: ${e.message}`, 'error');
+  }
+  
+  // Test 2: Servidor de upload
+  logDebug('Test 2: Verificando servidor de upload...');
+  try {
+    const response = await fetch(uploadUrl, { method: 'GET' });
+    logDebug(`Servidor responde: HTTP ${response.status} (405 es normal para GET)`, 'info');
+  } catch(e) {
+    logDebug(`❌ Error conectando a servidor: ${e.message}`, 'error');
+  }
+  
+  logDebug('=== TEST COMPLETADO ===', 'warning');
+}
+
+// =====================================================
+// UPLOAD A SERVIDOR
 // =====================================================
 async function uploadImageToServer(imageUrl, filename) {
   const uploadUrl = document.getElementById('cfgServerUrl')?.value?.trim() || DEFAULT_UPLOAD_URL;
   
+  logDebug(`Subiendo imagen a servidor...`);
+  logDebug(`URL origen: ${imageUrl.substring(0, 50)}...`);
+  
   try {
-    // Descargar imagen como blob
+    // Descargar imagen
+    logDebug('Descargando imagen desde URL...');
     const response = await fetch(imageUrl);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status} al descargar imagen`);
+    }
+    
     const blob = await response.blob();
+    logDebug(`Imagen descargada: ${(blob.size/1024).toFixed(1)} KB`);
     
     // Convertir a base64
     const base64 = await new Promise((resolve, reject) => {
@@ -402,7 +487,8 @@ async function uploadImageToServer(imageUrl, filename) {
       reader.readAsDataURL(blob);
     });
     
-    // Subir a tu servidor
+    // Subir
+    logDebug('Enviando a servidor PHP...');
     const uploadResponse = await fetch(uploadUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -410,41 +496,47 @@ async function uploadImageToServer(imageUrl, filename) {
     });
     
     const result = await uploadResponse.json();
+    logDebug(`Respuesta servidor: ${JSON.stringify(result).substring(0, 100)}`);
     
     if (!result.success) {
-      throw new Error(result.error || 'Error al subir imagen');
+      throw new Error(result.error || 'Error del servidor');
     }
     
+    logDebug(`✅ Subida exitosa: ${result.url.substring(0, 60)}...`, 'success');
     return result.url;
+    
   } catch (error) {
-    console.error('Error uploading image:', error);
-    toast('⚠️ Error al subir imagen, usando URL temporal');
-    return imageUrl;
+    logDebug(`❌ Error: ${error.message}`, 'error');
+    return null;
   }
 }
 
 // =====================================================
-// FLUX.1 - GENERACIÓN DE IMÁGENES
+// FLUX.1 - GENERACIÓN CON LOGS DETALLADOS
 // =====================================================
 function getReplicateToken() {
   return document.getElementById('cfgReplicateKey')?.value?.trim() || DEFAULT_REPLICATE_TOKEN;
 }
 
-async function generateWithFlux(prompt, isStory) {
+async function generateWithFlux(prompt, isStory, index) {
   const token = getReplicateToken();
   
+  logDebug(`[${index}] 🎨 Generando imagen con FLUX...`);
+  logDebug(`[${index}] Prompt: ${prompt.substring(0, 60)}...`);
+  
   try {
-    // Crear predicción con FLUX Schnell (rápido y bueno)
+    // Crear predicción
     const response = await fetch('https://api.replicate.com/v1/predictions', {
       method: 'POST',
       headers: {
         'Authorization': `Token ${token}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Prefer': 'wait'
       },
       body: JSON.stringify({
         version: "black-forest-labs/flux-schnell",
         input: {
-          prompt: prompt + ', professional food photography, appetizing, restaurant quality, natural lighting, 8k, detailed',
+          prompt: prompt + ', professional food photography, appetizing, restaurant quality, natural lighting, 8k, detailed, gourmet presentation',
           aspect_ratio: isStory ? "9:16" : "1:1",
           output_format: "jpg",
           output_quality: 90
@@ -452,43 +544,77 @@ async function generateWithFlux(prompt, isStory) {
       })
     });
     
+    logDebug(`[${index}] HTTP ${response.status} al crear predicción`);
+    
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.detail || 'Error en API Replicate');
+      const errorText = await response.text();
+      throw new Error(`API Error ${response.status}: ${errorText.substring(0, 100)}`);
     }
     
     const prediction = await response.json();
+    logDebug(`[${index}] Predicción ID: ${prediction.id}, Status: ${prediction.status}`);
     
-    // Polling hasta que termine (máximo 30 segundos)
-    let result = prediction;
-    let attempts = 0;
-    const maxAttempts = 60;
-    
-    while (result.status !== 'succeeded' && result.status !== 'failed' && attempts < maxAttempts) {
-      await new Promise(r => setTimeout(r, 1000));
-      const poll = await fetch(`https://api.replicate.com/v1/predictions/${prediction.id}`, {
-        headers: { 'Authorization': `Token ${token}` }
-      });
-      result = await poll.json();
-      attempts++;
-      
-      // Actualizar UI con progreso
-      if (document.getElementById('lstep')) {
-        document.getElementById('lstep').textContent = `Generando imagen... ${attempts}s`;
-      }
-    }
-    
-    if (result.status === 'succeeded' && result.output) {
-      // FLUX devuelve array de URLs o string
-      const imageUrl = Array.isArray(result.output) ? result.output[0] : result.output;
+    // Si ya está lista (con Prefer: wait)
+    if (prediction.status === 'succeeded' && prediction.output) {
+      const imageUrl = Array.isArray(prediction.output) ? prediction.output[0] : prediction.output;
+      logDebug(`[${index}] ✅ Imagen lista inmediatamente`, 'success');
       return imageUrl;
     }
     
-    throw new Error(result.error || 'Generación fallida');
+    // Si está procesando, hacer polling
+    if (prediction.status === 'starting' || prediction.status === 'processing') {
+      logDebug(`[${index}] ⏳ Esperando generación...`);
+      
+      let attempts = 0;
+      const maxAttempts = 30;
+      
+      while (attempts < maxAttempts) {
+        await new Promise(r => setTimeout(r, 2000));
+        attempts++;
+        
+        const pollResponse = await fetch(`https://api.replicate.com/v1/predictions/${prediction.id}`, {
+          headers: { 'Authorization': `Token ${token}` }
+        });
+        
+        if (!pollResponse.ok) continue;
+        
+        const result = await pollResponse.json();
+        
+        if (result.status === 'succeeded') {
+          const imageUrl = Array.isArray(result.output) ? result.output[0] : result.output;
+          logDebug(`[${index}] ✅ Generada en ${attempts*2} segundos`, 'success');
+          return imageUrl;
+        }
+        
+        if (result.status === 'failed') {
+          throw new Error(`Generación fallida: ${result.error || 'Unknown'}`);
+        }
+        
+        if (attempts % 3 === 0) {
+          logDebug(`[${index}] Esperando... (${attempts*2}s)`);
+        }
+      }
+      
+      throw new Error('Timeout después de 60 segundos');
+    }
+    
+    throw new Error(`Estado inesperado: ${prediction.status}`);
+    
   } catch(e) {
-    console.error('FLUX error:', e);
+    logDebug(`[${index}] ❌ Error FLUX: ${e.message}`, 'error');
     return null;
   }
+}
+
+// =====================================================
+// PLACEHOLDER DE IMÁGENES (reemplaza Unsplash roto)
+// =====================================================
+function getPlaceholderImage(text, isStory) {
+  // Usar placeholder.com o picsum con texto personalizado
+  const w = isStory ? 768 : 1024;
+  const h = isStory ? 1365 : 1024;
+  const encodedText = encodeURIComponent(text.substring(0, 30));
+  return `https://placehold.co/${w}x${h}/1a1a1a/e8c97e?text=${encodedText}`;
 }
 
 // =====================================================
@@ -496,31 +622,41 @@ async function generateWithFlux(prompt, isStory) {
 // =====================================================
 async function initApp() {
   setInitMsg('Conectando con Firebase...');
+  logDebug('Iniciando aplicación...');
+  
   try {
     firebase.initializeApp(firebaseConfig);
     auth = firebase.auth();
     db = firebase.firestore();
+    
     setInitMsg('Autenticando usuario...');
     const cred = await auth.signInAnonymously();
     currentUser = cred.user;
+    
+    logDebug(`✅ Usuario autenticado: ${currentUser.uid.substring(0, 8)}...`, 'success');
+    
     setSyncState('spin', 'Cargando datos...');
     setInitMsg('Cargando tus restaurantes...');
     await loadUserData();
+    
     setSyncState('ok', 'Sincronizado · ' + currentUser.uid.slice(0,8));
     document.getElementById('initScreen').style.display = 'none';
     document.getElementById('mainApp').style.display = 'grid';
     renderCal();
     updateImgEngineLabel();
+    
+    logDebug('✅ Aplicación lista', 'success');
+    
   } catch (err) {
+    logDebug(`❌ Error: ${err.message}`, 'error');
     setInitMsg('Error al conectar: ' + err.message);
-    console.error(err);
   }
 }
 
 function setInitMsg(msg) { document.getElementById('initMsg').textContent = msg; }
 function setSyncState(state, txt) {
   const dot = document.getElementById('syncDot');
-  dot.className = 'sync-dot ' + (state === 'ok' ? 'ok' : state === 'spin' ? 'spin' : '');
+  dot.className = 'sync-dot ' + (state === 'ok' ? 'ok' : state === 'spin' ? 'spin' : state === 'error' ? 'error' : '');
   document.getElementById('syncTxt').textContent = txt;
 }
 
@@ -631,7 +767,7 @@ async function saveCfg() {
   document.getElementById('restSel').value = currentRestId;
   updateImgEngineLabel();
   setSyncState('ok', 'Guardado ✓');
-  toast('✓ Perfil guardado en Firebase');
+  toast('✓ Perfil guardado');
 }
 
 async function saveScheduled() {
@@ -647,14 +783,17 @@ function updateImgEngineLabel() {
   const token = getReplicateToken();
   const lbl = document.getElementById('imgEngineLbl');
   const st  = document.getElementById('imgEngineSt');
-  if (lbl) lbl.textContent = token ? 'FLUX.1 → www.jordiqterrassa.com' : 'Sin token configurado';
+  if (lbl) lbl.textContent = token ? 'FLUX.1 → www.jordiqterrassa.com' : 'Sin token - Placeholders';
   if (st)  st.className = token ? 'kst on' : 'kst off';
 }
 
 // =====================================================
-// GENERAR PROPUESTAS CON FLUX.1
+// GENERAR PROPUESTAS - FLUJO COMPLETO
 // =====================================================
 async function genProposals() {
+  clearDebug();
+  logDebug('=== INICIANDO GENERACIÓN COMPLETA ===', 'warning');
+  
   document.getElementById('genBtn').disabled = true;
   document.getElementById('propArea').style.display = 'none';
   document.getElementById('lbox').classList.add('vis');
@@ -663,8 +802,7 @@ async function genProposals() {
   const theme    = document.getElementById('theme').value;
   const tone     = document.getElementById('tone').value;
   const ctx      = document.getElementById('ctx').value.trim();
-  const restName = restaurants.find(r => r.id === currentRestId)?.name
-                   || document.getElementById('cfgName').value;
+  const restName = restaurants.find(r => r.id === currentRestId)?.name || document.getElementById('cfgName').value;
   const cuisine  = document.getElementById('cfgCuisine').value;
   const desc     = document.getElementById('cfgDesc').value;
   const tags     = document.getElementById('cfgTags').value;
@@ -672,128 +810,141 @@ async function genProposals() {
   const lang     = document.getElementById('cfgLang').value;
   const hasToken = !!getReplicateToken();
 
-  const steps = ['Analizando restaurante...','Generando ideas...','Redactando textos...','Preparando imágenes...'];
-  let si = 0;
-  const iv = setInterval(() => {
-    document.getElementById('lstep').textContent = steps[++si % steps.length];
-  }, 1800);
+  logDebug(`Restaurante: ${restName}`);
+  logDebug(`Token FLUX disponible: ${hasToken ? 'SÍ' : 'NO'}`);
 
-  // Generar textos con Puter/Claude
-  const systemMsg = 'Eres un experto en marketing gastronómico para Instagram. Responde SIEMPRE con JSON válido.';
-  let userMsg = `Genera 6 propuestas de contenido para Instagram (3 post + 3 story) para: ${restName}\n`;
-  userMsg += `Cocina: ${cuisine}\nDescripción: ${desc}\nIdioma: ${lang}\n`;
-  userMsg += `Hashtags: ${tags}\nCTA: ${cta}\nTemática: ${theme}\nTono: ${tone}\n`;
-  if (ctx) userMsg += `Contexto: ${ctx}\n`;
-  userMsg += `Responde SOLO con este JSON: {"proposals":[{"id":"p1","type":"post","emoji":"🍽️","title":"Título","caption":"Texto 2-3 frases","hashtags":"#tag1 #tag2","imagePrompt":"Descripción detallada en inglés para foto de comida"},{"id":"p2","type":"story",...}]}`;
+  // PASO 1: Generar textos
+  logDebug('📝 Paso 1: Generando textos con Claude...');
+  document.getElementById('lstep').textContent = 'Generando textos...';
+  
+  const systemMsg = 'Eres un experto en marketing gastronómico. Responde SOLO con JSON válido.';
+  let userMsg = `Genera 6 propuestas (3 post + 3 story) para ${restName}.\n`;
+  userMsg += `Cocina: ${cuisine}. Descripción: ${desc}. Idioma: ${lang}.\n`;
+  userMsg += `Hashtags: ${tags}. CTA: ${cta}. Temática: ${theme}. Tono: ${tone}.\n`;
+  if (ctx) userMsg += `Contexto: ${ctx}.\n`;
+  userMsg += `JSON: {"proposals":[{"id":"p1","type":"post","emoji":"🍽️","title":"Título","caption":"Texto","hashtags":"#tags","imagePrompt":"Descripción en inglés para foto de comida"}...]}`;
 
   try {
-    document.getElementById('lstep').textContent = 'Generando textos con IA...';
     const resp = await puter.ai.chat(
       [{ role: 'system', content: systemMsg }, { role: 'user', content: userMsg }],
       { model: 'gpt-4o-mini' }
     );
+    
     let raw = typeof resp === 'string' ? resp : resp?.message?.content || JSON.stringify(resp);
     raw = raw.replace(/```json|```/gi, '').trim();
     const j0 = raw.indexOf('{'), j1 = raw.lastIndexOf('}');
     proposals = JSON.parse(raw.slice(j0, j1+1)).proposals;
+    logDebug(`✅ ${proposals.length} propuestas de texto generadas`, 'success');
+    
   } catch(e) {
-    console.error('Error IA:', e);
+    logDebug(`❌ Error textos: ${e.message}`, 'error');
     proposals = fallbackProposals(restName, ctx);
-    toast('⚠️ Usando contenido de ejemplo');
   }
 
-  clearInterval(iv);
+  // PASO 2: Generar imágenes
+  logDebug('🎨 Paso 2: Generando imágenes...');
   document.getElementById('lbox').classList.remove('vis');
   document.getElementById('genBtn').disabled = false;
-
-  // Generar imágenes con FLUX
+  
+  renderProps(); // Mostrar tarjetas inmediatamente
+  
   if (hasToken) {
-    renderProps();
-    toast('✓ Textos generados · Generando imágenes con FLUX.1...');
-    
+    // Generar con FLUX secuencialmente
     for (let i = 0; i < proposals.length; i++) {
       const p = proposals[i];
-      document.getElementById('lstep').textContent = `Generando imagen ${i+1}/6 con FLUX...`;
+      document.getElementById('lstep').textContent = `Generando imagen ${i+1}/${proposals.length}...`;
       document.getElementById('lbox').classList.add('vis');
       
-      const fluxUrl = await generateWithFlux(p.imagePrompt || p.title, p.type === 'story');
+      // Generar FLUX
+      const fluxUrl = await generateWithFlux(p.imagePrompt || p.title, p.type === 'story', i+1);
       
       if (fluxUrl) {
-        document.getElementById('lstep').textContent = `Subiendo imagen ${i+1}/6 al servidor...`;
+        // Subir a servidor
+        document.getElementById('lstep').textContent = `Subiendo imagen ${i+1}...`;
         const permanentUrl = await uploadImageToServer(fluxUrl, `flux_${p.id}_${Date.now()}.jpg`);
-        proposals[i].imageData = permanentUrl;
-        proposals[i].originalFluxUrl = fluxUrl;
-        injectImg(p.id, permanentUrl);
+        
+        if (permanentUrl) {
+          proposals[i].imageData = permanentUrl;
+          injectImg(p.id, permanentUrl);
+        } else {
+          // Si falla subida, usar URL de FLUX directamente (temporal)
+          proposals[i].imageData = fluxUrl;
+          injectImg(p.id, fluxUrl);
+          logDebug(`⚠️ Usando URL temporal de FLUX`, 'warning');
+        }
       } else {
-        const fallback = makeUnsplashUrl(p.imagePrompt || p.title, p.type === 'story', i);
-        proposals[i].imageData = fallback;
-        injectImg(p.id, fallback);
+        // Fallback a placeholder si FLUX falla
+        const placeholder = getPlaceholderImage(p.title, p.type === 'story');
+        proposals[i].imageData = placeholder;
+        injectImg(p.id, placeholder);
+        logDebug(`⚠️ Usando placeholder para ${p.id}`, 'warning');
       }
     }
     
     document.getElementById('lbox').classList.remove('vis');
-    toast('✓ ¡Todas las imágenes generadas y guardadas!');
+    toast('✅ Proceso completado');
+    
   } else {
-    // Sin token: usar Unsplash
+    // Sin token: placeholders
+    logDebug('⚠️ Sin token FLUX, usando placeholders', 'warning');
     proposals.forEach((p, i) => {
-      proposals[i].imageData = makeUnsplashUrl(p.imagePrompt || p.title, p.type === 'story', i);
+      proposals[i].imageData = getPlaceholderImage(p.title, p.type === 'story');
+      injectImg(p.id, proposals[i].imageData);
     });
-    renderProps();
-    proposals.forEach(p => injectImg(p.id, p.imageData));
-    toast('⚠️ Añade token de Replicate para generar imágenes con FLUX.1');
+    toast('⚠️ Añade token de Replicate para imágenes reales');
   }
+  
+  logDebug('=== PROCESO COMPLETADO ===', 'success');
 }
 
 function fallbackProposals(name) {
   return [
-    {id:'p1',type:'post',emoji:'🍽️',title:'El plato del día',caption:`En ${name} hoy te traemos algo especial. Ingredientes frescos, sabor auténtico.`,hashtags:'#gastronomia #restaurante #foodie',imagePrompt:'Beautiful Mediterranean dish on elegant white plate, overhead shot, natural window light, rustic wooden table, fresh herbs, professional food photography'},
-    {id:'p2',type:'story',emoji:'👨‍🍳',title:'Detrás del fogón',caption:`Cada día empezamos eligiendo los mejores ingredientes en ${name}.`,hashtags:'#cheflife #cocina #artesanal',imagePrompt:'Chef in professional restaurant kitchen, candid action shot, warm ambient lighting, authentic culinary atmosphere'},
-    {id:'p3',type:'post',emoji:'🌿',title:'Sabores de temporada',caption:`La temporada nos trae ingredientes increíbles. Descubre nuestro menú en ${name}.`,hashtags:'#temporada #km0 #gastronomy',imagePrompt:'Fresh seasonal vegetables flatlay on wooden surface, natural daylight, Mediterranean colors, fresh herbs and olive oil'},
-    {id:'p4',type:'story',emoji:'❤️',title:'Gracias por venir',caption:`Momentos así nos hacen seguir. Gracias por elegir ${name}.`,hashtags:'#familia #restaurante #momentos',imagePrompt:'Happy guests dining at restaurant, warm candlelight, intimate atmosphere, blurred background bokeh'},
-    {id:'p5',type:'post',emoji:'🥂',title:'Fin de semana especial',caption:`¿Tienes planes este finde? Tenemos una mesa para ti en ${name}.`,hashtags:'#finde #planes #reserva',imagePrompt:'Restaurant exterior at golden hour, warm lights through windows, inviting entrance, Mediterranean facade'},
-    {id:'p6',type:'story',emoji:'✨',title:'Novedad en carta',caption:`Algo nuevo llega a ${name}. ¡Pasa a descubrirla!`,hashtags:'#nuevacarta #novedad #chef',imagePrompt:'New signature dish beautifully plated on dark slate, dramatic studio lighting, fine dining presentation with microgreens'}
+    {id:'p1',type:'post',emoji:'🍽️',title:'El plato del día',caption:`En ${name} hoy te traemos algo especial.`,hashtags:'#gastronomia #restaurante',imagePrompt:'Beautiful Mediterranean dish on white plate, professional food photography'},
+    {id:'p2',type:'story',emoji:'👨‍🍳',title:'Detrás del fogón',caption:`Cocinando con pasión en ${name}.`,hashtags:'#cheflife #cocina',imagePrompt:'Chef cooking in professional kitchen, warm lighting'},
+    {id:'p3',type:'post',emoji:'🌿',title:'Sabores de temporada',caption:`Ingredientes frescos en ${name}.`,hashtags:'#temporada #fresco',imagePrompt:'Fresh vegetables and herbs on wooden table, natural light'},
+    {id:'p4',type:'story',emoji:'❤️',title:'Clientes felices',caption:`Gracias por elegir ${name}.`,hashtags:'#clientes #amor',imagePrompt:'Happy diners at restaurant table, candlelight atmosphere'},
+    {id:'p5',type:'post',emoji:'🥂',title:'Eventos especiales',caption:`Celebra en ${name}.`,hashtags:'#eventos #celebracion',imagePrompt:'Elegant restaurant interior, table setting, wine glasses'},
+    {id:'p6',type:'story',emoji:'✨',title:'Novedades',caption:`Nuevos platos en ${name}.`,hashtags:'#nuevo #carta',imagePrompt:'Gourmet dish presentation, fine dining, artistic plating'}
   ];
-}
-
-function makeUnsplashUrl(prompt, isStory, index) {
-  const w = isStory ? 768 : 1024;
-  const h = isStory ? 1365 : 1024;
-  const query = encodeURIComponent((prompt || 'food restaurant').split(',')[0].slice(0, 50));
-  const seed = index * 7 + Math.floor(Date.now() / 60000);
-  return `https://source.unsplash.com/${w}x${h}/?${query}&sig=${seed}`;
 }
 
 function injectImg(cardId, url) {
   const box = document.getElementById('cprev-' + cardId);
   if (!box) return;
+  
+  box.innerHTML = '';
   box.style.position = 'relative';
+  
   const img = new Image();
   img.style.cssText = 'width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s;position:absolute;inset:0';
-  img.onload = () => { img.style.opacity = '1'; };
-  img.onerror = () => {
-    const fallback = makeUnsplashUrl('food', false, Math.random());
-    const img2 = new Image();
-    img2.style.cssText = img.style.cssText;
-    img2.onload = () => { img2.style.opacity = '1'; };
-    box.innerHTML = '';
-    box.appendChild(img2);
-    img2.src = fallback;
+  
+  img.onload = () => { 
+    img.style.opacity = '1';
+    logDebug(`✅ Imagen cargada: ${cardId}`, 'success');
   };
-  box.innerHTML = '<div class="iload"><div class="ispin"></div><span class="ilt">Cargando...</span></div>';
+  
+  img.onerror = () => {
+    logDebug(`❌ Error cargando imagen en ${cardId}`, 'error');
+    // Mostrar emoji como fallback
+    const p = proposals.find(x => x.id === cardId);
+    if (p) {
+      box.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:10px"><span style="font-size:48px">${p.emoji}</span><span style="font-size:12px;color:var(--text3)">${p.title}</span></div>`;
+    }
+  };
+  
   box.appendChild(img);
   img.src = url;
 }
 
-// =====================================================
-// RENDER Y UI (resto del código igual)
-// =====================================================
+// ... resto de funciones (renderProps, toggleSel, etc.) igual que antes ...
+
 function renderProps() {
   const g = document.getElementById('propGrid');
   g.innerHTML = proposals.map(p => `
     <div class="pcard" id="card-${p.id}">
       <span class="sbadge">✓ Seleccionada</span>
       <div class="cprev ${p.type==='story'?'story':''}" id="cprev-${p.id}" onclick="toggleSel('${p.id}')">
-        <div class="iload"><div class="ispin"></div><span class="ilt">Cargando...</span></div>
+        <div class="iload"><div class="ispin"></div><span class="ilt">Generando...</span></div>
       </div>
       <div class="cbody">
         <span class="tbadge ${p.type}">${p.type==='post'?'□ Post':'□ Story'}</span>
@@ -805,7 +956,7 @@ function renderProps() {
         <button class="bedit" onclick="openPrev('${p.id}')">Previsualizar</button>
       </div>
     </div>`).join('');
-  document.getElementById('propCount').textContent = proposals.length + ' propuestas generadas';
+  document.getElementById('propCount').textContent = proposals.length + ' propuestas';
   document.getElementById('propArea').style.display = 'block';
   updSelUI();
 }
@@ -923,39 +1074,4 @@ function renderSList() {
           <div class="stit">${s.title}</div>
           <div class="styp">${s.type==='post'?'Post':'Story'}</div>
         </div>
-        <button onclick="remSched(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:4px;flex-shrink:0">×</button>
-      </div>
-    </div>`).join('');
-}
-
-async function remSched(i) {
-  scheduled.splice(i, 1);
-  updBadge();
-  await saveScheduled();
-  renderCal();
-  toast('Publicación eliminada');
-}
-
-function chMonth(d) { calMon += d; if (calMon > 11) { calMon = 0; calYr++; } if (calMon < 0) { calMon = 11; calYr--; } renderCal(); }
-function updBadge() { document.getElementById('calBadge').textContent = scheduled.length; }
-
-function showSec(n, btn) {
-  document.querySelectorAll('.content').forEach(s => s.style.display = 'none');
-  document.querySelectorAll('.ni').forEach(b => b.classList.remove('active'));
-  const s = document.getElementById('sec-'+n); s.style.display = 'flex'; s.style.flexDirection = 'column';
-  if (btn) btn.classList.add('active');
-  if (n === 'calendar') renderCal();
-}
-
-function fmtDate(d) { if (!d) return ''; const [y,m,dd] = d.split('-'); return `${dd} ${MONTHS[parseInt(m)-1].slice(0,3)} ${y}`; }
-function toast(msg) { 
-  const t = document.getElementById('toast'); 
-  t.textContent = msg; 
-  t.classList.add('show'); 
-  setTimeout(() => t.classList.remove('show'), 3500); 
-}
-
-window.onload = initApp;
-</script>
-</body>
-</html>
+        <button onclick="remSched(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:4px;
