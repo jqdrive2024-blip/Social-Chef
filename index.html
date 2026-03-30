@@ -11,7 +11,6 @@
 <script src="https://js.puter.com/v2/"></script>
 
 <style>
-/* === CSS ORIGINAL COMPLETO === */
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
   --bg:#0e0e0e;--surface:#161616;--surface2:#1e1e1e;--surface3:#272727;
@@ -22,6 +21,7 @@
   --r:12px;--rs:8px;--rl:16px;
 }
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.6;min-height:100vh}
+/* Layout */
 .app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
 .sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column}
 .logo{padding:28px 24px 20px;border-bottom:1px solid var(--border)}
@@ -38,13 +38,16 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .rsel-box select{width:100%;background:var(--surface3);border:1px solid var(--border2);color:var(--text);padding:8px 10px;border-radius:var(--rs);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer}
 .add-btn{display:block;width:100%;margin-top:8px;padding:8px;background:none;border:1px dashed var(--border2);color:var(--text3);border-radius:var(--rs);font-size:12px;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif}
 .add-btn:hover{border-color:var(--accent);color:var(--accent)}
+/* Sync indicator */
 .sync{padding:10px 14px;font-size:11px;display:flex;align-items:center;gap:6px;border-top:1px solid var(--border)}
 .sync-dot{width:7px;height:7px;border-radius:50%;background:var(--text3)}
 .sync-dot.ok{background:var(--green)}
 .sync-dot.spin{background:var(--accent);animation:pulse 1s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+/* Main */
 .main{display:flex;flex-direction:column;overflow:hidden}
 .content{flex:1;padding:32px;overflow-y:auto;display:flex;flex-direction:column}
+/* Forms */
 .gform{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:28px;margin-bottom:24px}
 .gform h3{font-size:16px;font-weight:500;margin-bottom:20px}
 .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
@@ -53,6 +56,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 label{font-size:12px;color:var(--text2);text-transform:uppercase;letter-spacing:.6px}
 input,select,textarea{background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:10px 14px;border-radius:var(--rs);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:border .15s;resize:vertical}
 input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+select option{background:var(--surface2)}
 .tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:4px}
 .tag{padding:5px 12px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--border2);color:var(--text2);background:none;transition:all .15s;font-family:'DM Sans',sans-serif}
 .tag.on{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
@@ -61,10 +65,15 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent)}
 .bp:disabled{opacity:.4;cursor:not-allowed}
 .bs{background:var(--surface2);color:var(--text);border:1px solid var(--border2);padding:10px 18px;border-radius:var(--rs);font-size:13px;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif}
 .bs:hover{border-color:var(--accent);color:var(--accent)}
+/* Key bar */
 .kbar{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--accent-bg);border:1px solid rgba(232,201,126,.2);border-radius:var(--rs);margin-bottom:20px}
 .kbar .lbl{font-size:12px;color:var(--accent);white-space:nowrap;font-weight:500}
+.kbar input{flex:1;font-size:12px;padding:7px 10px}
+.kbar button{padding:7px 14px;font-size:12px;white-space:nowrap}
 .kst{font-size:11px;padding:3px 9px;border-radius:20px;white-space:nowrap}
 .kst.on{background:rgba(126,201,142,.15);color:var(--green)}
+.kst.off{background:rgba(160,157,152,.1);color:var(--text3)}
+/* Proposals */
 .ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:20px}
 .pcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;transition:all .2s;position:relative}
@@ -90,6 +99,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent)}
 .bsel:hover,.pcard.sel .bsel{background:var(--accent);color:#0e0e0e}
 .bedit{background:var(--surface2);border:1px solid var(--border2);color:var(--text2)}
 .bedit:hover{border-color:var(--border);color:var(--text)}
+/* Calendar */
 .cal-area{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start}
 .calbox{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:24px}
 .calhd{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
@@ -108,6 +118,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent)}
 .pdot{width:6px;height:6px;border-radius:50%;background:var(--accent);margin-top:2px}
 .pdot.story{background:var(--green)}
 .cdnum{font-weight:500;font-size:13px}
+/* Scheduled list */
 .slist{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px}
 .slist h4{font-size:14px;font-weight:500;margin-bottom:16px;color:var(--text2)}
 .sitem{padding:12px;background:var(--surface2);border-radius:var(--rs);margin-bottom:10px;border-left:3px solid var(--accent)}
@@ -119,14 +130,17 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent)}
 .empty{text-align:center;padding:40px 20px;color:var(--text3)}
 .empty .ei{font-size:32px;display:block;margin-bottom:12px;opacity:.4}
 .empty p{font-size:13px}
+/* Config */
 .cfggrid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
 .cfgcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:24px}
 .cfgcard h3{font-size:15px;font-weight:500;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+/* Loading */
 .lbox{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:40px;text-align:center;display:none}
 .lbox.vis{display:block}
 .lspin{width:36px;height:36px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
 .ltxt{font-size:14px;color:var(--text2)}
 .lstep{font-size:12px;color:var(--text3);margin-top:8px}
+/* Modals */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s}
 .ov.open{opacity:1;pointer-events:all}
 .modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rl);width:540px;max-height:88vh;overflow-y:auto;padding:28px}
@@ -146,12 +160,15 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent)}
 .ightags{font-size:12px;color:var(--blue);margin-top:6px}
 .dtp{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
 .hdiv{height:1px;background:var(--border);margin:18px 0}
+/* Toast */
 .toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--accent);color:var(--accent);padding:12px 20px;border-radius:var(--rs);font-size:13px;transform:translateY(100px);opacity:0;transition:all .3s;z-index:200;max-width:320px}
 .toast.show{transform:translateY(0);opacity:1}
+/* Init screen */
 .init-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:16px}
 .init-screen h1{font-family:'DM Serif Display',serif;font-size:32px;color:var(--accent)}
 .init-screen p{color:var(--text3);font-size:14px}
 .init-spin{width:40px;height:40px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+/* Misc */
 .cbadge{background:var(--accent-bg);color:var(--accent);font-size:11px;padding:2px 7px;border-radius:20px;margin-left:6px}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
 @media(max-width:900px){.app{grid-template-columns:1fr}.sidebar{display:none}.cal-area,.cfggrid,.fgrid{grid-template-columns:1fr}}
@@ -199,7 +216,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent)}
     <!-- GENERATE -->
     <div id="sec-generate" class="content">
       <div class="kbar" style="justify-content:center">
-        <span class="lbl">🖼️ Imágenes con Nano Banana (Google Gemini) — más inteligente y variado</span>
+        <span class="lbl">🖼️ Imágenes generadas con Puter.js (FLUX) — gratis, sin API key</span>
         <span class="kst on">Activo</span>
       </div>
       <div class="gform">
@@ -224,7 +241,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent)}
           </div>
           <div class="fg full">
             <label>Contexto adicional (opcional)</label>
-            <textarea id="ctx" rows="2" placeholder="Ej: Carxofes i calçots de temporada, queremos promocionar estos platos frescos"></textarea>
+            <textarea id="ctx" rows="2" placeholder="Ej: Menú especial de trufa negra este finde, 45€ por persona..."></textarea>
           </div>
         </div>
         <div class="fg" style="margin-bottom:20px">
@@ -238,14 +255,14 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent)}
         </div>
         <div style="display:flex;align-items:center;gap:12px">
           <button class="bp" onclick="genProposals()" id="genBtn">✦ Generar propuestas</button>
-          <span style="font-size:12px;color:var(--text3)">Textos con Claude + imágenes con Nano Banana</span>
+          <span style="font-size:12px;color:var(--text3)">Textos con Claude + imágenes con Puter.js (FLUX)</span>
         </div>
       </div>
 
       <div class="lbox" id="lbox">
         <div class="lspin"></div>
-        <div class="ltxt">Creando propuestas...</div>
-        <div class="lstep" id="lstep">Analizando estilo del restaurante</div>
+        <div class="ltxt">Creando propuestas para tu restaurante...</div>
+        <div class="lstep" id="lstep">Analizando estilo y voz del restaurante</div>
       </div>
 
       <div id="propArea" style="display:none">
@@ -304,19 +321,27 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent)}
         <div class="cfgcard">
           <h3>Preferencias de contenido</h3>
           <div style="display:flex;flex-direction:column;gap:14px">
-            <div class="fg"><label>Idioma</label><select id="cfgLang"><option>Español</option><option>Catalán</option><option>Inglés</option><option>Bilingüe ES/EN</option></select></div>
-            <div class="fg"><label>Frecuencia ideal</label><select id="cfgFreq"><option>Diaria</option><option>3 veces por semana</option><option>Semanal</option></select></div>
+            <div class="fg"><label>Idioma</label>
+              <select id="cfgLang"><option>Español</option><option>Catalán</option><option>Inglés</option><option>Bilingüe ES/EN</option></select></div>
+            <div class="fg"><label>Frecuencia ideal</label>
+              <select id="cfgFreq"><option>Diaria</option><option>3 veces por semana</option><option>Semanal</option></select></div>
             <div class="fg"><label>Hashtags fijos</label><textarea rows="2" id="cfgTags"></textarea></div>
             <div class="fg"><label>CTA habitual</label><input type="text" id="cfgCTA"></div>
+            <div class="fg">
+              <label>Imágenes</label>
+              <input type="text" id="cfgKey" value="Puter.js (FLUX gratis)" readonly style="opacity:.5;cursor:default">
+              <span style="font-size:11px;color:var(--text3);margin-top:3px">Imágenes generadas en el navegador, sin coste</span>
+            </div>
             <button class="bp" style="width:fit-content" onclick="saveCfg()">Guardar</button>
           </div>
         </div>
       </div>
     </div>
+
   </main>
 </div>
 
-<!-- Modales -->
+<!-- Modal: Preview + Schedule -->
 <div class="ov" id="ovPrev" onclick="closeOvIf(event,'ovPrev')">
   <div class="modal">
     <h3 id="mpTitle">Previsualizar</h3>
@@ -332,6 +357,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent)}
   </div>
 </div>
 
+<!-- Modal: Bulk Schedule -->
 <div class="ov" id="ovBulk" onclick="closeOvIf(event,'ovBulk')">
   <div class="modal">
     <h3>Programar seleccionadas</h3>
@@ -354,7 +380,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--accent)}
 
 <script>
 // =====================================================
-// FIREBASE + STATE
+// FIREBASE CONFIG
 // =====================================================
 const firebaseConfig = {
   apiKey: "AIzaSyB1HefWkEqitPqHNE9G_slYDFzf9Z7jf9I",
@@ -367,6 +393,9 @@ const firebaseConfig = {
 
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
+// =====================================================
+// STATE
+// =====================================================
 let db, auth, currentUser, currentRestId;
 let restaurants = [];
 let proposals = [], scheduled = [], bulkItems = [];
@@ -374,7 +403,7 @@ let selIds = new Set();
 let calMon = new Date().getMonth(), calYr = new Date().getFullYear(), editP = null;
 
 // =====================================================
-// INIT + LOAD
+// FIREBASE INIT
 // =====================================================
 async function initApp() {
   setInitMsg('Conectando con Firebase...');
@@ -382,16 +411,18 @@ async function initApp() {
     firebase.initializeApp(firebaseConfig);
     auth = firebase.auth();
     db = firebase.firestore();
+    setInitMsg('Autenticando usuario...');
     const cred = await auth.signInAnonymously();
     currentUser = cred.user;
     setSyncState('spin', 'Cargando datos...');
+    setInitMsg('Cargando tus restaurantes...');
     await loadUserData();
-    setSyncState('ok', 'Sincronizado');
+    setSyncState('ok', 'Sincronizado · ' + currentUser.uid.slice(0,8));
     document.getElementById('initScreen').style.display = 'none';
     document.getElementById('mainApp').style.display = 'grid';
     renderCal();
   } catch (err) {
-    setInitMsg('Error: ' + err.message);
+    setInitMsg('Error al conectar: ' + err.message);
     console.error(err);
   }
 }
@@ -403,6 +434,9 @@ function setSyncState(state, txt) {
   document.getElementById('syncTxt').textContent = txt;
 }
 
+// =====================================================
+// LOAD USER DATA (sin cambios)
+// =====================================================
 async function loadUserData() {
   const snap = await db.collection('users').doc(currentUser.uid).collection('restaurants').orderBy('createdAt').get();
   restaurants = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -416,10 +450,12 @@ async function createDefaultRestaurant() {
   const data = {
     name: 'La Taberna del Mar',
     cuisine: 'Mediterránea y pescados frescos',
-    desc: 'Restaurante familiar con 30 años de historia en el puerto.',
+    desc: 'Restaurante familiar con 30 años de historia en el puerto. Cocina honesta, ingredientes locales y ambiente acogedor.',
     web: '', ig: '@latabernadelmar', lang: 'Español', freq: 'Diaria',
-    tags: '#tabernadelmar #pescadofresco', cta: '¡Reserva en el link de la bio!',
-    scheduled: [], createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    tags: '#tabernadelmar #pescadofresco #mediterránea #gastrocat',
+    cta: '¡Reserva en el link de la bio!',
+    scheduled: [],
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
   };
   const ref = await db.collection('users').doc(currentUser.uid).collection('restaurants').add(data);
   restaurants.push({ id: ref.id, ...data });
@@ -467,7 +503,8 @@ async function addRest() {
   const data = {
     name: n, cuisine: 'Tipo de cocina', desc: 'Descripción del restaurante.',
     web: '', ig: '@' + n.toLowerCase().replace(/\s+/g,''), lang: 'Español',
-    freq: 'Diaria', tags: '#restaurante', cta: '¡Reserva!', scheduled: [], createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    freq: 'Diaria', tags: '#restaurante', cta: '¡Reserva en el link de la bio!',
+    scheduled: [], createdAt: firebase.firestore.FieldValue.serverTimestamp()
   };
   const ref = await db.collection('users').doc(currentUser.uid).collection('restaurants').add(data);
   restaurants.push({ id: ref.id, ...data });
@@ -475,7 +512,7 @@ async function addRest() {
   document.getElementById('restSel').value = ref.id;
   await loadRestaurant(ref.id);
   setSyncState('ok', 'Sincronizado');
-  toast(`✓ "${n}" creado`);
+  toast(`✓ "${n}" creado y guardado`);
 }
 
 async function saveCfg() {
@@ -499,36 +536,39 @@ async function saveCfg() {
   renderRestSelector();
   document.getElementById('restSel').value = currentRestId;
   setSyncState('ok', 'Guardado ✓');
-  toast('✓ Perfil guardado');
+  toast('✓ Perfil guardado en Firebase');
 }
 
 async function saveScheduled() {
   if (!currentUser || !currentRestId) return;
   setSyncState('spin', 'Guardando...');
-  await db.collection('users').doc(currentUser.uid).collection('restaurants').doc(currentRestId).update({ scheduled: scheduled.map(s => ({...s})) });
+  const toSave = scheduled.map(s => ({...s}));
+  await db.collection('users').doc(currentUser.uid).collection('restaurants')
+    .doc(currentRestId).update({ scheduled: toSave });
   setSyncState('ok', 'Guardado ✓');
 }
 
 // =====================================================
-// NANO BANANA (Google Gemini) - Imágenes
+// GENERACIÓN DE IMÁGENES CON PUTER.JS (ACTUALIZADO)
 // =====================================================
 async function generateImageUrl(prompt, isStory) {
   const width = isStory ? 768 : 1024;
   const height = isStory ? 1365 : 1024;
 
   try {
-    const fullPrompt = prompt + ", professional high-end food photography, catalan cuisine, seasonal vegetables like calçots and artichokes, fresh ingredients, appetizing plating, natural daylight, sharp detail, realistic, restaurant presentation";
+    const fullPrompt = prompt + ", professional food photography, high quality, appetizing, restaurant, realistic, natural lighting, delicious presentation";
 
     const imageElement = await puter.ai.txt2img(fullPrompt, {
-      model: "gemini-3.1-flash-image-preview",
+      model: "black-forest-labs/flux.1-schnell",   // Modelo rápido y de buena calidad
       width: width,
       height: height
     });
 
     return imageElement.src;
   } catch (e) {
-    console.error("Error Nano Banana:", e);
-    return `https://picsum.photos/id/${Math.floor(Math.random()*900)+100}/${width}/${height}`;
+    console.error("Error generando imagen con Puter:", e);
+    // Fallback con imagen aleatoria
+    return `https://picsum.photos/id/${Math.floor(Math.random() * 900) + 100}/${width}/${height}`;
   }
 }
 
@@ -543,27 +583,57 @@ async function genProposals() {
 
   const theme = document.getElementById('theme').value;
   const tone = document.getElementById('tone').value;
-  const ctx = document.getElementById('ctx').value || "";
-  const restName = restaurants.find(r => r.id === currentRestId)?.name || document.getElementById('cfgName').value || "Restaurante";
+  const ctx = document.getElementById('ctx').value;
+  const restName = restaurants.find(r => r.id === currentRestId)?.name || document.getElementById('cfgName').value;
+  const cuisine = document.getElementById('cfgCuisine').value;
+  const desc = document.getElementById('cfgDesc').value;
+  const tags = document.getElementById('cfgTags').value;
+  const cta = document.getElementById('cfgCTA').value;
+  const lang = document.getElementById('cfgLang').value;
 
-  const steps = ['Analizando restaurante...', 'Generando textos...', 'Generando imágenes con Nano Banana...'];
+  const steps = ['Analizando el estilo del restaurante...','Generando ideas creativas...','Redactando textos para Instagram...','Preparando prompts visuales...','Generando imágenes con FLUX...'];
   let si = 0;
   const iv = setInterval(() => { 
     si = (si+1) % steps.length; 
     document.getElementById('lstep').textContent = steps[si]; 
-  }, 1400);
+  }, 1500);
 
-  proposals = fallback(restName);
+  const claudePrompt = `Eres un experto en marketing digital para restaurantes e Instagram.
+Restaurante: "${restName}"
+Cocina: ${cuisine}
+Voz de marca: ${desc}
+Idioma: ${lang}
+Hashtags del restaurante: ${tags}
+CTA habitual: ${cta}
+Genera exactamente 6 propuestas para Instagram con temática "${theme}" y tono "${tone}".${ctx ? '\nContexto extra: ' + ctx : ''}
+Responde SOLO con JSON válido sin markdown ni texto adicional:
+{"proposals":[{"id":"p1","type":"post","emoji":"🍽️","title":"Título corto atractivo","caption":"Texto natural 2-4 frases sin hashtags","hashtags":"#tag1 #tag2 #tag3 #tag4 #tag5","imagePrompt":"Very detailed English prompt for professional food photography"}]} 
+Reglas: exactamente 3 tipo post y 3 tipo story. caption humano y natural en tono ${tone}. imagePrompt en inglés, muy descriptivo.`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1800, messages: [{ role: 'user', content: claudePrompt }] })
+    });
+    const data = await res.json();
+    const raw = data.content.map(i => i.text || '').join('').replace(/```json|```/g, '').trim();
+    proposals = JSON.parse(raw).proposals;
+  } catch (e) {
+    console.error(e);
+    proposals = fallback(restName);
+  }
 
   clearInterval(iv);
   document.getElementById('lbox').classList.remove('vis');
 
-  document.getElementById('lstep').textContent = "Generando imágenes con Nano Banana (Google)...";
+  // Generar imágenes con Puter.js
+  document.getElementById('lstep').textContent = "Generando imágenes con FLUX...";
   document.getElementById('lbox').classList.add('vis');
 
   for (let i = 0; i < proposals.length; i++) {
     const p = proposals[i];
-    const url = await generateImageUrl(p.imagePrompt || (p.title + " " + ctx), p.type === 'story');
+    const url = await generateImageUrl(p.imagePrompt || p.title, p.type === 'story');
     proposals[i].imageData = url;
   }
 
@@ -571,22 +641,22 @@ async function genProposals() {
   document.getElementById('genBtn').disabled = false;
 
   renderProps();
-  toast('¡Propuestas generadas con Nano Banana!');
+  toast('¡Propuestas generadas correctamente con Puter.js!');
 }
 
 function fallback(name) {
   return [
-    {id:'p1',type:'post',emoji:'🍽️',title:'Carxofes i calçots de temporada',caption:`En ${name} celebramos la temporada con carxofes y calçots frescos. Platos auténticos y llenos de sabor.`,hashtags:'#calçots #carxofes #temporada #cuina catalana',imagePrompt:'carxofes i calçots grilled catalan seasonal vegetables'},
-    {id:'p2',type:'story',emoji:'🌿',title:'Productos de temporada',caption:`Carxofes tiernas y calçots recién cogidos. La esencia de la primavera en tu mesa.`,hashtags:'#productesfrescos #primavera',imagePrompt:'fresh seasonal artichokes and calçots catalan market'},
-    {id:'p3',type:'post',emoji:'🔥',title:'Calçotada especial',caption:`¿Listos para una buena calçotada? En ${name} preparamos la mejor versión con salsa romesco casera.`,hashtags:'#calçotada #romesco',imagePrompt:'traditional catalan calçotada with romesco sauce'},
-    {id:'p4',type:'story',emoji:'🍴',title:'Plato del día',caption:`Hoy destacamos nuestras alcachofas salteadas con jamón y calçots a la brasa.`,hashtags:'#alcachofas #calçots',imagePrompt:'artichokes and calçots grilled catalan dish'},
-    {id:'p5',type:'post',emoji:'🌱',title:'Sabor a primavera',caption:`Ingredientes de proximidad, temporada y mucho cariño. Ven y pruébalos en ${name}.`,hashtags:'#km0 #cuina catalana',imagePrompt:'seasonal catalan vegetables restaurant plating'},
-    {id:'p6',type:'story',emoji:'❤️',title:'De la tierra a la mesa',caption:`Carxofes y calçots directos del campo a tu plato. Auténtico sabor catalán.`,hashtags:'#productelocal #temporada',imagePrompt:'fresh harvested artichokes and calçots farm to table'}
+    {id:'p1',type:'post',emoji:'🍽️',title:'El plato del día',caption:`En ${name} hoy te traemos algo especial. Ingredientes frescos, sabor auténtico. ¡Reserva en el link de la bio!`,hashtags:'#gastronomia #restaurante #foodie #comida #sabor',imagePrompt:'Beautiful Mediterranean dish on elegant white plate, overhead shot, natural window light, rustic wooden table, fresh herbs, warm tones, professional food photography'},
+    {id:'p2',type:'story',emoji:'👨‍🍳',title:'Detrás del fogón',caption:`Cada día empezamos eligiendo los mejores ingredientes. Esto es lo que hay detrás de ${name}.`,hashtags:'#cheflife #cocina #artesanal #km0 #frescos',imagePrompt:'Chef in professional restaurant kitchen, candid action shot, warm ambient lighting, motion blur on hands, authentic culinary atmosphere'},
+    {id:'p3',type:'post',emoji:'🌿',title:'Sabores de temporada',caption:`La temporada nos trae ingredientes increíbles. Descubre nuestro menú de temporada en ${name}.`,hashtags:'#temporada #km0 #gastronomy #menudeldia #mercado',imagePrompt:'Fresh seasonal vegetables flatlay on wooden surface, natural daylight, Mediterranean colors, fresh herbs and olive oil, editorial food photography'},
+    {id:'p4',type:'story',emoji:'❤️',title:'Gracias por venir',caption:`Momentos así nos hacen seguir. Gracias por elegir ${name} para compartir tu mesa.`,hashtags:'#familia #amigos #restaurante #momentos #gracias',imagePrompt:'Happy guests dining at restaurant, warm candlelight, intimate atmosphere, blurred background bokeh, lifestyle photography'},
+    {id:'p5',type:'post',emoji:'🥂',title:'Fin de semana especial',caption:`¿Tienes planes este finde? Tenemos una mesa para ti en ${name}. Déjanos sorprenderte.`,hashtags:'#finde #planes #reserva #cena #gastronomia',imagePrompt:'Restaurant exterior at golden hour, warm lights through windows, inviting entrance, Mediterranean facade, lifestyle photography'},
+    {id:'p6',type:'story',emoji:'✨',title:'Novedad en carta',caption:`Algo nuevo llega a ${name}. Una propuesta que os va a encantar. ¡Pasa a descubrirla!`,hashtags:'#nuevacarta #novedad #restaurante #foodstagram #chef',imagePrompt:'New signature dish beautifully plated on dark slate, dramatic studio lighting, fine dining presentation with microgreens and sauce art, elegant moody aesthetic'}
   ];
 }
 
 // =====================================================
-// RENDER + UI
+// RENDER PROPOSALS (sin cambios importantes)
 // =====================================================
 function renderProps() {
   const g = document.getElementById('propGrid');
@@ -594,10 +664,10 @@ function renderProps() {
     <div class="pcard" id="card-${p.id}">
       <span class="sbadge">&#10003; Seleccionada</span>
       <div class="cprev ${p.type==='story'?'story':''}" id="cprev-${p.id}" onclick="toggleSel('${p.id}')">
-        ${p.imageData ? `<img src="${p.imageData}" alt="">` : `<div class="iload"><div class="ispin"></div><span class="ilt">Cargando...</span></div>`}
+        ${p.imageData ? `<img src="${p.imageData}" alt="">` : `<div class="iload"><div class="ispin"></div><span class="ilt">Imagen lista</span></div>`}
       </div>
       <div class="cbody">
-        <span class="tbadge ${p.type}">${p.type==='post'?'Post':'Story'}</span>
+        <span class="tbadge ${p.type}">${p.type==='post'?'&#9723; Post':'&#9723; Story'}</span>
         <div style="font-size:14px;font-weight:500;margin-bottom:6px">${p.title}</div>
         <div class="ccap">${p.caption}</div>
       </div>
@@ -627,14 +697,14 @@ function updSelUI() {
 }
 
 // =====================================================
-// PREVIEW + SCHEDULE + CALENDAR
+// PREVIEW, SCHEDULE, CALENDAR, etc. (sin cambios)
 // =====================================================
 function openPrev(id) {
   const p = proposals.find(x => x.id === id); if (!p) return;
   editP = p;
   const ig = document.getElementById('cfgIG').value || '@mi_restaurante';
   document.getElementById('mpTitle').textContent = p.title;
-  document.getElementById('mpSub').textContent = p.type === 'post' ? 'Vista previa · Post' : 'Vista previa · Story';
+  document.getElementById('mpSub').textContent = p.type === 'post' ? 'Vista previa · Post de Instagram' : 'Vista previa · Story de Instagram';
   document.getElementById('mpCap').value = p.caption;
   document.getElementById('mpDate').value = new Date().toISOString().split('T')[0];
   const imgH = p.imageData ? `<img src="${p.imageData}" alt="">` : `<div style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:10px;padding:20px"><span style="font-size:48px">${p.emoji}</span><span style="font-size:12px;color:var(--text3)">${p.title}</span></div>`;
@@ -656,7 +726,7 @@ async function confirmSched() {
   scheduled.push({ ...editP, date, time });
   updBadge(); closeOv('ovPrev');
   await saveScheduled();
-  toast('✓ Programada');
+  toast('✓ Programada para el ' + fmtDate(date) + ' a las ' + time);
   renderCal();
 }
 
@@ -675,8 +745,7 @@ function schedSel() {
 }
 
 function applyBulk() {
-  const d = document.getElementById('bdDate').value, t = document.getElementById('bdTime').value; 
-  if (!d) return;
+  const d = document.getElementById('bdDate').value, t = document.getElementById('bdTime').value; if (!d) return;
   bulkItems.forEach((_, i) => { bulkItems[i].date = d; bulkItems[i].time = t; });
   document.getElementById('bulkList').querySelectorAll('input[type="date"]').forEach(inp => inp.value = d);
   document.getElementById('bulkList').querySelectorAll('input[type="time"]').forEach(inp => inp.value = t);
@@ -686,15 +755,11 @@ async function confirmBulk() {
   bulkItems.forEach(item => { if (item.date) scheduled.push({ ...item }); });
   updBadge(); closeOv('ovBulk');
   await saveScheduled();
-  toast('✓ Publicaciones programadas');
-  selIds.clear();
-  proposals.forEach(p => document.getElementById('card-'+p.id)?.classList.remove('sel'));
+  toast('✓ ' + bulkItems.length + ' publicaciones programadas');
+  selIds.clear(); proposals.forEach(p => document.getElementById('card-'+p.id)?.classList.remove('sel'));
   updSelUI(); renderCal();
 }
 
-// =====================================================
-// CALENDAR FUNCTIONS (incluye updBadge)
-// =====================================================
 function renderCal() {
   document.getElementById('calTitle').textContent = MONTHS[calMon] + ' ' + calYr;
   const cont = document.getElementById('calDays');
@@ -718,9 +783,9 @@ function renderCal() {
 
 function renderSList() {
   const c = document.getElementById('schedItems');
-  if (!scheduled.length) {
-    c.innerHTML = `<div class="empty"><span class="ei">📅</span><p>Sin publicaciones aún.<br>Genera y programa contenido.</p></div>`;
-    return;
+  if (!scheduled.length) { 
+    c.innerHTML = `<div class="empty"><span class="ei">📅</span><p>Sin publicaciones aún.<br>Genera y programa contenido.</p></div>`; 
+    return; 
   }
   const sorted = [...scheduled].sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time));
   c.innerHTML = sorted.map((s, i) => `
@@ -746,17 +811,12 @@ async function remSched(i) {
 }
 
 function chMonth(d) { calMon += d; if (calMon > 11) { calMon = 0; calYr++; } if (calMon < 0) { calMon = 11; calYr--; } renderCal(); }
-
-function updBadge() {
-  document.getElementById('calBadge').textContent = scheduled.length;
-}
+function updBadge() { document.getElementById('calBadge').textContent = scheduled.length; }
 
 function showSec(n, btn) {
   document.querySelectorAll('.content').forEach(s => s.style.display = 'none');
   document.querySelectorAll('.ni').forEach(b => b.classList.remove('active'));
-  const s = document.getElementById('sec-'+n); 
-  s.style.display = 'flex'; 
-  s.style.flexDirection = 'column';
+  const s = document.getElementById('sec-'+n); s.style.display = 'flex'; s.style.flexDirection = 'column';
   if (btn) btn.classList.add('active');
   if (n === 'calendar') renderCal();
 }
