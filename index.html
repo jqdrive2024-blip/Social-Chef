@@ -216,7 +216,7 @@ select option{background:var(--surface2)}
     <!-- GENERATE -->
     <div id="sec-generate" class="content">
       <div class="kbar" style="justify-content:center">
-        <span class="lbl">🖼️ Textos amb Claude · Imatges amb Pollinations FLUX — gratuït</span>
+        <span class="lbl">🖼️ 🖼️ Textos amb GPT-4o-mini · Imatges Unsplash — gratuït</span>
         <span class="kst on">Activo</span>
       </div>
       <div class="gform">
@@ -255,7 +255,7 @@ select option{background:var(--surface2)}
         </div>
         <div style="display:flex;align-items:center;gap:12px">
           <button class="bp" onclick="genProposals()" id="genBtn">✦ Generar propuestas</button>
-          <span style="font-size:12px;color:var(--text3)">Textos amb Claude (Puter.js) + Imatges Pollinations FLUX</span>
+          <span style="font-size:12px;color:var(--text3)">Textos amb IA · Imatges Unsplash (instantànies)</span>
         </div>
       </div>
 
@@ -549,36 +549,41 @@ async function saveScheduled() {
 }
 
 // =====================================================
-// GENERACIÓ DE TEXTOS (Puter.js → Claude) + IMATGES (Pollinations FLUX)
 // =====================================================
+// IMATGES: Unsplash (fotos reals instantànies, sense límit)
+// =====================================================
+const FOOD_QUERIES = [
+  'food restaurant plate delicious',
+  'gourmet dish chef kitchen',
+  'fresh vegetables ingredients',
+  'restaurant atmosphere dining',
+  'dessert sweet pastry',
+  'tapas spanish food'
+];
 
-// Imatges: URL directa de Pollinations — el navegador la carrega sense CORS
-function makeImgUrl(prompt, isStory) {
+function makeImgUrl(prompt, isStory, index) {
   const w = isStory ? 768 : 1024;
   const h = isStory ? 1365 : 1024;
-  const seed = Math.floor(Math.random() * 999999);
-  const q = encodeURIComponent(
-    prompt + ', professional food photography, high quality, appetizing, natural light, restaurant'
-  );
-  return `https://image.pollinations.ai/prompt/${q}?width=${w}&height=${h}&model=flux&nologo=true&seed=${seed}`;
+  // Unsplash: foto aleatòria filtrada per menjar/restaurant, instantània
+  const query = encodeURIComponent(prompt.split(',')[0].slice(0, 60) + ' food');
+  const seed = index + Math.floor(Date.now() / 10000); // canvia cada 10s
+  return `https://source.unsplash.com/${w}x${h}/?${query}&sig=${seed}`;
 }
 
-// Injecta la imatge al DOM directament (evita CORS)
 function injectImg(cardId, url) {
   const box = document.getElementById('cprev-' + cardId);
   if (!box) return;
-  const img = new Image();
-  img.style.cssText = 'width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s;position:absolute;inset:0';
-  img.onload  = () => { img.style.opacity='1'; };
-  img.onerror = () => { img.remove(); };
   box.style.position = 'relative';
+  const img = new Image();
+  img.style.cssText = 'width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s;position:absolute;inset:0';
+  img.onload  = () => { img.style.opacity = '1'; };
+  img.onerror = () => { img.remove(); };
   box.appendChild(img);
-  // petit delay per evitar que el navegador bloquegi moltes peticions simultànies
-  setTimeout(() => { img.src = url; }, Math.random() * 800);
+  img.src = url;
 }
 
 // =====================================================
-// GENERAR PROPOSTES
+// TEXTOS: Puter.js amb gpt-4o-mini (proxy gratuït, 100% funcional)
 // =====================================================
 async function genProposals() {
   document.getElementById('genBtn').disabled = true;
@@ -597,72 +602,86 @@ async function genProposals() {
   const cta      = document.getElementById('cfgCTA').value;
   const lang     = document.getElementById('cfgLang').value;
 
-  const steps = [
-    'Analitzant el perfil del restaurant...',
-    'Generant idees creatives...',
-    'Redactant textos per Instagram...',
-    'Preparant prompts visuals...'
-  ];
+  const steps = ['Analitzant el restaurant...','Generant idees...','Redactant textos...','Preparant contingut...'];
   let si = 0;
   const iv = setInterval(() => {
     document.getElementById('lstep').textContent = steps[++si % steps.length];
   }, 1800);
 
-  // Construïm el prompt explícitament com a string (sense template literal aniuat)
-  let claudePrompt = 'Eres un experto en marketing digital para restaurantes e Instagram.\n';
-  claudePrompt += 'Restaurante: "' + restName + '"\n';
-  claudePrompt += 'Cocina: ' + cuisine + '\n';
-  claudePrompt += 'Voz de marca: ' + desc + '\n';
-  claudePrompt += 'Idioma: ' + lang + '\n';
-  claudePrompt += 'Hashtags: ' + tags + '\n';
-  claudePrompt += 'CTA: ' + cta + '\n';
-  claudePrompt += 'Temática: ' + theme + '\n';
-  claudePrompt += 'Tono: ' + tone + '\n';
-  if (ctx) claudePrompt += 'Contexto específico (MUY IMPORTANTE, usa esta info en los textos): ' + ctx + '\n';
-  claudePrompt += '\nGenera EXACTAMENTE 6 propuestas (3 post + 3 story) para Instagram.\n';
-  claudePrompt += 'Responde SOLO JSON sin markdown:\n';
-  claudePrompt += '{"proposals":[{"id":"p1","type":"post","emoji":"🍽️","title":"Titulo","caption":"Texto natural 2-4 frases sin hashtags. Si hay contexto específico, inclúyelo directamente.","hashtags":"#tag1 #tag2 #tag3 #tag4 #tag5","imagePrompt":"Detailed English prompt: specific dish or scene from the context, lighting, mood, colors, composition"}]}\n';
-  claudePrompt += 'Reglas: type solo post o story. Alterna post/story. imagePrompt en inglés, específico al contexto dado.';
+  // Prompt clar i robust
+  const systemMsg = 'Ets un expert en marketing de restaurants per Instagram. Respon SEMPRE amb JSON vàlid i res més.';
+  let userMsg = 'Genera 6 propostes de contingut per Instagram (3 post + 3 story) per aquest restaurant:\n\n';
+  userMsg += 'Restaurant: ' + restName + '\n';
+  userMsg += 'Cuina: ' + cuisine + '\n';
+  userMsg += 'Descripció: ' + desc + '\n';
+  userMsg += 'Idioma publicacions: ' + lang + '\n';
+  userMsg += 'Hashtags: ' + tags + '\n';
+  userMsg += 'CTA: ' + cta + '\n';
+  userMsg += 'Temàtica: ' + theme + '\n';
+  userMsg += 'To: ' + tone + '\n';
+  if (ctx) userMsg += '\n*** IMPORTANT: Usa aquest context específic als textos: ' + ctx + ' ***\n';
+  userMsg += '\nRetorna ÚNICAMENT aquest JSON (sense markdown, sense text extra):\n';
+  userMsg += '{"proposals":[\n';
+  userMsg += '  {"id":"p1","type":"post","emoji":"🍽️","title":"Títol curt","caption":"Text natural 2-3 frases sense hashtags","hashtags":"#tag1 #tag2 #tag3 #tag4","imagePrompt":"English: specific dish photo description"},\n';
+  userMsg += '  {"id":"p2","type":"story","emoji":"👨‍🍳","title":"Títol","caption":"Text","hashtags":"#tag1 #tag2","imagePrompt":"English description"},\n';
+  userMsg += '  {"id":"p3","type":"post",...},\n';
+  userMsg += '  {"id":"p4","type":"story",...},\n';
+  userMsg += '  {"id":"p5","type":"post",...},\n';
+  userMsg += '  {"id":"p6","type":"story",...}\n';
+  userMsg += ']}';
 
-  // ── Puter.js com a proxy per Claude (funciona des de GitHub Pages) ────────
   try {
-    document.getElementById('lstep').textContent = 'Generant textos amb Claude...';
-    const response = await puter.ai.chat(claudePrompt, {
-      model: 'claude-sonnet-4-5',
-      stream: false
-    });
-    // puter retorna string o objecte amb .message.content
-    let raw = typeof response === 'string' ? response : (response?.message?.content || response?.content || JSON.stringify(response));
-    raw = raw.replace(/```json|```/g, '').trim();
-    // Troba el JSON dins la resposta
-    const jsonStart = raw.indexOf('{');
-    const jsonEnd   = raw.lastIndexOf('}');
-    if (jsonStart === -1) throw new Error('No JSON found');
-    proposals = JSON.parse(raw.slice(jsonStart, jsonEnd + 1)).proposals;
-    if (!proposals || proposals.length === 0) throw new Error('Empty proposals');
+    document.getElementById('lstep').textContent = 'Generant textos amb IA...';
+
+    const resp = await puter.ai.chat(
+      [
+        { role: 'system', content: systemMsg },
+        { role: 'user',   content: userMsg   }
+      ],
+      { model: 'gpt-4o-mini' }
+    );
+
+    // Puter pot retornar string, objecte amb .message, o objecte amb .content
+    let raw = '';
+    if (typeof resp === 'string') raw = resp;
+    else if (resp?.message?.content) raw = resp.message.content;
+    else if (resp?.content)          raw = Array.isArray(resp.content) ? resp.content.map(x=>x.text||'').join('') : resp.content;
+    else raw = JSON.stringify(resp);
+
+    console.log('Puter raw response:', raw.slice(0, 300));
+
+    // Extreu JSON de la resposta
+    raw = raw.replace(/```json|```/gi, '').trim();
+    const j0 = raw.indexOf('{');
+    const j1 = raw.lastIndexOf('}');
+    if (j0 === -1 || j1 === -1) throw new Error('No JSON a la resposta: ' + raw.slice(0,100));
+    const parsed = JSON.parse(raw.slice(j0, j1 + 1));
+    if (!parsed.proposals?.length) throw new Error('Proposals buides');
+    proposals = parsed.proposals;
+    console.log('Proposals OK:', proposals.length);
+
   } catch (e) {
-    console.error('Puter/Claude error:', e);
-    proposals = fallback(restName);
-    toast('⚠ Claude no disponible — contingut de mostra');
+    console.error('Error IA:', e.message);
+    proposals = fallback(restName, ctx);
+    toast('⚠ IA no disponible · Contingut de mostra');
   }
 
   clearInterval(iv);
 
-  // ── Assigna les URLs de Pollinations (síncron) ───────────────────────────
+  // Unsplash: assigna URL per a cada proposta (instantani)
   proposals.forEach((p, i) => {
-    proposals[i].imageData = makeImgUrl(p.imagePrompt || p.title, p.type === 'story');
+    proposals[i].imageData = makeImgUrl(p.imagePrompt || p.title, p.type === 'story', i);
   });
 
   document.getElementById('lbox').classList.remove('vis');
   document.getElementById('genBtn').disabled = false;
   renderProps();
-
-  // ── Injecta imatges al DOM ara que existeix ───────────────────────────────
   proposals.forEach(p => injectImg(p.id, p.imageData));
-  toast('✓ Propostes generades · Imatges carregant...');
+  toast('✓ Propostes generades!');
 }
 
-function fallback(name) {
+
+function fallback(name, ctx) {
   return [
     {id:'p1',type:'post',emoji:'🍽️',title:'El plato del día',caption:`En ${name} hoy te traemos algo especial. Ingredientes frescos, sabor auténtico. ¡Reserva en el link de la bio!`,hashtags:'#gastronomia #restaurante #foodie #comida #sabor',imagePrompt:'Beautiful Mediterranean dish on elegant white plate, overhead shot, natural window light, rustic wooden table, fresh herbs, warm tones, professional food photography'},
     {id:'p2',type:'story',emoji:'👨‍🍳',title:'Detrás del fogón',caption:`Cada día empezamos eligiendo los mejores ingredientes. Esto es lo que hay detrás de ${name}.`,hashtags:'#cheflife #cocina #artesanal #km0 #frescos',imagePrompt:'Chef in professional restaurant kitchen, candid action shot, warm ambient lighting, motion blur on hands, authentic culinary atmosphere'},
