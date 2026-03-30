@@ -8,6 +8,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="https://js.puter.com/v2/"></script>
 
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -215,7 +216,7 @@ select option{background:var(--surface2)}
     <!-- GENERATE -->
     <div id="sec-generate" class="content">
       <div class="kbar" style="justify-content:center">
-        <span class="lbl">🖼️ Imágenes con Pollinations.ai (FLUX) — gratuito, sin límite</span>
+        <span class="lbl">🖼️ Textos amb Claude · Imatges amb Pollinations FLUX — gratuït</span>
         <span class="kst on">Activo</span>
       </div>
       <div class="gform">
@@ -254,7 +255,7 @@ select option{background:var(--surface2)}
         </div>
         <div style="display:flex;align-items:center;gap:12px">
           <button class="bp" onclick="genProposals()" id="genBtn">✦ Generar propuestas</button>
-          <span style="font-size:12px;color:var(--text3)">Textos con Claude + imágenes con Pollinations.ai</span>
+          <span style="font-size:12px;color:var(--text3)">Textos amb Claude (Puter.js) + Imatges Pollinations FLUX</span>
         </div>
       </div>
 
@@ -548,30 +549,36 @@ async function saveScheduled() {
 }
 
 // =====================================================
-// IMATGES AMB POLLINATIONS.AI — gratuït, sense límit, FLUX
+// GENERACIÓ DE TEXTOS (Puter.js → Claude) + IMATGES (Pollinations FLUX)
 // =====================================================
-function makePollinationsUrl(prompt, isStory) {
+
+// Imatges: URL directa de Pollinations — el navegador la carrega sense CORS
+function makeImgUrl(prompt, isStory) {
   const w = isStory ? 768 : 1024;
   const h = isStory ? 1365 : 1024;
-  const full = prompt + ', professional food photography, high quality, appetizing, natural lighting, delicious presentation';
   const seed = Math.floor(Math.random() * 999999);
-  return 'https://image.pollinations.ai/prompt/' + encodeURIComponent(full)
-    + '?width=' + w + '&height=' + h + '&model=flux&nologo=true&seed=' + seed;
+  const q = encodeURIComponent(
+    prompt + ', professional food photography, high quality, appetizing, natural light, restaurant'
+  );
+  return `https://image.pollinations.ai/prompt/${q}?width=${w}&height=${h}&model=flux&nologo=true&seed=${seed}`;
 }
 
-function injectImage(cardId, url) {
+// Injecta la imatge al DOM directament (evita CORS)
+function injectImg(cardId, url) {
   const box = document.getElementById('cprev-' + cardId);
   if (!box) return;
-  const img = document.createElement('img');
-  img.style.cssText = 'width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s;position:absolute;inset:0';
-  img.onload  = () => { img.style.opacity = '1'; };
-  img.onerror = () => { img.remove(); }; // deixa el spinner si falla
+  const img = new Image();
+  img.style.cssText = 'width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s;position:absolute;inset:0';
+  img.onload  = () => { img.style.opacity='1'; };
+  img.onerror = () => { img.remove(); };
+  box.style.position = 'relative';
   box.appendChild(img);
-  img.src = url; // el navegador la carrega sense CORS perquè és <img src>, no fetch
+  // petit delay per evitar que el navegador bloquegi moltes peticions simultànies
+  setTimeout(() => { img.src = url; }, Math.random() * 800);
 }
 
 // =====================================================
-// GENERAR PROPOSTES (Claude + Pollinations)
+// GENERAR PROPOSTES
 // =====================================================
 async function genProposals() {
   document.getElementById('genBtn').disabled = true;
@@ -581,7 +588,7 @@ async function genProposals() {
 
   const theme    = document.getElementById('theme').value;
   const tone     = document.getElementById('tone').value;
-  const ctx      = document.getElementById('ctx').value;
+  const ctx      = document.getElementById('ctx').value.trim();
   const restName = restaurants.find(r => r.id === currentRestId)?.name
                    || document.getElementById('cfgName').value;
   const cuisine  = document.getElementById('cfgCuisine').value;
@@ -591,72 +598,68 @@ async function genProposals() {
   const lang     = document.getElementById('cfgLang').value;
 
   const steps = [
-    'Analitzant l\'estil del restaurant...',
+    'Analitzant el perfil del restaurant...',
     'Generant idees creatives...',
     'Redactant textos per Instagram...',
     'Preparant prompts visuals...'
   ];
   let si = 0;
   const iv = setInterval(() => {
-    si = (si + 1) % steps.length;
-    document.getElementById('lstep').textContent = steps[si];
+    document.getElementById('lstep').textContent = steps[++si % steps.length];
   }, 1800);
 
-  // ── Claude genera els textos ─────────────────────────────────────────────
-  const claudePrompt = [
-    'Eres un experto en marketing digital para restaurantes e Instagram.',
-    'Restaurante: "' + restName + '"',
-    'Cocina: ' + cuisine,
-    'Voz de marca: ' + desc,
-    'Idioma de publicaciones: ' + lang,
-    'Hashtags del restaurante: ' + tags,
-    'CTA habitual: ' + cta,
-    'Genera exactamente 6 propuestas para Instagram con temática "' + theme + '" y tono "' + tone + '".',
-    ctx ? 'Contexto extra: ' + ctx : '',
-    'Responde SOLO con JSON válido, sin markdown, sin texto adicional:',
-    '{"proposals":[{"id":"p1","type":"post","emoji":"🍽️","title":"Título corto","caption":"Texto natural 2-4 frases sin hashtags","hashtags":"#tag1 #tag2 #tag3 #tag4 #tag5","imagePrompt":"Detailed English prompt for food photography, specific dish, lighting, mood, colors"}]}',
-    'Reglas: exactamente 3 tipo post y 3 tipo story (alterna). caption humano en tono ' + tone + '. imagePrompt en inglés muy específico sobre el plato o escena concreta del contexto dado.'
-  ].filter(Boolean).join('\n');
+  // Construïm el prompt explícitament com a string (sense template literal aniuat)
+  let claudePrompt = 'Eres un experto en marketing digital para restaurantes e Instagram.\n';
+  claudePrompt += 'Restaurante: "' + restName + '"\n';
+  claudePrompt += 'Cocina: ' + cuisine + '\n';
+  claudePrompt += 'Voz de marca: ' + desc + '\n';
+  claudePrompt += 'Idioma: ' + lang + '\n';
+  claudePrompt += 'Hashtags: ' + tags + '\n';
+  claudePrompt += 'CTA: ' + cta + '\n';
+  claudePrompt += 'Temática: ' + theme + '\n';
+  claudePrompt += 'Tono: ' + tone + '\n';
+  if (ctx) claudePrompt += 'Contexto específico (MUY IMPORTANTE, usa esta info en los textos): ' + ctx + '\n';
+  claudePrompt += '\nGenera EXACTAMENTE 6 propuestas (3 post + 3 story) para Instagram.\n';
+  claudePrompt += 'Responde SOLO JSON sin markdown:\n';
+  claudePrompt += '{"proposals":[{"id":"p1","type":"post","emoji":"🍽️","title":"Titulo","caption":"Texto natural 2-4 frases sin hashtags. Si hay contexto específico, inclúyelo directamente.","hashtags":"#tag1 #tag2 #tag3 #tag4 #tag5","imagePrompt":"Detailed English prompt: specific dish or scene from the context, lighting, mood, colors, composition"}]}\n';
+  claudePrompt += 'Reglas: type solo post o story. Alterna post/story. imagePrompt en inglés, específico al contexto dado.';
 
+  // ── Puter.js com a proxy per Claude (funciona des de GitHub Pages) ────────
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': '',           // la clau la posa el proxy d'Anthropic automàticament
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 2000,
-        messages: [{ role: 'user', content: claudePrompt }]
-      })
+    document.getElementById('lstep').textContent = 'Generant textos amb Claude...';
+    const response = await puter.ai.chat(claudePrompt, {
+      model: 'claude-sonnet-4-5',
+      stream: false
     });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    if (data.error) throw new Error(data.error.message);
-    const raw = data.content.map(i => i.text || '').join('').replace(/```json|```/g, '').trim();
-    proposals = JSON.parse(raw).proposals;
+    // puter retorna string o objecte amb .message.content
+    let raw = typeof response === 'string' ? response : (response?.message?.content || response?.content || JSON.stringify(response));
+    raw = raw.replace(/```json|```/g, '').trim();
+    // Troba el JSON dins la resposta
+    const jsonStart = raw.indexOf('{');
+    const jsonEnd   = raw.lastIndexOf('}');
+    if (jsonStart === -1) throw new Error('No JSON found');
+    proposals = JSON.parse(raw.slice(jsonStart, jsonEnd + 1)).proposals;
+    if (!proposals || proposals.length === 0) throw new Error('Empty proposals');
   } catch (e) {
-    console.error('Claude error:', e);
+    console.error('Puter/Claude error:', e);
     proposals = fallback(restName);
-    toast('⚠ Claude no disponible — usant contingut de mostra');
+    toast('⚠ Claude no disponible — contingut de mostra');
   }
 
   clearInterval(iv);
 
-  // ── Pre-assigna les URLs de Pollinations (síncron, instantani) ───────────
+  // ── Assigna les URLs de Pollinations (síncron) ───────────────────────────
   proposals.forEach((p, i) => {
-    proposals[i].imageData = makePollinationsUrl(p.imagePrompt || p.title, p.type === 'story');
+    proposals[i].imageData = makeImgUrl(p.imagePrompt || p.title, p.type === 'story');
   });
 
   document.getElementById('lbox').classList.remove('vis');
   document.getElementById('genBtn').disabled = false;
   renderProps();
 
-  // ── Injecta les imatges ara que el DOM existeix ──────────────────────────
-  proposals.forEach(p => injectImage(p.id, p.imageData));
-  toast('✓ Propostes generades · Les imatges estan carregant...');
+  // ── Injecta imatges al DOM ara que existeix ───────────────────────────────
+  proposals.forEach(p => injectImg(p.id, p.imageData));
+  toast('✓ Propostes generades · Imatges carregant...');
 }
 
 function fallback(name) {
