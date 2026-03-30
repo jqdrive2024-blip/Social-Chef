@@ -216,8 +216,8 @@ select option{background:var(--surface2)}
     <!-- GENERATE -->
     <div id="sec-generate" class="content">
       <div class="kbar" style="justify-content:center">
-        <span class="lbl">🖼️ 🖼️ Textos amb GPT-4o-mini · Imatges Unsplash — gratuït</span>
-        <span class="kst on">Activo</span>
+        <span class="lbl">🖼️ Imatges: <span id="imgEngineLbl">Unsplash (sense key)</span></span>
+        <span class="kst on" id="imgEngineSt">Actiu</span>
       </div>
       <div class="gform">
         <h3>Nueva generación de contenido</h3>
@@ -255,7 +255,7 @@ select option{background:var(--surface2)}
         </div>
         <div style="display:flex;align-items:center;gap:12px">
           <button class="bp" onclick="genProposals()" id="genBtn">✦ Generar propuestas</button>
-          <span style="font-size:12px;color:var(--text3)">Textos amb IA · Imatges Unsplash (instantànies)</span>
+          <span style="font-size:12px;color:var(--text3)">Textos con Claude + imágenes con Puter.js (FLUX)</span>
         </div>
       </div>
 
@@ -328,9 +328,9 @@ select option{background:var(--surface2)}
             <div class="fg"><label>Hashtags fijos</label><textarea rows="2" id="cfgTags"></textarea></div>
             <div class="fg"><label>CTA habitual</label><input type="text" id="cfgCTA"></div>
             <div class="fg">
-              <label>Imágenes</label>
-              <input type="text" id="cfgKey" value="Puter.js (FLUX gratis)" readonly style="opacity:.5;cursor:default">
-              <span style="font-size:11px;color:var(--text3);margin-top:3px">Imágenes generadas en el navegador, sin coste</span>
+              <label>API Key OpenAI (DALL·E 3)</label>
+              <input type="password" id="cfgOpenAIKey" placeholder="sk-..." autocomplete="off">
+              <span style="font-size:11px;color:var(--text3);margin-top:3px">Per generar imatges amb DALL·E 3 · Si no tens key, s'usen fotos d'Unsplash</span>
             </div>
             <button class="bp" style="width:fit-content" onclick="saveCfg()">Guardar</button>
           </div>
@@ -421,6 +421,12 @@ async function initApp() {
     document.getElementById('initScreen').style.display = 'none';
     document.getElementById('mainApp').style.display = 'grid';
     renderCal();
+    // Recupera key OpenAI guardada
+    const savedKey = localStorage.getItem('sc_oai_key');
+    if (savedKey && document.getElementById('cfgOpenAIKey')) {
+      document.getElementById('cfgOpenAIKey').value = savedKey;
+    }
+    updateImgEngineLabel();
   } catch (err) {
     setInitMsg('Error al conectar: ' + err.message);
     console.error(err);
@@ -535,6 +541,10 @@ async function saveCfg() {
   if (r) Object.assign(r, data);
   renderRestSelector();
   document.getElementById('restSel').value = currentRestId;
+  // Guarda la key d'OpenAI localment (no a Firebase per seguretat)
+  const oaiKey = document.getElementById('cfgOpenAIKey').value.trim();
+  if (oaiKey) localStorage.setItem('sc_oai_key', oaiKey);
+  updateImgEngineLabel();
   setSyncState('ok', 'Guardado ✓');
   toast('✓ Perfil guardado en Firebase');
 }
@@ -550,23 +560,52 @@ async function saveScheduled() {
 
 // =====================================================
 // =====================================================
-// IMATGES: Unsplash (fotos reals instantànies, sense límit)
+// IMATGES: DALL·E 3 (si hi ha key) o Unsplash (fallback gratuït)
 // =====================================================
-const FOOD_QUERIES = [
-  'food restaurant plate delicious',
-  'gourmet dish chef kitchen',
-  'fresh vegetables ingredients',
-  'restaurant atmosphere dining',
-  'dessert sweet pastry',
-  'tapas spanish food'
-];
+function getOAIKey() {
+  return localStorage.getItem('sc_oai_key') || document.getElementById('cfgOpenAIKey')?.value?.trim() || '';
+}
 
-function makeImgUrl(prompt, isStory, index) {
+function updateImgEngineLabel() {
+  const key = getOAIKey();
+  const lbl = document.getElementById('imgEngineLbl');
+  const st  = document.getElementById('imgEngineSt');
+  if (lbl) lbl.textContent = key ? 'DALL·E 3 (OpenAI)' : 'Unsplash (sense key)';
+  if (st)  st.className = 'kst on';
+}
+
+// DALL·E 3 via OpenAI API
+async function generateWithDalle(prompt, isStory) {
+  const key = getOAIKey();
+  if (!key) return null;
+  const size = isStory ? '1024x1792' : '1024x1024';
+  try {
+    const res = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+      body: JSON.stringify({
+        model: 'dall-e-3',
+        prompt: prompt + ', professional food photography, restaurant, high quality, appetizing, natural lighting',
+        n: 1,
+        size: size,
+        quality: 'standard'
+      })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+    return data.data[0].url;
+  } catch(e) {
+    console.error('DALL-E error:', e.message);
+    return null;
+  }
+}
+
+// Unsplash: foto real instantània (fallback sense key)
+function makeUnsplashUrl(prompt, isStory, index) {
   const w = isStory ? 768 : 1024;
   const h = isStory ? 1365 : 1024;
-  // Unsplash: foto aleatòria filtrada per menjar/restaurant, instantània
-  const query = encodeURIComponent(prompt.split(',')[0].slice(0, 60) + ' food');
-  const seed = index + Math.floor(Date.now() / 10000); // canvia cada 10s
+  const query = encodeURIComponent(prompt.split(',')[0].slice(0, 50) + ' food dish');
+  const seed = index * 7 + Math.floor(Date.now() / 60000);
   return `https://source.unsplash.com/${w}x${h}/?${query}&sig=${seed}`;
 }
 
@@ -577,13 +616,23 @@ function injectImg(cardId, url) {
   const img = new Image();
   img.style.cssText = 'width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s;position:absolute;inset:0';
   img.onload  = () => { img.style.opacity = '1'; };
-  img.onerror = () => { img.remove(); };
+  img.onerror = () => {
+    // Si falla DALL-E, prova Unsplash
+    const fallbackUrl = makeUnsplashUrl('food restaurant', false, Math.random() * 100);
+    const img2 = new Image();
+    img2.style.cssText = img.style.cssText;
+    img2.onload = () => { img2.style.opacity='1'; };
+    box.innerHTML = '';
+    box.appendChild(img2);
+    img2.src = fallbackUrl;
+  };
+  box.innerHTML = '<div class="iload"><div class="ispin"></div><span class="ilt">Generant...</span></div>';
   box.appendChild(img);
   img.src = url;
 }
 
 // =====================================================
-// TEXTOS: Puter.js amb gpt-4o-mini (proxy gratuït, 100% funcional)
+// GENERAR PROPOSTES: Puter (gpt-4o-mini) + DALL·E 3 / Unsplash
 // =====================================================
 async function genProposals() {
   document.getElementById('genBtn').disabled = true;
@@ -601,14 +650,15 @@ async function genProposals() {
   const tags     = document.getElementById('cfgTags').value;
   const cta      = document.getElementById('cfgCTA').value;
   const lang     = document.getElementById('cfgLang').value;
+  const hasKey   = !!getOAIKey();
 
-  const steps = ['Analitzant el restaurant...','Generant idees...','Redactant textos...','Preparant contingut...'];
+  const steps = ['Analitzant el restaurant...','Generant idees...','Redactant textos...','Preparant imatges...'];
   let si = 0;
   const iv = setInterval(() => {
     document.getElementById('lstep').textContent = steps[++si % steps.length];
   }, 1800);
 
-  // Prompt clar i robust
+  // ── Textos amb Puter (gpt-4o-mini) ─────────────────────────────────────
   const systemMsg = 'Ets un expert en marketing de restaurants per Instagram. Respon SEMPRE amb JSON vàlid i res més.';
   let userMsg = 'Genera 6 propostes de contingut per Instagram (3 post + 3 story) per aquest restaurant:\n\n';
   userMsg += 'Restaurant: ' + restName + '\n';
@@ -620,68 +670,63 @@ async function genProposals() {
   userMsg += 'Temàtica: ' + theme + '\n';
   userMsg += 'To: ' + tone + '\n';
   if (ctx) userMsg += '\n*** IMPORTANT: Usa aquest context específic als textos: ' + ctx + ' ***\n';
-  userMsg += '\nRetorna ÚNICAMENT aquest JSON (sense markdown, sense text extra):\n';
-  userMsg += '{"proposals":[\n';
-  userMsg += '  {"id":"p1","type":"post","emoji":"🍽️","title":"Títol curt","caption":"Text natural 2-3 frases sense hashtags","hashtags":"#tag1 #tag2 #tag3 #tag4","imagePrompt":"English: specific dish photo description"},\n';
-  userMsg += '  {"id":"p2","type":"story","emoji":"👨‍🍳","title":"Títol","caption":"Text","hashtags":"#tag1 #tag2","imagePrompt":"English description"},\n';
-  userMsg += '  {"id":"p3","type":"post",...},\n';
-  userMsg += '  {"id":"p4","type":"story",...},\n';
-  userMsg += '  {"id":"p5","type":"post",...},\n';
-  userMsg += '  {"id":"p6","type":"story",...}\n';
-  userMsg += ']}';
+  userMsg += '\nRetorna ÚNICAMENT aquest JSON (sense markdown):\n';
+  userMsg += '{"proposals":[{"id":"p1","type":"post","emoji":"🍽️","title":"Títol","caption":"Text 2-3 frases sense hashtags","hashtags":"#tag1 #tag2 #tag3 #tag4","imagePrompt":"English: specific appetizing food photo, dish name, lighting style, mood"},{"id":"p2","type":"story",...},{"id":"p3","type":"post",...},{"id":"p4","type":"story",...},{"id":"p5","type":"post",...},{"id":"p6","type":"story",...}]}';
 
   try {
     document.getElementById('lstep').textContent = 'Generant textos amb IA...';
-
     const resp = await puter.ai.chat(
-      [
-        { role: 'system', content: systemMsg },
-        { role: 'user',   content: userMsg   }
-      ],
+      [{ role: 'system', content: systemMsg }, { role: 'user', content: userMsg }],
       { model: 'gpt-4o-mini' }
     );
-
-    // Puter pot retornar string, objecte amb .message, o objecte amb .content
-    let raw = '';
-    if (typeof resp === 'string') raw = resp;
-    else if (resp?.message?.content) raw = resp.message.content;
-    else if (resp?.content)          raw = Array.isArray(resp.content) ? resp.content.map(x=>x.text||'').join('') : resp.content;
-    else raw = JSON.stringify(resp);
-
-    console.log('Puter raw response:', raw.slice(0, 300));
-
-    // Extreu JSON de la resposta
+    let raw = typeof resp === 'string' ? resp
+            : resp?.message?.content || resp?.content
+              ? (Array.isArray(resp.content) ? resp.content.map(x=>x.text||'').join('') : (resp.message?.content || resp.content))
+              : JSON.stringify(resp);
     raw = raw.replace(/```json|```/gi, '').trim();
-    const j0 = raw.indexOf('{');
-    const j1 = raw.lastIndexOf('}');
-    if (j0 === -1 || j1 === -1) throw new Error('No JSON a la resposta: ' + raw.slice(0,100));
-    const parsed = JSON.parse(raw.slice(j0, j1 + 1));
-    if (!parsed.proposals?.length) throw new Error('Proposals buides');
-    proposals = parsed.proposals;
-    console.log('Proposals OK:', proposals.length);
-
-  } catch (e) {
-    console.error('Error IA:', e.message);
+    const j0 = raw.indexOf('{'), j1 = raw.lastIndexOf('}');
+    if (j0 === -1) throw new Error('No JSON: ' + raw.slice(0,80));
+    proposals = JSON.parse(raw.slice(j0, j1+1)).proposals;
+    if (!proposals?.length) throw new Error('Buit');
+  } catch(e) {
+    console.error('IA error:', e);
     proposals = fallback(restName, ctx);
     toast('⚠ IA no disponible · Contingut de mostra');
   }
 
   clearInterval(iv);
-
-  // Unsplash: assigna URL per a cada proposta (instantani)
-  proposals.forEach((p, i) => {
-    proposals[i].imageData = makeImgUrl(p.imagePrompt || p.title, p.type === 'story', i);
-  });
-
   document.getElementById('lbox').classList.remove('vis');
   document.getElementById('genBtn').disabled = false;
-  renderProps();
-  proposals.forEach(p => injectImg(p.id, p.imageData));
-  toast('✓ Propostes generades!');
+
+  // ── Imatges: DALL·E 3 (seqüencial per no sobrepassar rate limit) o Unsplash (paral·lel) ──
+  if (hasKey) {
+    // Amb DALL·E: renderitza primer, genera seqüencialment
+    proposals.forEach((p,i) => { proposals[i].imageData = makeUnsplashUrl(p.imagePrompt||p.title, p.type==='story', i); });
+    renderProps();
+    toast('✓ Textos generats · Generant imatges amb DALL·E 3...');
+    for (let i = 0; i < proposals.length; i++) {
+      const p = proposals[i];
+      document.getElementById('lstep').textContent = `Generant imatge ${i+1}/6 amb DALL·E 3...`;
+      const url = await generateWithDalle(p.imagePrompt || p.title, p.type === 'story');
+      if (url) {
+        proposals[i].imageData = url;
+        injectImg(p.id, url);
+      } else {
+        injectImg(p.id, makeUnsplashUrl(p.imagePrompt||p.title, p.type==='story', i));
+      }
+    }
+    toast('✓ Imatges generades amb DALL·E 3!');
+  } else {
+    // Sense key: Unsplash instantani
+    proposals.forEach((p,i) => { proposals[i].imageData = makeUnsplashUrl(p.imagePrompt||p.title, p.type==='story', i); });
+    renderProps();
+    proposals.forEach((p,i) => injectImg(p.id, proposals[i].imageData));
+    toast('✓ Propostes generades · Afegeix key OpenAI per DALL·E 3');
+  }
 }
 
 
-function fallback(name, ctx) {
+function fallback(name) {
   return [
     {id:'p1',type:'post',emoji:'🍽️',title:'El plato del día',caption:`En ${name} hoy te traemos algo especial. Ingredientes frescos, sabor auténtico. ¡Reserva en el link de la bio!`,hashtags:'#gastronomia #restaurante #foodie #comida #sabor',imagePrompt:'Beautiful Mediterranean dish on elegant white plate, overhead shot, natural window light, rustic wooden table, fresh herbs, warm tones, professional food photography'},
     {id:'p2',type:'story',emoji:'👨‍🍳',title:'Detrás del fogón',caption:`Cada día empezamos eligiendo los mejores ingredientes. Esto es lo que hay detrás de ${name}.`,hashtags:'#cheflife #cocina #artesanal #km0 #frescos',imagePrompt:'Chef in professional restaurant kitchen, candid action shot, warm ambient lighting, motion blur on hands, authentic culinary atmosphere'},
