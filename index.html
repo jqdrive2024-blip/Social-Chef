@@ -17,7 +17,7 @@
   --border:#2a2a2a;--border2:#333;
   --text:#f0ede8;--text2:#a09d98;--text3:#666;
   --accent:#e8c97e;--accent2:#c4a55a;--accent-bg:rgba(232,201,126,0.08);
-  --green:#7ec98e;--blue:#7eb3e8;
+  --green:#7ec98e;--blue:#7eb3e8;--red:#e87e7e;
   --r:12px;--rs:8px;--rl:16px;
 }
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;line-height:1.6;min-height:100vh}
@@ -59,16 +59,19 @@ select option{background:var(--surface2)}
 .bp{background:var(--accent);color:#0e0e0e;border:none;padding:12px 24px;border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif}
 .bp:hover{background:var(--accent2)}
 .bp:disabled{opacity:.4;cursor:not-allowed}
+.bp.secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border2)}
+.bp.secondary:hover{border-color:var(--accent);color:var(--accent)}
 .bs{background:var(--surface2);color:var(--text);border:1px solid var(--border2);padding:10px 18px;border-radius:var(--rs);font-size:13px;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif}
 .bs:hover{border-color:var(--accent);color:var(--accent)}
-.kbar{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--accent-bg);border:1px solid rgba(232,201,126,.2);border-radius:var(--rs);margin-bottom:20px}
+.kbar{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--accent-bg);border:1px solid rgba(232,201,126,.2);border-radius:var(--rs);margin-bottom:20px;flex-wrap:wrap}
 .kbar .lbl{font-size:12px;color:var(--accent);white-space:nowrap;font-weight:500}
 .kbar input{flex:1;font-size:12px;padding:7px 10px}
 .kbar button{padding:7px 14px;font-size:12px;white-space:nowrap}
 .kst{font-size:11px;padding:3px 9px;border-radius:20px;white-space:nowrap}
 .kst.on{background:rgba(126,201,142,.15);color:var(--green)}
 .kst.off{background:rgba(160,157,152,.1);color:var(--text3)}
-.ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.kst.error{background:rgba(232,126,126,.15);color:var(--red)}
+.ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:20px}
 .pcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;transition:all .2s;position:relative}
 .pcard:hover{border-color:var(--border2);transform:translateY(-2px)}
@@ -82,6 +85,7 @@ select option{background:var(--surface2)}
 .ispin{width:22px;height:22px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .ilt{font-size:11px;color:var(--text3)}
+.img-tag{position:absolute;bottom:8px;left:8px;background:rgba(0,0,0,0.7);color:var(--text);font-size:10px;padding:2px 8px;border-radius:20px;backdrop-filter:blur(4px)}
 .cbody{padding:16px}
 .tbadge{display:inline-flex;align-items:center;font-size:11px;padding:3px 10px;border-radius:20px;margin-bottom:10px}
 .tbadge.post{background:rgba(126,179,232,.15);color:var(--blue)}
@@ -93,6 +97,8 @@ select option{background:var(--surface2)}
 .bsel:hover,.pcard.sel .bsel{background:var(--accent);color:#0e0e0e}
 .bedit{background:var(--surface2);border:1px solid var(--border2);color:var(--text2)}
 .bedit:hover{border-color:var(--border);color:var(--text)}
+.bflux{background:var(--surface3);border:1px solid var(--border2);color:var(--accent);font-size:11px}
+.bflux:hover{border-color:var(--accent)}
 .cal-area{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start}
 .calbox{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:24px}
 .calhd{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
@@ -151,6 +157,7 @@ select option{background:var(--surface2)}
 .hdiv{height:1px;background:var(--border);margin:18px 0}
 .toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--accent);color:var(--accent);padding:12px 20px;border-radius:var(--rs);font-size:13px;transform:translateY(100px);opacity:0;transition:all .3s;z-index:200;max-width:320px}
 .toast.show{transform:translateY(0);opacity:1}
+.toast.error{border-color:var(--red);color:var(--red)}
 .init-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:16px}
 .init-screen h1{font-family:'DM Serif Display',serif;font-size:32px;color:var(--accent)}
 .init-screen p{color:var(--text3);font-size:14px}
@@ -215,10 +222,14 @@ select option{background:var(--surface2)}
 
   <main class="main">
     <div id="sec-generate" class="content">
-      <div class="kbar" style="justify-content:center">
-        <span class="lbl">🖼️ Imágenes: <span id="imgEngineLbl">Pexels → Tu servidor</span></span>
-        <span class="kst on" id="imgEngineSt">Actiu</span>
+      <div class="kbar" style="justify-content:space-between">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="lbl">🖼️ Imágenes: <span id="imgEngineLbl">Pexels + FLUX.1</span></span>
+          <span class="kst on" id="imgEngineSt">Activo</span>
+        </div>
+        <button class="bs" onclick="testConnections()" style="font-size:11px">Test conexiones</button>
       </div>
+      
       <div class="gform">
         <h3>Nueva generación de contenido</h3>
         <div class="fgrid">
@@ -240,8 +251,8 @@ select option{background:var(--surface2)}
             </select>
           </div>
           <div class="fg full">
-            <label>Contexto adicional (opcional)</label>
-            <textarea id="ctx" rows="2" placeholder="Ej: Menú especial de trufa negra este finde, 45€ por persona..."></textarea>
+            <label>Contexto adicional (obligatorio para imágenes)</label>
+            <textarea id="ctx" rows="2" placeholder="Ej: Hamburguesa de ternera con queso cheddar, Menú degustación de trufas, Paella valenciana..."></textarea>
           </div>
         </div>
         <div class="fg" style="margin-bottom:20px">
@@ -253,8 +264,9 @@ select option{background:var(--surface2)}
             <button class="tag" onclick="this.classList.toggle('on')">Reel corto</button>
           </div>
         </div>
-        <div style="display:flex;align-items:center;gap:12px">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
           <button class="bp" onclick="genProposals()" id="genBtn">✦ Generar propuestas</button>
+          <button class="bp secondary" onclick="genWithFluxOnly()" id="fluxBtn" style="display:none">🎨 Solo FLUX</button>
           <span style="font-size:12px;color:var(--text3)">Textos con Claude + imágenes con Pexels/FLUX.1</span>
         </div>
       </div>
@@ -272,6 +284,8 @@ select option{background:var(--surface2)}
             <span style="font-size:13px;color:var(--text3);margin-left:8px" id="selCount">0 seleccionadas</span>
           </div>
           <div style="display:flex;gap:10px">
+            <button class="bs" onclick="regenerateImages()">🔄 Nuevas imágenes (Pexels)</button>
+            <button class="bs" onclick="upgradeToFlux()">✨ Mejorar con FLUX</button>
             <button class="bs" onclick="selAll()">Seleccionar todo</button>
             <button class="bp" onclick="schedSel()" id="schedBtn" disabled>Programar seleccionadas →</button>
           </div>
@@ -408,7 +422,7 @@ select option{background:var(--surface2)}
 const DEFAULT_UPLOAD_URL = 'https://www.jordiqterrassa.com/upload.php';
 const DEFAULT_REPLICATE_TOKEN = 'r8_e1KCvK21l1VWdHhanVOM5lmUPMn6EJI3Xncv4';
 
-// API KEY PEXELS (200 requests/hora gratis)
+// API KEY PEXELS
 const PEXELS_API_KEY = 'e3qN3dCv9TQaLbq4hWJ8JCGYpQTbfpCOt6wTJoBT5gYkMrKdLm22Udks';
 
 const firebaseConfig = {
@@ -429,43 +443,61 @@ let selIds = new Set();
 let calMon = new Date().getMonth(), calYr = new Date().getFullYear(), editP = null;
 
 // =====================================================
-// PEXELS + PICSUM (IMÁGENES)
+// SISTEMA DE IMÁGENES MEJORADO (PEXELS + FLUX)
 // =====================================================
 
-// Buscar imagen en Pexels según tema
-async function fetchPexelsImage(query, isStory, index) {
+// Buscar imagen en Pexels usando CONTEXTO específico
+async function fetchPexelsImage(context, theme, isStory, index) {
   if (!PEXELS_API_KEY) {
-    console.warn('⚠️ No hay API Key de Pexels, usando Picsum...');
+    console.warn('⚠️ No hay API Key de Pexels');
     return fetchPicsumImage(isStory, index);
   }
   
   try {
-    // Mapeo de temas a términos de búsqueda optimizados
-    const searchTerms = {
-      'Plato destacado del día': 'gourmet food dish plating restaurant',
-      'Evento especial': 'restaurant event celebration dinner',
-      'Detrás del escenario': 'chef cooking kitchen restaurant professional',
-      'Testimonio de cliente': 'happy couple dining restaurant',
-      'Temporada / Festividad': 'seasonal food festive holiday cuisine',
-      'Nuevo producto o menú': 'new menu food presentation gourmet',
-      'Historia del restaurante': 'cozy restaurant interior ambiance'
-    };
+    // Construir búsqueda inteligente combinando contexto + tema
+    let searchQuery = '';
     
-    const searchQuery = encodeURIComponent(searchTerms[query] || query || 'restaurant food');
+    if (context && context.length > 2) {
+      // Usar el contexto específico (hamburguesa, paella, etc.)
+      searchQuery = context.toLowerCase()
+        .replace(/[^\w\s]/gi, '') // Eliminar puntuación
+        .replace(/\b(menú|menu|plato|nuevo|especial|delicioso|rico)\b/gi, '') // Palabras vacías
+        .trim();
+    }
+    
+    // Si no hay contexto útil, usar el tema
+    if (!searchQuery || searchQuery.length < 3) {
+      const themeTerms = {
+        'Plato destacado del día': 'gourmet food dish plating',
+        'Evento especial': 'restaurant event celebration',
+        'Detrás del escenario': 'chef cooking kitchen',
+        'Testimonio de cliente': 'happy diners restaurant',
+        'Temporada / Festividad': 'seasonal food festive',
+        'Nuevo producto o menú': 'new menu food',
+        'Historia del restaurante': 'restaurant interior cozy'
+      };
+      searchQuery = themeTerms[theme] || 'restaurant food';
+    }
+    
+    // Añadir calidad fotográfica
+    searchQuery += ' food photography';
+    const encodedQuery = encodeURIComponent(searchQuery);
     const orientation = isStory ? 'portrait' : 'square';
+    const page = (index % 20) + 1; // Rotar páginas para variedad
     
-    console.log(`🔍 Pexels: Buscando "${searchTerms[query] || query}" (${orientation})`);
+    console.log(`🔍 Buscando: "${searchQuery}" (${orientation})`);
     
     const response = await fetch(
-      `https://api.pexels.com/v1/search?query=${searchQuery}&orientation=${orientation}&per_page=1&page=${(index % 10) + 1}`, 
+      `https://api.pexels.com/v1/search?query=${encodedQuery}&orientation=${orientation}&per_page=1&page=${page}`, 
       {
-        headers: {
-          'Authorization': PEXELS_API_KEY
-        }
+        headers: { 'Authorization': PEXELS_API_KEY }
       }
     );
     
     if (!response.ok) {
+      if (response.status === 429) {
+        throw new Error('Límite Pexels excedido (200/hr)');
+      }
       throw new Error(`HTTP ${response.status}`);
     }
     
@@ -473,43 +505,87 @@ async function fetchPexelsImage(query, isStory, index) {
     
     if (data.photos && data.photos.length > 0) {
       const photo = data.photos[0];
-      console.log('✅ Pexels OK:', photo.id, '-', photo.photographer);
-      // Usar tamaño apropiado
-      return isStory ? photo.src.portrait : photo.src.large;
+      console.log('✅ Pexels:', photo.id, '-', photo.photographer);
+      return {
+        url: isStory ? photo.src.portrait : photo.src.large,
+        source: 'pexels',
+        photographer: photo.photographer,
+        id: photo.id
+      };
     } else {
-      console.warn('⚠️ Pexels sin resultados, usando Picsum');
+      console.warn('⚠️ Sin resultados para:', searchQuery);
       return fetchPicsumImage(isStory, index);
     }
     
   } catch (error) {
-    console.error('❌ Error Pexels:', error);
+    console.error('❌ Pexels error:', error);
     return fetchPicsumImage(isStory, index);
   }
 }
 
-// Fallback a Picsum (no requiere API key)
+// Fallback a Picsum
 function fetchPicsumImage(isStory, index) {
   const w = isStory ? 768 : 1024;
   const h = isStory ? 1365 : 1024;
   const seed = (index * 997) + Math.floor(Date.now() / 86400000);
-  console.log('🎲 Usando Picsum (fallback)');
-  return `https://picsum.photos/seed/${seed}/${w}/${h}`;
+  return {
+    url: `https://picsum.photos/seed/${seed}/${w}/${h}`,
+    source: 'picsum',
+    photographer: 'Random',
+    id: null
+  };
 }
 
 // =====================================================
-// UTILIDAD: SUBIR IMAGEN A SERVIDOR
+// TEST DE CONEXIONES
+// =====================================================
+async function testConnections() {
+  toast('🔍 Probando conexiones...');
+  
+  // Test Pexels
+  try {
+    const testPexels = await fetch('https://api.pexels.com/v1/search?query=food&per_page=1', {
+      headers: { 'Authorization': PEXELS_API_KEY }
+    });
+    console.log('Pexels:', testPexels.ok ? '✅ OK' : '❌ Error ' + testPexels.status);
+  } catch(e) {
+    console.error('Pexels:', e.message);
+  }
+  
+  // Test servidor
+  try {
+    const testServer = await fetch(getBaseUrl() + 'gallery.php?action=list');
+    console.log('Servidor:', testServer.ok ? '✅ OK' : '❌ Error ' + testServer.status);
+  } catch(e) {
+    console.error('Servidor:', e.message);
+  }
+  
+  // Test FLUX (proxy)
+  try {
+    const testFlux = await fetch(getBaseUrl() + 'replicate-proxy.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({token: getReplicateToken(), prompt: 'test', test: true})
+    });
+    console.log('FLUX Proxy:', testFlux.ok ? '✅ OK' : '❌ Error ' + testFlux.status);
+  } catch(e) {
+    console.error('FLUX:', e.message);
+  }
+  
+  toast('📋 Revisa la consola (F12) para resultados');
+}
+
+// =====================================================
+// SUBIR IMAGEN A SERVIDOR
 // =====================================================
 async function uploadImageToServer(imageUrl, filename) {
   const uploadUrl = document.getElementById('cfgServerUrl')?.value?.trim() || DEFAULT_UPLOAD_URL;
   
   try {
-    console.log('📤 Descargando imagen:', imageUrl);
     const response = await fetch(imageUrl);
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     
     const blob = await response.blob();
-    console.log('📦 Blob:', blob.size, 'bytes');
-    
     const base64 = await new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onloadend = () => resolve(reader.result);
@@ -517,7 +593,6 @@ async function uploadImageToServer(imageUrl, filename) {
       reader.readAsDataURL(blob);
     });
     
-    console.log('📡 Subiendo a servidor...');
     const uploadResponse = await fetch(uploadUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -530,20 +605,18 @@ async function uploadImageToServer(imageUrl, filename) {
     }
     
     const result = await uploadResponse.json();
-    if (!result.success) throw new Error(result.error || 'Error desconocido');
+    if (!result.success) throw new Error(result.error);
     
-    console.log('✅ Subida OK:', result.url);
     return result.url;
-    
   } catch (error) {
-    console.error('❌ Error upload:', error);
-    toast('⚠️ Error al subir imagen, usando URL temporal');
-    return imageUrl;
+    console.error('Error upload:', error);
+    toast('⚠️ Error al subir: ' + error.message);
+    return null;
   }
 }
 
 // =====================================================
-// FLUX.1 — Via replicate-proxy.php
+// FLUX.1
 // =====================================================
 function getReplicateToken() {
   return document.getElementById('cfgReplicateKey')?.value?.trim() || DEFAULT_REPLICATE_TOKEN;
@@ -555,41 +628,50 @@ function getBaseUrl() {
 
 async function generateWithFlux(prompt, isStory, restName, propType) {
   const token = getReplicateToken();
-  if (!token) return null;
+  if (!token || token.length < 10) {
+    throw new Error('Token FLUX no configurado');
+  }
   
   const proxyUrl = getBaseUrl() + 'replicate-proxy.php';
+  
   try {
-    console.log('🎨 Generando FLUX...');
+    console.log('🎨 FLUX:', prompt.substring(0, 50) + '...');
+    
     const res = await fetch(proxyUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         token,
-        prompt: prompt + ', professional food photography, appetizing, restaurant quality, natural lighting, 8k, detailed',
+        prompt: prompt + ', professional food photography, 8k, detailed',
         aspect_ratio: isStory ? '9:16' : '1:1',
         restaurant: restName || 'restaurant',
         type: propType || 'post'
       })
     });
     
-    if (!res.ok) throw new Error('HTTP ' + res.status);
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Proxy error ${res.status}: ${errText}`);
+    }
+    
     const data = await res.json();
-    if (!data.success) throw new Error(data.error);
+    if (!data.success) throw new Error(data.error || 'Error desconocido');
+    
+    console.log('✅ FLUX OK:', data.filename);
     return data.url;
   } catch(e) {
-    console.error('❌ Error FLUX:', e);
-    return null;
+    console.error('❌ FLUX Error:', e.message);
+    throw e;
   }
 }
 
 // =====================================================
-// BACKOFFICE — Galeria d'imatges
+// BACKOFFICE
 // =====================================================
 let allBoImages = [];
 
 async function loadBackoffice() {
   const grid = document.getElementById('boGrid');
-  if (!grid) return;
   grid.innerHTML = '<div class="bo-empty"><p>Cargando...</p></div>';
   
   try {
@@ -648,7 +730,6 @@ async function deleteBo(filename, idx) {
     const data = await res.json();
     if (data.success) {
       allBoImages = allBoImages.filter(i => i.filename !== filename);
-      document.getElementById('imgBadge').textContent = allBoImages.length || '·';
       filterBo();
       toast('✓ Imagen eliminada');
     }
@@ -656,28 +737,25 @@ async function deleteBo(filename, idx) {
 }
 
 // =====================================================
-// FIREBASE INIT
+// FIREBASE
 // =====================================================
 async function initApp() {
-  setInitMsg('Conectando con Firebase...');
+  setInitMsg('Conectando...');
   try {
     firebase.initializeApp(firebaseConfig);
     auth = firebase.auth();
     db = firebase.firestore();
-    setInitMsg('Autenticando...');
     const cred = await auth.signInAnonymously();
     currentUser = cred.user;
-    setSyncState('spin', 'Cargando datos...');
-    setInitMsg('Cargando restaurantes...');
+    setSyncState('spin', 'Cargando...');
     await loadUserData();
-    setSyncState('ok', 'Sincronizado');
+    setSyncState('ok', 'Listo');
     document.getElementById('initScreen').style.display = 'none';
     document.getElementById('mainApp').style.display = 'grid';
     renderCal();
     updateImgEngineLabel();
   } catch (err) {
     setInitMsg('Error: ' + err.message);
-    console.error(err);
   }
 }
 
@@ -689,7 +767,7 @@ function setSyncState(state, txt) {
 }
 
 // =====================================================
-// LOAD USER DATA
+// USER DATA
 // =====================================================
 async function loadUserData() {
   const snap = await db.collection('users').doc(currentUser.uid).collection('restaurants').orderBy('createdAt').get();
@@ -702,13 +780,9 @@ async function loadUserData() {
 
 async function createDefaultRestaurant() {
   const data = {
-    name: 'La Taberna del Mar',
-    cuisine: 'Mediterránea y pescados frescos',
-    desc: 'Restaurante familiar con 30 años de historia en el puerto. Cocina honesta, ingredientes locales y ambiente acogedor.',
+    name: 'La Taberna del Mar', cuisine: 'Mediterránea', desc: 'Restaurante familiar',
     web: '', ig: '@latabernadelmar', lang: 'Español', freq: 'Diaria',
-    tags: '#tabernadelmar #pescadofresco #mediterránea #gastrocat',
-    cta: '¡Reserva en el link de la bio!',
-    scheduled: [],
+    tags: '#gastronomia', cta: '¡Reserva!', scheduled: [],
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   };
   const ref = await db.collection('users').doc(currentUser.uid).collection('restaurants').add(data);
@@ -748,18 +822,16 @@ async function changeRest() {
   if (id === currentRestId) return;
   setSyncState('spin', 'Cargando...');
   await loadRestaurant(id);
-  setSyncState('ok', 'Sincronizado');
+  setSyncState('ok', 'Listo');
   toast('Restaurante cambiado');
 }
 
 async function addRest() {
-  const n = prompt('Nombre del nuevo restaurante:');
+  const n = prompt('Nombre:');
   if (!n) return;
-  setSyncState('spin', 'Guardando...');
   const data = {
-    name: n, cuisine: 'Tipo de cocina', desc: 'Descripción del restaurante.',
-    web: '', ig: '@' + n.toLowerCase().replace(/\s+/g,''), lang: 'Español',
-    freq: 'Diaria', tags: '#restaurante', cta: '¡Reserva en el link de la bio!',
+    name: n, cuisine: 'Tipo', desc: 'Descripción', web: '', ig: '@' + n.toLowerCase().replace(/\s+/g,''),
+    lang: 'Español', freq: 'Diaria', tags: '#restaurante', cta: '¡Reserva!',
     scheduled: [], createdAt: firebase.firestore.FieldValue.serverTimestamp()
   };
   const ref = await db.collection('users').doc(currentUser.uid).collection('restaurants').add(data);
@@ -767,7 +839,7 @@ async function addRest() {
   renderRestSelector();
   document.getElementById('restSel').value = ref.id;
   await loadRestaurant(ref.id);
-  setSyncState('ok', 'Sincronizado');
+  setSyncState('ok', 'Listo');
   toast(`✓ "${n}" creado`);
 }
 
@@ -792,32 +864,39 @@ async function saveCfg() {
   const r = restaurants.find(x => x.id === currentRestId);
   if (r) Object.assign(r, data);
   renderRestSelector();
-  document.getElementById('restSel').value = currentRestId;
   updateImgEngineLabel();
-  setSyncState('ok', 'Guardado ✓');
+  setSyncState('ok', 'Guardado');
   toast('✓ Perfil guardado');
 }
 
 async function saveScheduled() {
   if (!currentUser || !currentRestId) return;
   setSyncState('spin', 'Guardando...');
-  const toSave = scheduled.map(s => ({...s}));
-  await db.collection('users').doc(currentUser.uid).collection('restaurants').doc(currentRestId).update({ scheduled: toSave });
-  setSyncState('ok', 'Guardado ✓');
+  await db.collection('users').doc(currentUser.uid).collection('restaurants').doc(currentRestId).update({ 
+    scheduled: scheduled.map(s => ({...s})) 
+  });
+  setSyncState('ok', 'Guardado');
 }
 
 function updateImgEngineLabel() {
   const token = getReplicateToken();
-  const lbl = document.getElementById('imgEngineLbl');
-  const st = document.getElementById('imgEngineSt');
-  if (lbl) lbl.textContent = token ? 'Pexels + FLUX.1 → www.jordiqterrassa.com' : 'Pexels (sin FLUX)';
-  if (st) st.className = 'kst on';
+  const hasToken = token && token.length > 10 && !token.includes('...');
+  document.getElementById('imgEngineLbl').textContent = hasToken ? 'Pexels + FLUX.1' : 'Pexels (sin FLUX)';
+  document.getElementById('imgEngineSt').className = hasToken ? 'kst on' : 'kst off';
+  document.getElementById('fluxBtn').style.display = hasToken ? 'inline-block' : 'none';
 }
 
 // =====================================================
-// GENERAR PROPUESTAS CON PEXELS + FLUX
+// GENERAR PROPUESTAS (CON IMÁGENES RELEVANTES)
 // =====================================================
 async function genProposals() {
+  const context = document.getElementById('ctx').value.trim();
+  if (!context) {
+    toast('⚠️ Escribe un contexto (ej: "Hamburguesa de ternera") para obtener imágenes relevantes');
+    document.getElementById('ctx').focus();
+    return;
+  }
+
   document.getElementById('genBtn').disabled = true;
   document.getElementById('propArea').style.display = 'none';
   document.getElementById('lbox').classList.add('vis');
@@ -825,35 +904,24 @@ async function genProposals() {
 
   const theme = document.getElementById('theme').value;
   const tone = document.getElementById('tone').value;
-  const ctx = document.getElementById('ctx').value.trim();
   const restName = restaurants.find(r => r.id === currentRestId)?.name || document.getElementById('cfgName').value;
   const cuisine = document.getElementById('cfgCuisine').value;
   const desc = document.getElementById('cfgDesc').value;
   const tags = document.getElementById('cfgTags').value;
   const cta = document.getElementById('cfgCTA').value;
   const lang = document.getElementById('cfgLang').value;
-  const hasFlux = !!getReplicateToken();
+  const hasFlux = !!getReplicateToken() && getReplicateToken().length > 10;
 
-  const steps = ['Analizando restaurante...', 'Generando ideas...', 'Buscando imágenes en Pexels...', 'Preparando todo...'];
-  let si = 0;
-  const iv = setInterval(() => {
-    document.getElementById('lstep').textContent = steps[++si % steps.length];
-  }, 1500);
-
-  // Generar textos con Puter/Claude
+  // Generar textos
   try {
     document.getElementById('lstep').textContent = 'Generando textos con IA...';
-    const systemMsg = 'Eres un experto en marketing gastronómico para Instagram. Responde SIEMPRE con JSON válido.';
-    let userMsg = `Genera 6 propuestas de contenido para Instagram (3 post + 3 story) para: ${restName}\n`;
-    userMsg += `Cocina: ${cuisine}\nDescripción: ${desc}\nIdioma: ${lang}\n`;
-    userMsg += `Hashtags: ${tags}\nCTA: ${cta}\nTemática: ${theme}\nTono: ${tone}\n`;
-    if (ctx) userMsg += `Contexto: ${ctx}\n`;
-    userMsg += `Responde SOLO con este JSON exacto: {"proposals":[{"id":"p1","type":"post","emoji":"🍽️","title":"Título atractivo","caption":"Texto 2-3 frases persuasivas","hashtags":"#tag1 #tag2","imagePrompt":"Descripción detallada en inglés para foto de comida"},{"id":"p2","type":"story",...} (total 6 items)]}`;
+    const systemMsg = 'Eres experto en marketing gastronómico. Responde SIEMPRE con JSON válido.';
+    const userMsg = `Genera 6 propuestas para ${restName} (${cuisine}). Contexto: ${context}. Temática: ${theme}. Tono: ${tone}. Idioma: ${lang}. Incluye emojis. JSON: {"proposals":[{"id":"p1","type":"post","emoji":"🍽️","title":"Título","caption":"Texto 2-3 frases","hashtags":"${tags}","imagePrompt":"Descripción detallada foto"}]}`;
 
-    const resp = await puter.ai.chat(
-      [{ role: 'system', content: systemMsg }, { role: 'user', content: userMsg }],
-      { model: 'gpt-4o-mini' }
-    );
+    const resp = await puter.ai.chat([
+      { role: 'system', content: systemMsg },
+      { role: 'user', content: userMsg }
+    ], { model: 'gpt-4o-mini' });
     
     let raw = typeof resp === 'string' ? resp : resp?.message?.content || JSON.stringify(resp);
     raw = raw.replace(/```json|```/gi, '').trim();
@@ -862,64 +930,150 @@ async function genProposals() {
     
   } catch(e) {
     console.error('Error IA:', e);
-    proposals = fallbackProposals(restName);
-    toast('⚠️ Usando contenido de ejemplo');
+    proposals = fallbackProposals(restName, context);
+    toast('⚠️ Usando plantilla de ejemplo');
   }
 
-  clearInterval(iv);
-  document.getElementById('lbox').classList.remove('vis');
-  document.getElementById('genBtn').disabled = false;
-
-  // Cargar imágenes de Pexels (asíncrono)
-  document.getElementById('lstep').textContent = 'Buscando imágenes en Pexels...';
-  document.getElementById('lbox').classList.add('vis');
+  // Cargar imágenes de Pexels (AHORA CON CONTEXTO ESPECÍFICO)
+  document.getElementById('lstep').textContent = 'Buscando imágenes relevantes...';
   
   for (let i = 0; i < proposals.length; i++) {
-    const p = proposals[i];
-    document.getElementById('lstep').textContent = `Buscando imagen ${i+1}/6 en Pexels...`;
-    p.imageData = await fetchPexelsImage(theme, p.type === 'story', i);
+    document.getElementById('lstep').textContent = `Buscando imagen ${i+1}/${proposals.length}...`;
+    const imgData = await fetchPexelsImage(context, theme, proposals[i].type === 'story', i);
+    proposals[i].imageData = imgData.url;
+    proposals[i].imageSource = imgData.source;
+    proposals[i].imageMeta = imgData;
   }
-  
-  document.getElementById('lbox').classList.remove('vis');
-  renderProps();
-  proposals.forEach(p => injectImg(p.id, p.imageData));
-  toast('✓ Imágenes de Pexels cargadas');
 
-  // Si tiene FLUX, mejorar las imágenes
+  document.getElementById('lbox').classList.remove('vis');
+  document.getElementById('genBtn').disabled = false;
+  renderProps();
+  proposals.forEach(p => injectImg(p.id, p.imageData, p.imageSource));
+  
+  toast(`✓ ${proposals.length} propuestas con imágenes de ${proposals[0].imageSource}`);
+
+  // Opcional: Generar FLUX en segundo plano si está activado
   if (hasFlux) {
-    toast('🎨 Generando imágenes personalizadas con FLUX.1...');
-    for (let i = 0; i < proposals.length; i++) {
-      const p = proposals[i];
-      document.getElementById('lstep').textContent = `Generando imagen ${i+1}/6 con FLUX...`;
-      document.getElementById('lbox').classList.add('vis');
-      
-      const fluxUrl = await generateWithFlux(p.imagePrompt || p.title, p.type === 'story', restName, p.type);
-      
-      if (fluxUrl) {
-        document.getElementById('lstep').textContent = `Subiendo imagen ${i+1}/6 al servidor...`;
-        const permanentUrl = await uploadImageToServer(fluxUrl, `flux_${p.id}_${Date.now()}.jpg`);
-        proposals[i].imageData = permanentUrl;
-        proposals[i].originalFluxUrl = fluxUrl;
-        injectImg(p.id, permanentUrl);
-      }
-    }
-    document.getElementById('lbox').classList.remove('vis');
-    toast('✓ Imágenes FLUX generadas y guardadas');
+    setTimeout(() => generateFluxForAll(restName), 100);
   }
 }
 
-function fallbackProposals(name) {
+// Generar todas las imágenes con FLUX
+async function generateFluxForAll(restName) {
+  toast('🎨 Generando imágenes FLUX en segundo plano...');
+  
+  for (let i = 0; i < proposals.length; i++) {
+    try {
+      const p = proposals[i];
+      const fluxUrl = await generateWithFlux(
+        p.imagePrompt || p.title, 
+        p.type === 'story', 
+        restName, 
+        p.type
+      );
+      
+      if (fluxUrl) {
+        proposals[i].imageData = fluxUrl;
+        proposals[i].imageSource = 'flux';
+        injectImg(p.id, fluxUrl, 'flux');
+      }
+    } catch(e) {
+      console.error('FLUX error item', i, e);
+    }
+  }
+  
+  toast('✨ Imágenes FLUX completadas');
+}
+
+// Regenerar imágenes con Pexels (nuevas búsquedas)
+async function regenerateImages() {
+  const context = document.getElementById('ctx').value.trim() || 'restaurant food';
+  const theme = document.getElementById('theme').value;
+  
+  toast('🔄 Buscando nuevas imágenes...');
+  
+  for (let i = 0; i < proposals.length; i++) {
+    const imgData = await fetchPexelsImage(context + ' ' + (i+1), theme, proposals[i].type === 'story', i + 100);
+    proposals[i].imageData = imgData.url;
+    proposals[i].imageSource = imgData.source;
+    injectImg(proposals[i].id, imgData.url, imgData.source);
+  }
+  
+  renderProps();
+  toast('✓ Nuevas imágenes cargadas');
+}
+
+// Mejorar propuestas actuales con FLUX
+async function upgradeToFlux() {
+  const restName = restaurants.find(r => r.id === currentRestId)?.name || 'restaurant';
+  const token = getReplicateToken();
+  
+  if (!token || token.length < 10) {
+    toast('❌ Configura tu API Key de Replicate primero');
+    showSec('config', document.querySelectorAll('.ni')[3]);
+    return;
+  }
+  
+  document.getElementById('lbox').classList.add('vis');
+  document.getElementById('lstep').textContent = 'Generando imágenes FLUX...';
+  
+  for (let i = 0; i < proposals.length; i++) {
+    document.getElementById('lstep').textContent = `FLUX ${i+1}/${proposals.length}...`;
+    try {
+      const fluxUrl = await generateWithFlux(
+        proposals[i].imagePrompt || proposals[i].title,
+        proposals[i].type === 'story',
+        restName,
+        proposals[i].type
+      );
+      
+      if (fluxUrl) {
+        proposals[i].imageData = fluxUrl;
+        proposals[i].imageSource = 'flux';
+        injectImg(proposals[i].id, fluxUrl, 'flux');
+      }
+    } catch(e) {
+      toast(`❌ Error FLUX en imagen ${i+1}: ${e.message}`);
+      break;
+    }
+  }
+  
+  document.getElementById('lbox').classList.remove('vis');
+  toast('✨ Proceso FLUX completado');
+}
+
+// Generar solo con FLUX (sin Pexels)
+async function genWithFluxOnly() {
+  const context = document.getElementById('ctx').value.trim();
+  if (!context) {
+    toast('⚠️ Escribe un contexto primero');
+    return;
+  }
+  
+  document.getElementById('genBtn').disabled = true;
+  document.getElementById('propArea').style.display = 'none';
+  document.getElementById('lbox').classList.add('vis');
+  
+  // Generar textos primero (igual que antes)
+  await genProposals();
+  
+  // Luego reemplazar todas las imágenes con FLUX
+  await upgradeToFlux();
+}
+
+function fallbackProposals(name, context) {
+  const ctx = context || 'gourmet dish';
   return [
-    {id:'p1',type:'post',emoji:'🍽️',title:'El plato del día',caption:`En ${name} hoy te traemos algo especial. Ingredientes frescos, sabor auténtico.`,hashtags:'#gastronomia #restaurante #foodie',imagePrompt:'Beautiful Mediterranean dish on elegant white plate'},
-    {id:'p2',type:'story',emoji:'👨‍🍳',title:'Detrás del fogón',caption:`Cada día empezamos eligiendo los mejores ingredientes.`,hashtags:'#cheflife #cocina',imagePrompt:'Chef cooking in professional kitchen'},
-    {id:'p3',type:'post',emoji:'🌿',title:'Sabores de temporada',caption:`La temporada nos trae ingredientes increíbles.`,hashtags:'#temporada #km0',imagePrompt:'Fresh seasonal vegetables'},
-    {id:'p4',type:'story',emoji:'❤️',title:'Gracias por venir',caption:`Momentos así nos hacen seguir.`,hashtags:'#familia #restaurante',imagePrompt:'Happy diners restaurant'},
-    {id:'p5',type:'post',emoji:'🥂',title:'Fin de semana especial',caption:`¿Tienes planes este finde? Tenemos una mesa para ti.`,hashtags:'#finde #planes',imagePrompt:'Restaurant table setting wine'},
-    {id:'p6',type:'story',emoji:'✨',title:'Novedad en carta',caption:`Algo nuevo llega a ${name}.`,hashtags:'#nuevacarta',imagePrompt:'New gourmet dish presentation'}
+    {id:'p1',type:'post',emoji:'🍽️',title:`${ctx} especial`,caption:`Descubre nuestro ${ctx} en ${name}. Ingredientes frescos y sabor único.`,hashtags:'#gastronomia',imagePrompt:`Professional food photography of ${ctx}`},
+    {id:'p2',type:'story',emoji:'👨‍🍳',title:'Preparación',caption:`Así preparamos nuestro ${ctx}.`,hashtags:'#chef',imagePrompt:`Chef preparing ${ctx} in kitchen`},
+    {id:'p3',type:'post',emoji:'📸',title:'Plato estrella',caption:`El ${ctx} que todos adoran.`,hashtags:'#foodie',imagePrompt:`Beautiful ${ctx} on plate`},
+    {id:'p4',type:'story',emoji:'✨',title:'Detalles',caption:`Los pequeños detalles marcan la diferencia.`,hashtags:'#gourmet',imagePrompt:`Close up ${ctx} details`},
+    {id:'p5',type:'post',emoji:'🔥',title:'Recién hecho',caption:`${ctx} recién preparado para ti.`,hashtags:'#fresh',imagePrompt:`Fresh ${ctx} restaurant`},
+    {id:'p6',type:'story',emoji:'❤️',title:'Clientes felices',caption:`¿Ya probaste nuestro ${ctx}?`,hashtags:'#happy',imagePrompt:`Customers enjoying ${ctx}`}
   ];
 }
 
-function injectImg(cardId, url) {
+function injectImg(cardId, url, source) {
   const box = document.getElementById('cprev-' + cardId);
   if (!box) return;
   
@@ -927,7 +1081,7 @@ function injectImg(cardId, url) {
   img.style.cssText = 'width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s;position:absolute;inset:0';
   img.onload = () => { img.style.opacity = '1'; };
   img.onerror = () => {
-    const fallback = fetchPicsumImage(false, Math.random());
+    const fallback = fetchPicsumImage(false, Math.random()).url;
     const img2 = new Image();
     img2.style.cssText = img.style.cssText;
     img2.onload = () => { img2.style.opacity = '1'; };
@@ -937,12 +1091,19 @@ function injectImg(cardId, url) {
   };
   
   box.innerHTML = '<div class="iload"><div class="ispin"></div><span class="ilt">Cargando...</span></div>';
+  
+  // Añadir tag de fuente
+  const tag = document.createElement('div');
+  tag.className = 'img-tag';
+  tag.textContent = source === 'flux' ? 'FLUX' : source === 'pexels' ? 'Pexels' : 'Picsum';
+  box.appendChild(tag);
+  
   box.appendChild(img);
   img.src = url;
 }
 
 // =====================================================
-// RENDER Y UI
+// RENDER Y UI (resto del código)
 // =====================================================
 function renderProps() {
   const g = document.getElementById('propGrid');
@@ -959,12 +1120,34 @@ function renderProps() {
       </div>
       <div class="cact">
         <button class="bsel" onclick="toggleSel('${p.id}')">Seleccionar</button>
-        <button class="bedit" onclick="openPrev('${p.id}')">Previsualizar</button>
+        <button class="bedit" onclick="openPrev('${p.id}')">Editar</button>
+        <button class="bflux" onclick="regenerateOneFlux('${p.id}')">FLUX</button>
       </div>
     </div>`).join('');
-  document.getElementById('propCount').textContent = proposals.length + ' propuestas generadas';
+  document.getElementById('propCount').textContent = proposals.length + ' propuestas';
   document.getElementById('propArea').style.display = 'block';
   updSelUI();
+}
+
+async function regenerateOneFlux(id) {
+  const p = proposals.find(x => x.id === id);
+  if (!p) return;
+  
+  const restName = restaurants.find(r => r.id === currentRestId)?.name || 'restaurant';
+  document.getElementById('cprev-' + id).innerHTML = '<div class="iload"><div class="ispin"></div><span class="ilt">FLUX...</span></div>';
+  
+  try {
+    const fluxUrl = await generateWithFlux(p.imagePrompt || p.title, p.type === 'story', restName, p.type);
+    if (fluxUrl) {
+      p.imageData = fluxUrl;
+      p.imageSource = 'flux';
+      injectImg(id, fluxUrl, 'flux');
+      toast('✨ Imagen FLUX generada');
+    }
+  } catch(e) {
+    toast('❌ Error FLUX: ' + e.message);
+    injectImg(id, p.imageData, 'pexels');
+  }
 }
 
 function toggleSel(id) {
@@ -979,19 +1162,18 @@ function updSelUI() {
   document.getElementById('selCount').textContent = n + ' seleccionadas';
   const b = document.getElementById('schedBtn'); 
   b.disabled = n === 0;
-  b.textContent = n > 0 ? `Programar ${n} publicaci${n>1?'ones':'ón'} →` : 'Programar seleccionadas →';
+  b.textContent = n > 0 ? `Programar ${n} →` : 'Programar seleccionadas →';
 }
 
 function openPrev(id) {
   const p = proposals.find(x => x.id === id); if (!p) return;
   editP = p;
-  const ig = document.getElementById('cfgIG').value || '@mi_restaurante';
+  const ig = document.getElementById('cfgIG').value || '@restaurant';
   document.getElementById('mpTitle').textContent = p.title;
-  document.getElementById('mpSub').textContent = p.type === 'post' ? 'Vista previa · Post' : 'Vista previa · Story';
+  document.getElementById('mpSub').textContent = p.type === 'post' ? 'Post de Instagram' : 'Story';
   document.getElementById('mpCap').value = p.caption;
   document.getElementById('mpDate').value = new Date().toISOString().split('T')[0];
-  
-  const imgH = p.imageData ? `<img src="${p.imageData}" alt="">` : `<div style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:10px"><span style="font-size:48px">${p.emoji}</span></div>`;
+  const imgH = p.imageData ? `<img src="${p.imageData}" alt="">` : `<div style="display:flex;align-items:center;justify-content:center;height:100%"><span style="font-size:48px">${p.emoji}</span></div>`;
   document.getElementById('mpPrev').innerHTML = `
     <div class="ighd"><div class="igav">${p.emoji}</div><div><div class="igun">${ig}</div><div class="igti">Instagram</div></div></div>
     <div class="igimg ${p.type==='story'?'story':''}">${imgH}</div>
@@ -1005,19 +1187,19 @@ function closeOvIf(e, id) { if (e.target.id === id) closeOv(id); }
 async function confirmSched() {
   if (!editP) return;
   const date = document.getElementById('mpDate').value, time = document.getElementById('mpTime').value;
-  if (!date) { toast('Selecciona una fecha'); return; }
+  if (!date) { toast('Selecciona fecha'); return; }
   editP.caption = document.getElementById('mpCap').value;
   scheduled.push({ ...editP, date, time });
   updBadge(); closeOv('ovPrev');
   await saveScheduled();
-  toast('✓ Programada para el ' + fmtDate(date));
+  toast('✓ Programada: ' + fmtDate(date));
   renderCal();
 }
 
 function schedSel() {
   bulkItems = proposals.filter(p => selIds.has(p.id)).map(p => ({ ...p, date: new Date().toISOString().split('T')[0], time: '12:00' }));
   document.getElementById('bulkList').innerHTML = bulkItems.map((p, i) => `
-    <div style="display:grid;grid-template-columns:${p.imageData?'40px ':''} 24px 1fr auto auto;gap:8px;align-items:center;padding:10px;background:var(--surface2);border-radius:var(--rs);margin-bottom:8px">
+    <div style="display:grid;grid-template-columns:40px 24px 1fr auto auto;gap:8px;align-items:center;padding:10px;background:var(--surface2);border-radius:var(--rs);margin-bottom:8px">
       ${p.imageData ? `<img src="${p.imageData}" style="width:36px;height:36px;border-radius:6px;object-fit:cover">` : ''}
       <span style="font-size:18px">${p.emoji}</span>
       <div><div style="font-size:13px;font-weight:500">${p.title}</div><span class="tbadge ${p.type}" style="font-size:10px;padding:1px 6px">${p.type}</span></div>
@@ -1029,7 +1211,8 @@ function schedSel() {
 }
 
 function applyBulk() {
-  const d = document.getElementById('bdDate').value, t = document.getElementById('bdTime').value; if (!d) return;
+  const d = document.getElementById('bdDate').value, t = document.getElementById('bdTime').value; 
+  if (!d) return;
   bulkItems.forEach((_, i) => { bulkItems[i].date = d; bulkItems[i].time = t; });
   document.getElementById('bulkList').querySelectorAll('input[type="date"]').forEach(inp => inp.value = d);
   document.getElementById('bulkList').querySelectorAll('input[type="time"]').forEach(inp => inp.value = t);
@@ -1039,9 +1222,11 @@ async function confirmBulk() {
   bulkItems.forEach(item => { if (item.date) scheduled.push({ ...item }); });
   updBadge(); closeOv('ovBulk');
   await saveScheduled();
-  toast('✓ ' + bulkItems.length + ' publicaciones programadas');
-  selIds.clear(); proposals.forEach(p => document.getElementById('card-'+p.id)?.classList.remove('sel'));
-  updSelUI(); renderCal();
+  toast('✓ ' + bulkItems.length + ' programadas');
+  selIds.clear(); 
+  proposals.forEach(p => document.getElementById('card-'+p.id)?.classList.remove('sel'));
+  updSelUI(); 
+  renderCal();
 }
 
 function renderCal() {
@@ -1068,7 +1253,7 @@ function renderCal() {
 function renderSList() {
   const c = document.getElementById('schedItems');
   if (!scheduled.length) { 
-    c.innerHTML = `<div class="empty"><span class="ei">📅</span><p>Sin publicaciones aún.</p></div>`; 
+    c.innerHTML = `<div class="empty"><span class="ei">📅</span><p>Sin publicaciones.</p></div>`; 
     return; 
   }
   const sorted = [...scheduled].sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time));
@@ -1106,9 +1291,11 @@ function showSec(n, btn) {
 }
 
 function fmtDate(d) { if (!d) return ''; const [y,m,dd] = d.split('-'); return `${dd} ${MONTHS[parseInt(m)-1].slice(0,3)} ${y}`; }
-function toast(msg) { 
+function toast(msg, isError) { 
   const t = document.getElementById('toast'); 
   t.textContent = msg; 
+  if (isError) t.classList.add('error');
+  else t.classList.remove('error');
   t.classList.add('show'); 
   setTimeout(() => t.classList.remove('show'), 3500); 
 }
