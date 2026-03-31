@@ -222,17 +222,10 @@ select option{background:var(--surface2)}
 
   <main class="main">
     <div id="sec-generate" class="content">
-      <div<div class="kbar" style="gap:12px">
-        <span class="lbl" style="white-space:nowrap">🖼️ Motor:</span>
-        <select id="motorSelect" onchange="setImgMotor(this.value)" style="flex:1;padding:6px 10px;font-size:12px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:var(--rs);font-family:'DM Sans',sans-serif;outline:none;cursor:pointer">
-          <option value="unsplash">📷 Unsplash — fotos reals, instantànies (recomanat)</option>
-          <option value="pollinations">🤖 Pollinations FLUX — IA gratuïta (~15s)</option>
-          <option value="flux">⚡ FLUX.1 Replicate — IA premium, guarda al servidor</option>
-        </select>
+      <div class="kbar" style="padding:10px 16px;justify-content:space-between">
+        <span class="lbl">🤖 FLUX.1 · Hugging Face — IA gratuïta sense límit</span>
         <span class="kst on" id="imgEngineSt">Actiu</span>
         <span id="imgEngineLbl" style="display:none"></span>
-      </div>
-        <button class="bs" onclick="testConnections()" style="font-size:11px">Test conexiones</button>
       </div>
       
       <div class="gform">
@@ -345,7 +338,12 @@ select option{background:var(--surface2)}
             <div class="fg"><label>Hashtags fijos</label><textarea rows="2" id="cfgTags"></textarea></div>
             <div class="fg"><label>CTA habitual</label><input type="text" id="cfgCTA"></div>
             <div class="fg">
-              <label>API Key Replicate (FLUX.1)</label>
+              <label>Token Hugging Face (gratis · opcional)</label>
+              <input type="password" id="cfgHFToken" placeholder="hf_..." autocomplete="off">
+              <span style="font-size:11px;color:var(--text3);margin-top:3px">Sense token funciona però amb rate limit · Crea'l a huggingface.co (gratuït)</span>
+            </div>
+            <div class="fg">
+              <label>API Key Replicate (FLUX.1 premium)</label>
               <input type="password" id="cfgReplicateKey" placeholder="r8_..." autocomplete="off" value="r8_e1KCvK21l1VWdHhanVOM5lmUPMn6EJI3Xncv4">
               <span style="font-size:11px;color:var(--text3);margin-top:3px">Token de Replicate para FLUX.1</span>
             </div>
@@ -427,8 +425,6 @@ select option{background:var(--surface2)}
 const DEFAULT_UPLOAD_URL = 'https://www.jordiqterrassa.com/upload.php';
 const DEFAULT_REPLICATE_TOKEN = 'r8_e1KCvK21l1VWdHhanVOM5lmUPMn6EJI3Xncv4';
 
-// API KEY PEXELS
-const PEXELS_API_KEY = 'e3qN3dCv9TQaLbq4hWJ8JCGYpQTbfpCOt6wTJoBT5gYkMrKdLm22Udks';
 
 const firebaseConfig = {
   apiKey: "AIzaSyB1HefWkEqitPqHNE9G_slYDFzf9Z7jf9I",
@@ -448,126 +444,49 @@ let selIds = new Set();
 let calMon = new Date().getMonth(), calYr = new Date().getFullYear(), editP = null;
 
 // =====================================================
-// MOTORS D'IMATGE: Unsplash | Pollinations FLUX | Replicate FLUX
+// GENERACIÓ D'IMATGES: Hugging Face FLUX.1-schnell
+// Gratuït · Sense CORS · Base64 · Funciona des de GitHub Pages
 // =====================================================
 
-// Motor actiu: 'unsplash' | 'pollinations' | 'flux'
-function getImgMotor() {
-  return localStorage.getItem('sc_img_motor') || 'unsplash';
-}
-function setImgMotor(v) {
-  localStorage.setItem('sc_img_motor', v);
-  updateImgEngineLabel();
+function getHFToken() {
+  return localStorage.getItem('sc_hf_token') || document.getElementById('cfgHFToken')?.value?.trim() || '';
 }
 
-// Construeix query de cerca intel·ligent a partir del context
-function buildSearchQuery(context, theme) {
-  let q = '';
-  if (context && context.length > 2) {
-    q = context.toLowerCase().replace(/[^\w\s]/gi,'').trim();
-    // Eliminar paraules buides
-    q = q.replace(/\b(menú|menu|plato|nuevo|especial|delicioso|rico|con|de|la|el|los|las)\b/gi,'').trim();
-  }
-  if (!q || q.length < 3) {
-    const map = {
-      'Plato destacado del día':'gourmet food plating',
-      'Evento especial':'restaurant celebration',
-      'Detrás del escenario':'chef kitchen cooking',
-      'Testimonio de cliente':'happy restaurant diners',
-      'Temporada / Festividad':'seasonal food festive',
-      'Nuevo producto o menú':'new dish menu',
-      'Historia del restaurante':'restaurant interior cozy'
-    };
-    q = map[theme] || 'restaurant food';
-  }
-  return q;
-}
-
-// UNSPLASH — fotos reals, sense CORS, instantànies
-function fetchUnsplashImage(context, theme, isStory, index) {
+async function generateImageHF(prompt, isStory) {
   const w = isStory ? 768 : 1024;
-  const h = isStory ? 1365 : 1024;
-  const q = encodeURIComponent(buildSearchQuery(context, theme) + ' food');
-  const seed = index * 13 + Math.floor(Date.now() / 300000); // canvia cada 5min
-  return {
-    url: `https://source.unsplash.com/${w}x${h}/?${q}&sig=${seed}`,
-    source: 'unsplash'
-  };
+  const h = isStory ? 1360 : 1024;
+  const full = prompt + ', professional food photography, appetizing, restaurant, high quality, natural lighting';
+  const headers = { 'Content-Type': 'application/json' };
+  const tok = getHFToken();
+  if (tok) headers['Authorization'] = 'Bearer ' + tok;
+
+  const res = await fetch(
+    'https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell',
+    { method: 'POST', headers, body: JSON.stringify({ inputs: full, parameters: { width: w, height: h, num_inference_steps: 4, guidance_scale: 0 } }) }
+  );
+  if (!res.ok) throw new Error('HF ' + res.status + ': ' + (await res.text()).slice(0,100));
+  const blob = await res.blob();
+  return URL.createObjectURL(blob);
 }
 
-// POLLINATIONS FLUX — IA gratuïta, sense key
-function fetchPollinationsImage(imagePrompt, isStory, index) {
-  const w = isStory ? 768 : 1024;
-  const h = isStory ? 1365 : 1024;
-  const full = (imagePrompt || 'food dish') + ', professional food photography, restaurant, high quality, natural lighting';
-  const seed = index * 7919 + Math.floor(Math.random() * 999);
-  const url = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(full)
-    + '?width=' + w + '&height=' + h + '&model=flux&nologo=true&seed=' + seed;
-  return { url, source: 'pollinations' };
+function injectHFImage(cardId, blobUrl) {
+  const box = document.getElementById('cprev-' + cardId);
+  if (!box) return;
+  const img = new Image();
+  img.style.cssText = 'width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s;position:absolute;inset:0';
+  img.onload = () => img.style.opacity = '1';
+  img.onerror = () => { if (box.querySelector('.iload')) box.querySelector('.iload').innerHTML = '<span style="font-size:20px">⚠️</span><span class="ilt">Error</span>'; };
+  box.style.position = 'relative';
+  box.innerHTML = '<div class="iload"><div class="ispin"></div><span class="ilt">Generant FLUX...</span></div>';
+  box.appendChild(img);
+  img.src = blobUrl;
 }
 
-// Fallback Picsum
-function fetchPicsumImage(isStory, index) {
-  const w = isStory ? 768 : 1024;
-  const h = isStory ? 1365 : 1024;
-  const seed = (index * 997) + Math.floor(Date.now() / 86400000);
-  return { url: `https://picsum.photos/seed/${seed}/${w}/${h}`, source: 'picsum' };
-}
+// Compatibilitat amb codi v7
+async function fetchPexelsImage(context, theme, isStory, index) { return { url: null, source: 'hf' }; }
+function fetchPicsumImage(isStory, index) { return { url: null, source: 'hf' }; }
 
-// Funció unificada — decideix quin motor usar
-async function fetchImage(context, theme, imagePrompt, isStory, index) {
-  const motor = getImgMotor();
-  if (motor === 'pollinations') {
-    return fetchPollinationsImage(imagePrompt || context, isStory, index);
-  }
-  // Per defecte: Unsplash (instantani i fiable)
-  return fetchUnsplashImage(context, theme, isStory, index);
-}
 
-// Alias per compatibilitat amb codi existent
-async function fetchPexelsImage(context, theme, isStory, index) {
-  const p = proposals[index] || {};
-  return fetchImage(context, theme, p.imagePrompt, isStory, index);
-}
-
-// =====================================================
-// TEST DE CONEXIONES
-// =====================================================
-async function testConnections() {
-  toast('🔍 Probando conexiones...');
-  
-  // Test Pexels
-  try {
-    const testPexels = await fetch('https://api.pexels.com/v1/search?query=food&per_page=1', {
-      headers: { 'Authorization': PEXELS_API_KEY }
-    });
-    console.log('Pexels:', testPexels.ok ? '✅ OK' : '❌ Error ' + testPexels.status);
-  } catch(e) {
-    console.error('Pexels:', e.message);
-  }
-  
-  // Test servidor
-  try {
-    const testServer = await fetch(getBaseUrl() + 'gallery.php?action=list');
-    console.log('Servidor:', testServer.ok ? '✅ OK' : '❌ Error ' + testServer.status);
-  } catch(e) {
-    console.error('Servidor:', e.message);
-  }
-  
-  // Test FLUX (proxy)
-  try {
-    const testFlux = await fetch(getBaseUrl() + 'replicate-proxy.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({token: getReplicateToken(), prompt: 'test', test: true})
-    });
-    console.log('FLUX Proxy:', testFlux.ok ? '✅ OK' : '❌ Error ' + testFlux.status);
-  } catch(e) {
-    console.error('FLUX:', e.message);
-  }
-  
-  toast('📋 Revisa la consola (F12) para resultados');
-}
 
 // =====================================================
 // SUBIR IMAGEN A SERVIDOR
@@ -747,10 +666,8 @@ async function initApp() {
     document.getElementById('initScreen').style.display = 'none';
     document.getElementById('mainApp').style.display = 'grid';
     renderCal();
-    // Inicialitzar selector de motor
-    const sel = document.getElementById('motorSelect');
-    if (sel) sel.value = getImgMotor();
-    updateImgEngineLabel();
+    const hfSaved = localStorage.getItem('sc_hf_token'); if (hfSaved && document.getElementById('cfgHFToken')) document.getElementById('cfgHFToken').value = hfSaved;
+  updateImgEngineLabel();
   } catch (err) {
     setInitMsg('Error: ' + err.message);
   }
@@ -803,6 +720,7 @@ async function loadRestaurant(id) {
   document.getElementById('cfgCTA').value = d.cta || '';
   document.getElementById('cfgServerUrl').value = d.serverUrl || DEFAULT_UPLOAD_URL;
   if (d.replicateKey) document.getElementById('cfgReplicateKey').value = d.replicateKey;
+  const hfEl = document.getElementById('cfgHFToken'); if (hfEl && d.hfToken) { hfEl.value = d.hfToken; localStorage.setItem('sc_hf_token', d.hfToken); }
   scheduled = (d.scheduled || []).map(s => ({...s}));
   updBadge();
   renderCal();
@@ -854,6 +772,7 @@ async function saveCfg() {
     cta: document.getElementById('cfgCTA').value,
     serverUrl: document.getElementById('cfgServerUrl').value,
     replicateKey: document.getElementById('cfgReplicateKey').value,
+    hfToken: document.getElementById('cfgHFToken')?.value || '',
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
   setSyncState('spin', 'Guardando...');
@@ -876,17 +795,11 @@ async function saveScheduled() {
 }
 
 function updateImgEngineLabel() {
-  const token = getReplicateToken();
-  const hasFlux = token && token.length > 10;
-  const motor = getImgMotor();
-  const motorNames = { unsplash:'Unsplash', pollinations:'Pollinations FLUX', flux:'FLUX.1 (Replicate)' };
-  document.getElementById('imgEngineLbl').textContent = motorNames[motor] || motor;
-  document.getElementById('imgEngineSt').className = 'kst on';
+  const hfTok = getHFToken();
+  const st = document.getElementById('imgEngineSt');
+  if (st) { st.textContent = hfTok ? 'HF ✓' : 'Actiu'; st.className = 'kst on'; }
   const fluxBtn = document.getElementById('fluxBtn');
-  if (fluxBtn) fluxBtn.style.display = hasFlux ? 'inline-block' : 'none';
-  // Actualitzar selector si existeix
-  const sel = document.getElementById('motorSelect');
-  if (sel) sel.value = motor;
+  if (fluxBtn) fluxBtn.style.display = getReplicateToken()?.length > 10 ? 'inline-block' : 'none';
 }
 
 // =====================================================
@@ -937,50 +850,25 @@ async function genProposals() {
     toast('⚠️ Usando plantilla de ejemplo');
   }
 
-  const motor = getImgMotor();
 
-  if (motor === 'flux') {
-    // FLUX.1 Replicate: renderitza primer amb Unsplash, després substitueix amb FLUX
-    for (let i = 0; i < proposals.length; i++) {
-      const fb = fetchUnsplashImage(context, theme, proposals[i].type === 'story', i);
-      proposals[i].imageData = fb.url;
-      proposals[i].imageSource = 'unsplash';
-    }
-    document.getElementById('lbox').classList.remove('vis');
-    document.getElementById('genBtn').disabled = false;
-    renderProps();
-    proposals.forEach(p => injectImg(p.id, p.imageData, p.imageSource));
-    toast('✓ Textos generats · Generant imatges FLUX.1...');
-    setTimeout(() => generateFluxForAll(restName), 100);
+  // ── Imatges amb HuggingFace FLUX.1 (en paral·lel) ─────────────────────────
+  document.getElementById('lbox').classList.remove('vis');
+  document.getElementById('genBtn').disabled = false;
+  renderProps();
+  toast('✓ Textos generats · Generant imatges FLUX.1...');
 
-  } else if (motor === 'pollinations') {
-    // Pollinations: assigna URL (es carreguen al fons)
-    document.getElementById('lstep').textContent = 'Preparant imatges IA...';
-    for (let i = 0; i < proposals.length; i++) {
-      const imgData = fetchPollinationsImage(proposals[i].imagePrompt || context, proposals[i].type === 'story', i);
-      proposals[i].imageData = imgData.url;
-      proposals[i].imageSource = 'pollinations';
+  await Promise.all(proposals.map(async (p, i) => {
+    try {
+      const blobUrl = await generateImageHF(p.imagePrompt || p.title + ' ' + context, p.type === 'story');
+      proposals[i].imageData = blobUrl;
+      injectHFImage(p.id, blobUrl);
+    } catch(e) {
+      console.error('HF img ' + i + ':', e.message);
+      const box = document.getElementById('cprev-' + p.id);
+      if (box) box.innerHTML = '<div class="iload"><span style="font-size:18px">⚠️</span><span class="ilt">' + e.message.slice(0,50) + '</span></div>';
     }
-    document.getElementById('lbox').classList.remove('vis');
-    document.getElementById('genBtn').disabled = false;
-    renderProps();
-    proposals.forEach(p => injectImg(p.id, p.imageData, p.imageSource));
-    toast('✓ Propuestas generadas · Imatges carregant (~15s)...');
-
-  } else {
-    // Unsplash: instantani per defecte
-    document.getElementById('lstep').textContent = 'Carregant imatges...';
-    for (let i = 0; i < proposals.length; i++) {
-      const imgData = fetchUnsplashImage(context, theme, proposals[i].type === 'story', i);
-      proposals[i].imageData = imgData.url;
-      proposals[i].imageSource = 'unsplash';
-    }
-    document.getElementById('lbox').classList.remove('vis');
-    document.getElementById('genBtn').disabled = false;
-    renderProps();
-    proposals.forEach(p => injectImg(p.id, p.imageData, p.imageSource));
-    toast('✓ ' + proposals.length + ' propuestas con imágenes de Unsplash');
-  }
+  }));
+  toast('✓ Imatges generades amb FLUX.1!');
 }
 
 // Generar todas las imágenes con FLUX
