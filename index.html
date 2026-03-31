@@ -179,6 +179,9 @@ select option{background:var(--surface2)}
 .bo-filters{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:4px}
 .bo-filters select{padding:7px 12px;font-size:13px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:var(--rs);font-family:'DM Sans',sans-serif;outline:none}
 .bo-empty{text-align:center;padding:60px 20px;color:var(--text3)}
+.model-sel{display:flex;align-items:center;gap:8px;background:var(--surface2);padding:6px 12px;border-radius:var(--rs);border:1px solid var(--border2)}
+.model-sel label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin:0}
+.model-sel select{background:transparent;border:none;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer;padding:4px 8px}
 @media(max-width:900px){.app{grid-template-columns:1fr}.sidebar{display:none}.cal-area,.cfggrid,.fgrid{grid-template-columns:1fr}}
 </style>
 </head>
@@ -224,10 +227,18 @@ select option{background:var(--surface2)}
     <div id="sec-generate" class="content">
       <div class="kbar" style="justify-content:space-between">
         <div style="display:flex;align-items:center;gap:10px">
-          <span class="lbl">🖼️ Imágenes: <span id="imgEngineLbl">Pexels + FLUX.1</span></span>
-          <span class="kst on" id="imgEngineSt">Activo</span>
+          <span class="lbl">🖼️ Motor de imágenes:</span>
+          <div class="model-sel">
+            <select id="imgModel" onchange="updateModelLabel()">
+              <option value="flux">FLUX.1</option>
+              <option value="flux-pro">FLUX Pro</option>
+              <option value="dall-e-3">DALL-E 3</option>
+              <option value="stable-diffusion">Stable Diffusion</option>
+            </select>
+          </div>
+          <span class="kst on" id="modelStatus">Puter.js Activo</span>
         </div>
-        <button class="bs" onclick="testConnections()" style="font-size:11px">Test conexiones</button>
+        <button class="bs" onclick="testPuter()" style="font-size:11px">Test Puter</button>
       </div>
       
       <div class="gform">
@@ -266,8 +277,7 @@ select option{background:var(--surface2)}
         </div>
         <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
           <button class="bp" onclick="genProposals()" id="genBtn">✦ Generar propuestas</button>
-          <button class="bp secondary" onclick="genWithFluxOnly()" id="fluxBtn" style="display:none">🎨 Solo FLUX</button>
-          <span style="font-size:12px;color:var(--text3)">Textos con Claude + imágenes con Pexels/FLUX.1</span>
+          <span style="font-size:12px;color:var(--text3)">Textos con Claude + imágenes con Puter.js</span>
         </div>
       </div>
 
@@ -284,8 +294,7 @@ select option{background:var(--surface2)}
             <span style="font-size:13px;color:var(--text3);margin-left:8px" id="selCount">0 seleccionadas</span>
           </div>
           <div style="display:flex;gap:10px">
-            <button class="bs" onclick="regenerateImages()">🔄 Nuevas imágenes (Pexels)</button>
-            <button class="bs" onclick="upgradeToFlux()">✨ Mejorar con FLUX</button>
+            <button class="bs" onclick="regenerateImages()">🔄 Regenerar imágenes</button>
             <button class="bs" onclick="selAll()">Seleccionar todo</button>
             <button class="bp" onclick="schedSel()" id="schedBtn" disabled>Programar seleccionadas →</button>
           </div>
@@ -340,26 +349,25 @@ select option{background:var(--surface2)}
             <div class="fg"><label>Hashtags fijos</label><textarea rows="2" id="cfgTags"></textarea></div>
             <div class="fg"><label>CTA habitual</label><input type="text" id="cfgCTA"></div>
             <div class="fg">
-              <label>API Key Replicate (FLUX.1)</label>
-              <input type="password" id="cfgReplicateKey" placeholder="r8_..." autocomplete="off" value="r8_e1KCvK21l1VWdHhanVOM5lmUPMn6EJI3Xncv4">
-              <span style="font-size:11px;color:var(--text3);margin-top:3px">Token de Replicate para FLUX.1</span>
-            </div>
-            <div class="fg">
-              <label>URL de tu servidor (upload.php)</label>
-              <input type="url" id="cfgServerUrl" placeholder="https://www.jordiqterrassa.com/upload.php" value="https://www.jordiqterrassa.com/upload.php">
-              <span style="font-size:11px;color:var(--text3);margin-top:3px">Ej: https://www.jordiqterrassa.com/upload.php</span>
+              <label>Modelo de imágenes por defecto</label>
+              <select id="cfgModel">
+                <option value="flux">FLUX.1 (rápido)</option>
+                <option value="flux-pro">FLUX Pro (calidad)</option>
+                <option value="dall-e-3">DALL-E 3</option>
+                <option value="stable-diffusion">Stable Diffusion</option>
+              </select>
             </div>
             <button class="bp" style="width:fit-content" onclick="saveCfg()">Guardar</button>
           </div>
         </div>
       </div>
     </div>
-    <!-- BACKOFFICE IMATGES -->
+
     <div id="sec-backoffice" class="content" style="display:none">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
         <div>
           <h2 style="font-size:18px;font-weight:500">Librería de imágenes</h2>
-          <p style="font-size:13px;color:var(--text3);margin-top:2px">Generadas con FLUX.1 · Guardadas en tu servidor</p>
+          <p style="font-size:13px;color:var(--text3);margin-top:2px">Generadas con Puter.js</p>
         </div>
         <button class="bs" onclick="loadBackoffice()">↺ Actualizar</button>
       </div>
@@ -419,12 +427,6 @@ select option{background:var(--surface2)}
 // =====================================================
 // CONFIGURACIÓN
 // =====================================================
-const DEFAULT_UPLOAD_URL = 'https://www.jordiqterrassa.com/upload.php';
-const DEFAULT_REPLICATE_TOKEN = 'r8_e1KCvK21l1VWdHhanVOM5lmUPMn6EJI3Xncv4';
-
-// API KEY PEXELS
-const PEXELS_API_KEY = 'e3qN3dCv9TQaLbq4hWJ8JCGYpQTbfpCOt6wTJoBT5gYkMrKdLm22Udks';
-
 const firebaseConfig = {
   apiKey: "AIzaSyB1HefWkEqitPqHNE9G_slYDFzf9Z7jf9I",
   authDomain: "social-chef-55f11.firebaseapp.com",
@@ -443,297 +445,70 @@ let selIds = new Set();
 let calMon = new Date().getMonth(), calYr = new Date().getFullYear(), editP = null;
 
 // =====================================================
-// SISTEMA DE IMÁGENES MEJORADO (PEXELS + FLUX)
+// SISTEMA DE IMÁGENES CON PUTER.JS
 // =====================================================
 
-// Buscar imagen en Pexels usando CONTEXTO específico
-async function fetchPexelsImage(context, theme, isStory, index) {
-  if (!PEXELS_API_KEY) {
-    console.warn('⚠️ No hay API Key de Pexels');
-    return fetchPicsumImage(isStory, index);
-  }
+// Modelos disponibles en Puter
+const MODELS = {
+  'flux': { name: 'FLUX.1', quality: 'Buena', speed: 'Rápido' },
+  'flux-pro': { name: 'FLUX Pro', quality: 'Excelente', speed: 'Lento' },
+  'dall-e-3': { name: 'DALL-E 3', quality: 'Muy buena', speed: 'Medio' },
+  'stable-diffusion': { name: 'Stable Diffusion', quality: 'Buena', speed: 'Rápido' }
+};
+
+function getSelectedModel() {
+  return document.getElementById('imgModel')?.value || 'flux';
+}
+
+function updateModelLabel() {
+  const model = getSelectedModel();
+  const info = MODELS[model];
+  document.getElementById('modelStatus').textContent = `${info.name} • ${info.quality}`;
+}
+
+// Generar imagen con Puter.js
+async function generateWithPuter(prompt, isStory, model = null) {
+  const selectedModel = model || getSelectedModel();
+  const aspectRatio = isStory ? '9:16' : '1:1';
   
   try {
-    // Construir búsqueda inteligente combinando contexto + tema
-    let searchQuery = '';
+    console.log(`🎨 Generando con ${selectedModel}: ${prompt.substring(0, 50)}...`);
     
-    if (context && context.length > 2) {
-      // Usar el contexto específico (hamburguesa, paella, etc.)
-      searchQuery = context.toLowerCase()
-        .replace(/[^\w\s]/gi, '') // Eliminar puntuación
-        .replace(/\b(menú|menu|plato|nuevo|especial|delicioso|rico)\b/gi, '') // Palabras vacías
-        .trim();
-    }
+    // Usar la API de Puter para generar imágenes
+    const result = await puter.ai.txt2img(prompt, {
+      model: selectedModel,
+      aspect_ratio: aspectRatio,
+      quality: selectedModel === 'flux-pro' ? 'high' : 'standard'
+    });
     
-    // Si no hay contexto útil, usar el tema
-    if (!searchQuery || searchQuery.length < 3) {
-      const themeTerms = {
-        'Plato destacado del día': 'gourmet food dish plating',
-        'Evento especial': 'restaurant event celebration',
-        'Detrás del escenario': 'chef cooking kitchen',
-        'Testimonio de cliente': 'happy diners restaurant',
-        'Temporada / Festividad': 'seasonal food festive',
-        'Nuevo producto o menú': 'new menu food',
-        'Historia del restaurante': 'restaurant interior cozy'
-      };
-      searchQuery = themeTerms[theme] || 'restaurant food';
-    }
-    
-    // Añadir calidad fotográfica
-    searchQuery += ' food photography';
-    const encodedQuery = encodeURIComponent(searchQuery);
-    const orientation = isStory ? 'portrait' : 'square';
-    const page = (index % 20) + 1; // Rotar páginas para variedad
-    
-    console.log(`🔍 Buscando: "${searchQuery}" (${orientation})`);
-    
-    const response = await fetch(
-      `https://api.pexels.com/v1/search?query=${encodedQuery}&orientation=${orientation}&per_page=1&page=${page}`, 
-      {
-        headers: { 'Authorization': PEXELS_API_KEY }
-      }
-    );
-    
-    if (!response.ok) {
-      if (response.status === 429) {
-        throw new Error('Límite Pexels excedido (200/hr)');
-      }
-      throw new Error(`HTTP ${response.status}`);
-    }
-    
-    const data = await response.json();
-    
-    if (data.photos && data.photos.length > 0) {
-      const photo = data.photos[0];
-      console.log('✅ Pexels:', photo.id, '-', photo.photographer);
-      return {
-        url: isStory ? photo.src.portrait : photo.src.large,
-        source: 'pexels',
-        photographer: photo.photographer,
-        id: photo.id
-      };
-    } else {
-      console.warn('⚠️ Sin resultados para:', searchQuery);
-      return fetchPicsumImage(isStory, index);
-    }
+    console.log('✅ Imagen generada:', result?.url || 'URL no disponible');
+    return result?.url || null;
     
   } catch (error) {
-    console.error('❌ Pexels error:', error);
-    return fetchPicsumImage(isStory, index);
+    console.error('❌ Error Puter:', error);
+    throw error;
   }
 }
 
-// Fallback a Picsum
-function fetchPicsumImage(isStory, index) {
-  const w = isStory ? 768 : 1024;
-  const h = isStory ? 1365 : 1024;
-  const seed = (index * 997) + Math.floor(Date.now() / 86400000);
-  return {
-    url: `https://picsum.photos/seed/${seed}/${w}/${h}`,
-    source: 'picsum',
-    photographer: 'Random',
-    id: null
-  };
-}
-
-// =====================================================
-// TEST DE CONEXIONES
-// =====================================================
-async function testConnections() {
-  toast('🔍 Probando conexiones...');
-  
-  // Test Pexels
+// Test de conexión con Puter
+async function testPuter() {
+  toast('🔍 Probando conexión con Puter...');
   try {
-    const testPexels = await fetch('https://api.pexels.com/v1/search?query=food&per_page=1', {
-      headers: { 'Authorization': PEXELS_API_KEY }
-    });
-    console.log('Pexels:', testPexels.ok ? '✅ OK' : '❌ Error ' + testPexels.status);
-  } catch(e) {
-    console.error('Pexels:', e.message);
-  }
-  
-  // Test servidor
-  try {
-    const testServer = await fetch(getBaseUrl() + 'gallery.php?action=list');
-    console.log('Servidor:', testServer.ok ? '✅ OK' : '❌ Error ' + testServer.status);
-  } catch(e) {
-    console.error('Servidor:', e.message);
-  }
-  
-  // Test FLUX (proxy)
-  try {
-    const testFlux = await fetch(getBaseUrl() + 'replicate-proxy.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({token: getReplicateToken(), prompt: 'test', test: true})
-    });
-    console.log('FLUX Proxy:', testFlux.ok ? '✅ OK' : '❌ Error ' + testFlux.status);
-  } catch(e) {
-    console.error('FLUX:', e.message);
-  }
-  
-  toast('📋 Revisa la consola (F12) para resultados');
-}
-
-// =====================================================
-// SUBIR IMAGEN A SERVIDOR
-// =====================================================
-async function uploadImageToServer(imageUrl, filename) {
-  const uploadUrl = document.getElementById('cfgServerUrl')?.value?.trim() || DEFAULT_UPLOAD_URL;
-  
-  try {
-    const response = await fetch(imageUrl);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    
-    const blob = await response.blob();
-    const base64 = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-    
-    const uploadResponse = await fetch(uploadUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ image: base64 })
-    });
-    
-    if (!uploadResponse.ok) {
-      const errorText = await uploadResponse.text();
-      throw new Error(`HTTP ${uploadResponse.status}: ${errorText}`);
+    // Test simple de autenticación
+    if (puter.auth?.isSignedIn) {
+      const isSignedIn = await puter.auth.isSignedIn();
+      console.log('Puter auth:', isSignedIn ? '✅ Conectado' : '⚠️ No autenticado');
     }
     
-    const result = await uploadResponse.json();
-    if (!result.success) throw new Error(result.error);
+    // Test de generación de imagen pequeña
+    const testResult = await puter.ai.txt2img('a simple red apple', { model: 'flux' });
+    console.log('Puter img test:', testResult?.url ? '✅ OK' : '❌ Falló');
     
-    return result.url;
-  } catch (error) {
-    console.error('Error upload:', error);
-    toast('⚠️ Error al subir: ' + error.message);
-    return null;
+    toast('✅ Puter.js funciona correctamente');
+  } catch (e) {
+    console.error('Puter test error:', e);
+    toast('❌ Error: ' + e.message, true);
   }
-}
-
-// =====================================================
-// FLUX.1
-// =====================================================
-function getReplicateToken() {
-  return document.getElementById('cfgReplicateKey')?.value?.trim() || DEFAULT_REPLICATE_TOKEN;
-}
-function getBaseUrl() {
-  const raw = document.getElementById('cfgServerUrl')?.value?.trim() || DEFAULT_UPLOAD_URL;
-  return raw.replace(/\/[^\/]+$/, '/');
-}
-
-async function generateWithFlux(prompt, isStory, restName, propType) {
-  const token = getReplicateToken();
-  if (!token || token.length < 10) {
-    throw new Error('Token FLUX no configurado');
-  }
-  
-  const proxyUrl = getBaseUrl() + 'replicate-proxy.php';
-  
-  try {
-    console.log('🎨 FLUX:', prompt.substring(0, 50) + '...');
-    
-    const res = await fetch(proxyUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        token,
-        prompt: prompt + ', professional food photography, 8k, detailed',
-        aspect_ratio: isStory ? '9:16' : '1:1',
-        restaurant: restName || 'restaurant',
-        type: propType || 'post'
-      })
-    });
-    
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`Proxy error ${res.status}: ${errText}`);
-    }
-    
-    const data = await res.json();
-    if (!data.success) throw new Error(data.error || 'Error desconocido');
-    
-    console.log('✅ FLUX OK:', data.filename);
-    return data.url;
-  } catch(e) {
-    console.error('❌ FLUX Error:', e.message);
-    throw e;
-  }
-}
-
-// =====================================================
-// BACKOFFICE
-// =====================================================
-let allBoImages = [];
-
-async function loadBackoffice() {
-  const grid = document.getElementById('boGrid');
-  grid.innerHTML = '<div class="bo-empty"><p>Cargando...</p></div>';
-  
-  try {
-    const galleryUrl = getBaseUrl() + 'gallery.php?action=list&t=' + Date.now();
-    const res = await fetch(galleryUrl);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    allBoImages = data.images || [];
-    document.getElementById('imgBadge').textContent = allBoImages.length || '·';
-    
-    const rests = [...new Set(allBoImages.map(i => i.restaurant).filter(Boolean))];
-    const sel = document.getElementById('boFilterRest');
-    sel.innerHTML = '<option value="">Todos los restaurantes</option>' +
-      rests.map(r => `<option value="${r}">${r}</option>`).join('');
-    filterBo();
-  } catch(e) {
-    grid.innerHTML = `<div class="bo-empty"><p>Error: ${e.message}</p></div>`;
-  }
-}
-
-function filterBo() {
-  const rest = document.getElementById('boFilterRest')?.value || '';
-  const type = document.getElementById('boFilterType')?.value || '';
-  const filtered = allBoImages.filter(img =>
-    (!rest || img.restaurant === rest) && (!type || img.type === type)
-  );
-  renderBo(filtered);
-}
-
-function renderBo(images) {
-  const grid = document.getElementById('boGrid');
-  document.getElementById('boCount').textContent = images.length + ' imágenes';
-  if (!images.length) {
-    grid.innerHTML = '<div class="bo-empty"><p>No hay imágenes aún.</p></div>';
-    return;
-  }
-  grid.innerHTML = images.map((img, i) => `
-    <div class="bo-card ${img.type==='story'?'story':''}">
-      <img src="${img.url}" alt="" loading="lazy" onerror="this.style.opacity='.2'">
-      <div class="bo-meta">
-        <div class="bo-rest">${img.restaurant||'Restaurant'} · ${img.type||'post'}</div>
-        <div class="bo-prm">${img.prompt||''}</div>
-        <div class="bo-dt">${img.date ? new Date(img.date*1000).toLocaleDateString('ca-ES') : ''}</div>
-      </div>
-      <div class="bo-act">
-        <button onclick="navigator.clipboard.writeText('${img.url}').then(()=>toast('✓ URL copiada'))">📋 Copiar</button>
-        <button class="del" onclick="deleteBo('${img.filename}',${i})">🗑 Eliminar</button>
-      </div>
-    </div>`).join('');
-}
-
-async function deleteBo(filename, idx) {
-  if (!confirm('¿Eliminar esta imagen?')) return;
-  try {
-    const res = await fetch(getBaseUrl() + 'gallery.php?action=delete&file=' + encodeURIComponent(filename));
-    const data = await res.json();
-    if (data.success) {
-      allBoImages = allBoImages.filter(i => i.filename !== filename);
-      filterBo();
-      toast('✓ Imagen eliminada');
-    }
-  } catch(e) { toast('Error: ' + e.message); }
 }
 
 // =====================================================
@@ -748,14 +523,21 @@ async function initApp() {
     const cred = await auth.signInAnonymously();
     currentUser = cred.user;
     setSyncState('spin', 'Cargando...');
+    
+    // Inicializar Puter
+    if (typeof puter !== 'undefined') {
+      console.log('✅ Puter.js cargado');
+    }
+    
     await loadUserData();
     setSyncState('ok', 'Listo');
     document.getElementById('initScreen').style.display = 'none';
     document.getElementById('mainApp').style.display = 'grid';
     renderCal();
-    updateImgEngineLabel();
+    updateModelLabel();
   } catch (err) {
     setInitMsg('Error: ' + err.message);
+    console.error(err);
   }
 }
 
@@ -782,7 +564,7 @@ async function createDefaultRestaurant() {
   const data = {
     name: 'La Taberna del Mar', cuisine: 'Mediterránea', desc: 'Restaurante familiar',
     web: '', ig: '@latabernadelmar', lang: 'Español', freq: 'Diaria',
-    tags: '#gastronomia', cta: '¡Reserva!', scheduled: [],
+    tags: '#gastronomia', cta: '¡Reserva!', imgModel: 'flux', scheduled: [],
     createdAt: firebase.firestore.FieldValue.serverTimestamp()
   };
   const ref = await db.collection('users').doc(currentUser.uid).collection('restaurants').add(data);
@@ -804,8 +586,14 @@ async function loadRestaurant(id) {
   document.getElementById('cfgFreq').value = d.freq || 'Diaria';
   document.getElementById('cfgTags').value = d.tags || '';
   document.getElementById('cfgCTA').value = d.cta || '';
-  document.getElementById('cfgServerUrl').value = d.serverUrl || DEFAULT_UPLOAD_URL;
-  if (d.replicateKey) document.getElementById('cfgReplicateKey').value = d.replicateKey;
+  document.getElementById('cfgModel').value = d.imgModel || 'flux';
+  
+  // Sincronizar selector de modelo
+  if (d.imgModel) {
+    document.getElementById('imgModel').value = d.imgModel;
+    updateModelLabel();
+  }
+  
   scheduled = (d.scheduled || []).map(s => ({...s}));
   updBadge();
   renderCal();
@@ -831,7 +619,7 @@ async function addRest() {
   if (!n) return;
   const data = {
     name: n, cuisine: 'Tipo', desc: 'Descripción', web: '', ig: '@' + n.toLowerCase().replace(/\s+/g,''),
-    lang: 'Español', freq: 'Diaria', tags: '#restaurante', cta: '¡Reserva!',
+    lang: 'Español', freq: 'Diaria', tags: '#restaurante', cta: '¡Reserva!', imgModel: 'flux',
     scheduled: [], createdAt: firebase.firestore.FieldValue.serverTimestamp()
   };
   const ref = await db.collection('users').doc(currentUser.uid).collection('restaurants').add(data);
@@ -855,8 +643,7 @@ async function saveCfg() {
     freq: document.getElementById('cfgFreq').value,
     tags: document.getElementById('cfgTags').value,
     cta: document.getElementById('cfgCTA').value,
-    serverUrl: document.getElementById('cfgServerUrl').value,
-    replicateKey: document.getElementById('cfgReplicateKey').value,
+    imgModel: document.getElementById('cfgModel').value,
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
   setSyncState('spin', 'Guardando...');
@@ -864,35 +651,22 @@ async function saveCfg() {
   const r = restaurants.find(x => x.id === currentRestId);
   if (r) Object.assign(r, data);
   renderRestSelector();
-  updateImgEngineLabel();
+  
+  // Actualizar selector de modelo si cambió en config
+  document.getElementById('imgModel').value = data.imgModel;
+  updateModelLabel();
+  
   setSyncState('ok', 'Guardado');
   toast('✓ Perfil guardado');
 }
 
-async function saveScheduled() {
-  if (!currentUser || !currentRestId) return;
-  setSyncState('spin', 'Guardando...');
-  await db.collection('users').doc(currentUser.uid).collection('restaurants').doc(currentRestId).update({ 
-    scheduled: scheduled.map(s => ({...s})) 
-  });
-  setSyncState('ok', 'Guardado');
-}
-
-function updateImgEngineLabel() {
-  const token = getReplicateToken();
-  const hasToken = token && token.length > 10 && !token.includes('...');
-  document.getElementById('imgEngineLbl').textContent = hasToken ? 'Pexels + FLUX.1' : 'Pexels (sin FLUX)';
-  document.getElementById('imgEngineSt').className = hasToken ? 'kst on' : 'kst off';
-  document.getElementById('fluxBtn').style.display = hasToken ? 'inline-block' : 'none';
-}
-
 // =====================================================
-// GENERAR PROPUESTAS (CON IMÁGENES RELEVANTES)
+// GENERAR PROPUESTAS CON PUTER.JS
 // =====================================================
 async function genProposals() {
   const context = document.getElementById('ctx').value.trim();
   if (!context) {
-    toast('⚠️ Escribe un contexto (ej: "Hamburguesa de ternera") para obtener imágenes relevantes');
+    toast('⚠️ Escribe un contexto (ej: "Hamburguesa de ternera")');
     document.getElementById('ctx').focus();
     return;
   }
@@ -910,18 +684,18 @@ async function genProposals() {
   const tags = document.getElementById('cfgTags').value;
   const cta = document.getElementById('cfgCTA').value;
   const lang = document.getElementById('cfgLang').value;
-  const hasFlux = !!getReplicateToken() && getReplicateToken().length > 10;
+  const model = getSelectedModel();
 
-  // Generar textos
+  // Generar textos con Puter AI (Claude)
   try {
     document.getElementById('lstep').textContent = 'Generando textos con IA...';
     const systemMsg = 'Eres experto en marketing gastronómico. Responde SIEMPRE con JSON válido.';
-    const userMsg = `Genera 6 propuestas para ${restName} (${cuisine}). Contexto: ${context}. Temática: ${theme}. Tono: ${tone}. Idioma: ${lang}. Incluye emojis. JSON: {"proposals":[{"id":"p1","type":"post","emoji":"🍽️","title":"Título","caption":"Texto 2-3 frases","hashtags":"${tags}","imagePrompt":"Descripción detallada foto"}]}`;
+    const userMsg = `Genera 6 propuestas para ${restName} (${cuisine}). Contexto: ${context}. Temática: ${theme}. Tono: ${tone}. Idioma: ${lang}. Incluye emojis. JSON: {"proposals":[{"id":"p1","type":"post","emoji":"🍽️","title":"Título","caption":"Texto 2-3 frases","hashtags":"${tags}","imagePrompt":"Descripción detallada foto profesional comida"}]}`;
 
     const resp = await puter.ai.chat([
       { role: 'system', content: systemMsg },
       { role: 'user', content: userMsg }
-    ], { model: 'gpt-4o-mini' });
+    ], { model: 'claude' });
     
     let raw = typeof resp === 'string' ? resp : resp?.message?.content || JSON.stringify(resp);
     raw = raw.replace(/```json|```/gi, '').trim();
@@ -934,15 +708,24 @@ async function genProposals() {
     toast('⚠️ Usando plantilla de ejemplo');
   }
 
-  // Cargar imágenes de Pexels (AHORA CON CONTEXTO ESPECÍFICO)
-  document.getElementById('lstep').textContent = 'Buscando imágenes relevantes...';
+  // Generar imágenes con Puter.js
+  document.getElementById('lstep').textContent = `Generando imágenes con ${MODELS[model].name}...`;
   
   for (let i = 0; i < proposals.length; i++) {
-    document.getElementById('lstep').textContent = `Buscando imagen ${i+1}/${proposals.length}...`;
-    const imgData = await fetchPexelsImage(context, theme, proposals[i].type === 'story', i);
-    proposals[i].imageData = imgData.url;
-    proposals[i].imageSource = imgData.source;
-    proposals[i].imageMeta = imgData;
+    document.getElementById('lstep').textContent = `Generando imagen ${i+1}/${proposals.length}...`;
+    try {
+      const imgUrl = await generateWithPuter(
+        proposals[i].imagePrompt || proposals[i].title,
+        proposals[i].type === 'story',
+        model
+      );
+      proposals[i].imageData = imgUrl;
+      proposals[i].imageSource = model;
+    } catch (e) {
+      console.error('Error imagen', i, e);
+      proposals[i].imageData = null;
+      proposals[i].imageSource = 'error';
+    }
   }
 
   document.getElementById('lbox').classList.remove('vis');
@@ -950,126 +733,64 @@ async function genProposals() {
   renderProps();
   proposals.forEach(p => injectImg(p.id, p.imageData, p.imageSource));
   
-  toast(`✓ ${proposals.length} propuestas con imágenes de ${proposals[0].imageSource}`);
-
-  // Opcional: Generar FLUX en segundo plano si está activado
-  if (hasFlux) {
-    setTimeout(() => generateFluxForAll(restName), 100);
-  }
+  const successCount = proposals.filter(p => p.imageData).length;
+  toast(`✓ ${successCount}/${proposals.length} imágenes generadas con ${MODELS[model].name}`);
 }
 
-// Generar todas las imágenes con FLUX
-async function generateFluxForAll(restName) {
-  toast('🎨 Generando imágenes FLUX en segundo plano...');
+// Regenerar imágenes con modelo seleccionado
+async function regenerateImages() {
+  const model = getSelectedModel();
+  toast(`🔄 Regenerando con ${MODELS[model].name}...`);
   
   for (let i = 0; i < proposals.length; i++) {
     try {
-      const p = proposals[i];
-      const fluxUrl = await generateWithFlux(
-        p.imagePrompt || p.title, 
-        p.type === 'story', 
-        restName, 
-        p.type
+      const imgUrl = await generateWithPuter(
+        proposals[i].imagePrompt || proposals[i].title,
+        proposals[i].type === 'story',
+        model
       );
-      
-      if (fluxUrl) {
-        proposals[i].imageData = fluxUrl;
-        proposals[i].imageSource = 'flux';
-        injectImg(p.id, fluxUrl, 'flux');
-      }
-    } catch(e) {
-      console.error('FLUX error item', i, e);
+      proposals[i].imageData = imgUrl;
+      proposals[i].imageSource = model;
+      injectImg(proposals[i].id, imgUrl, model);
+    } catch (e) {
+      console.error('Error regenerando', i, e);
     }
-  }
-  
-  toast('✨ Imágenes FLUX completadas');
-}
-
-// Regenerar imágenes con Pexels (nuevas búsquedas)
-async function regenerateImages() {
-  const context = document.getElementById('ctx').value.trim() || 'restaurant food';
-  const theme = document.getElementById('theme').value;
-  
-  toast('🔄 Buscando nuevas imágenes...');
-  
-  for (let i = 0; i < proposals.length; i++) {
-    const imgData = await fetchPexelsImage(context + ' ' + (i+1), theme, proposals[i].type === 'story', i + 100);
-    proposals[i].imageData = imgData.url;
-    proposals[i].imageSource = imgData.source;
-    injectImg(proposals[i].id, imgData.url, imgData.source);
   }
   
   renderProps();
-  toast('✓ Nuevas imágenes cargadas');
+  toast('✓ Imágenes regeneradas');
 }
 
-// Mejorar propuestas actuales con FLUX
-async function upgradeToFlux() {
-  const restName = restaurants.find(r => r.id === currentRestId)?.name || 'restaurant';
-  const token = getReplicateToken();
+// Regenerar una sola imagen
+async function regenerateOneImage(id) {
+  const p = proposals.find(x => x.id === id);
+  if (!p) return;
   
-  if (!token || token.length < 10) {
-    toast('❌ Configura tu API Key de Replicate primero');
-    showSec('config', document.querySelectorAll('.ni')[3]);
-    return;
-  }
+  const model = getSelectedModel();
+  document.getElementById('cprev-' + id).innerHTML = '<div class="iload"><div class="ispin"></div><span class="ilt">Generando...</span></div>';
   
-  document.getElementById('lbox').classList.add('vis');
-  document.getElementById('lstep').textContent = 'Generando imágenes FLUX...';
-  
-  for (let i = 0; i < proposals.length; i++) {
-    document.getElementById('lstep').textContent = `FLUX ${i+1}/${proposals.length}...`;
-    try {
-      const fluxUrl = await generateWithFlux(
-        proposals[i].imagePrompt || proposals[i].title,
-        proposals[i].type === 'story',
-        restName,
-        proposals[i].type
-      );
-      
-      if (fluxUrl) {
-        proposals[i].imageData = fluxUrl;
-        proposals[i].imageSource = 'flux';
-        injectImg(proposals[i].id, fluxUrl, 'flux');
-      }
-    } catch(e) {
-      toast(`❌ Error FLUX en imagen ${i+1}: ${e.message}`);
-      break;
+  try {
+    const imgUrl = await generateWithPuter(p.imagePrompt || p.title, p.type === 'story', model);
+    if (imgUrl) {
+      p.imageData = imgUrl;
+      p.imageSource = model;
+      injectImg(id, imgUrl, model);
+      toast('✨ Imagen regenerada');
     }
+  } catch(e) {
+    toast('❌ Error: ' + e.message);
   }
-  
-  document.getElementById('lbox').classList.remove('vis');
-  toast('✨ Proceso FLUX completado');
-}
-
-// Generar solo con FLUX (sin Pexels)
-async function genWithFluxOnly() {
-  const context = document.getElementById('ctx').value.trim();
-  if (!context) {
-    toast('⚠️ Escribe un contexto primero');
-    return;
-  }
-  
-  document.getElementById('genBtn').disabled = true;
-  document.getElementById('propArea').style.display = 'none';
-  document.getElementById('lbox').classList.add('vis');
-  
-  // Generar textos primero (igual que antes)
-  await genProposals();
-  
-  // Luego reemplazar todas las imágenes con FLUX
-  await upgradeToFlux();
 }
 
 function fallbackProposals(name, context) {
   const ctx = context || 'gourmet dish';
   return [
-    {id:'p1',type:'post',emoji:'🍽️',title:`${ctx} especial`,caption:`Descubre nuestro ${ctx} en ${name}. Ingredientes frescos y sabor único.`,hashtags:'#gastronomia',imagePrompt:`Professional food photography of ${ctx}`},
-    {id:'p2',type:'story',emoji:'👨‍🍳',title:'Preparación',caption:`Así preparamos nuestro ${ctx}.`,hashtags:'#chef',imagePrompt:`Chef preparing ${ctx} in kitchen`},
-    {id:'p3',type:'post',emoji:'📸',title:'Plato estrella',caption:`El ${ctx} que todos adoran.`,hashtags:'#foodie',imagePrompt:`Beautiful ${ctx} on plate`},
-    {id:'p4',type:'story',emoji:'✨',title:'Detalles',caption:`Los pequeños detalles marcan la diferencia.`,hashtags:'#gourmet',imagePrompt:`Close up ${ctx} details`},
-    {id:'p5',type:'post',emoji:'🔥',title:'Recién hecho',caption:`${ctx} recién preparado para ti.`,hashtags:'#fresh',imagePrompt:`Fresh ${ctx} restaurant`},
-    {id:'p6',type:'story',emoji:'❤️',title:'Clientes felices',caption:`¿Ya probaste nuestro ${ctx}?`,hashtags:'#happy',imagePrompt:`Customers enjoying ${ctx}`}
+    {id:'p1',type:'post',emoji:'🍽️',title:`${ctx} especial`,caption:`Descubre nuestro ${ctx} en ${name}. Ingredientes frescos y sabor único.`,hashtags:'#gastronomia',imagePrompt:`Professional food photography of ${ctx}, gourmet plating, restaurant lighting, 8k quality`},
+    {id:'p2',type:'story',emoji:'👨‍🍳',title:'Preparación',caption:`Así preparamos nuestro ${ctx}.`,hashtags:'#chef',imagePrompt:`Chef preparing ${ctx} in professional kitchen, action shot, warm lighting`},
+    {id:'p3',type:'post',emoji:'📸',title:'Plato estrella',caption:`El ${ctx} que todos adoran.`,hashtags:'#foodie',imagePrompt:`Beautiful ${ctx} on elegant plate, top view, restaurant setting`},
+    {id:'p4',type:'story',emoji:'✨',title:'Detalles',caption:`Los pequeños detalles marcan la diferencia.`,hashtags:'#gourmet',imagePrompt:`Close up ${ctx} details, texture, professional food photography`},
+    {id:'p5',type:'post',emoji:'🔥',title:'Recién hecho',caption:`${ctx} recién preparado para ti.`,hashtags:'#fresh',imagePrompt:`Fresh ${ctx} steam rising, appetizing, restaurant presentation`},
+    {id:'p6',type:'story',emoji:'❤️',title:'Clientes felices',caption:`¿Ya probaste nuestro ${ctx}?`,hashtags:'#happy',imagePrompt:`Happy diners enjoying ${ctx} at restaurant, cozy atmosphere`}
   ];
 }
 
@@ -1077,25 +798,24 @@ function injectImg(cardId, url, source) {
   const box = document.getElementById('cprev-' + cardId);
   if (!box) return;
   
+  if (!url) {
+    box.innerHTML = '<div class="iload"><span class="ilt">❌ Error</span></div>';
+    return;
+  }
+  
   const img = new Image();
   img.style.cssText = 'width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s;position:absolute;inset:0';
   img.onload = () => { img.style.opacity = '1'; };
   img.onerror = () => {
-    const fallback = fetchPicsumImage(false, Math.random()).url;
-    const img2 = new Image();
-    img2.style.cssText = img.style.cssText;
-    img2.onload = () => { img2.style.opacity = '1'; };
-    box.innerHTML = '';
-    box.appendChild(img2);
-    img2.src = fallback;
+    box.innerHTML = '<div class="iload"><span class="ilt">❌ Error carga</span></div>';
   };
   
   box.innerHTML = '<div class="iload"><div class="ispin"></div><span class="ilt">Cargando...</span></div>';
   
-  // Añadir tag de fuente
+  // Tag de fuente
   const tag = document.createElement('div');
   tag.className = 'img-tag';
-  tag.textContent = source === 'flux' ? 'FLUX' : source === 'pexels' ? 'Pexels' : 'Picsum';
+  tag.textContent = MODELS[source]?.name || source;
   box.appendChild(tag);
   
   box.appendChild(img);
@@ -1103,7 +823,7 @@ function injectImg(cardId, url, source) {
 }
 
 // =====================================================
-// RENDER Y UI (resto del código)
+// RENDER Y UI
 // =====================================================
 function renderProps() {
   const g = document.getElementById('propGrid');
@@ -1121,33 +841,12 @@ function renderProps() {
       <div class="cact">
         <button class="bsel" onclick="toggleSel('${p.id}')">Seleccionar</button>
         <button class="bedit" onclick="openPrev('${p.id}')">Editar</button>
-        <button class="bflux" onclick="regenerateOneFlux('${p.id}')">FLUX</button>
+        <button class="bflux" onclick="regenerateOneImage('${p.id}')">↻</button>
       </div>
     </div>`).join('');
   document.getElementById('propCount').textContent = proposals.length + ' propuestas';
   document.getElementById('propArea').style.display = 'block';
   updSelUI();
-}
-
-async function regenerateOneFlux(id) {
-  const p = proposals.find(x => x.id === id);
-  if (!p) return;
-  
-  const restName = restaurants.find(r => r.id === currentRestId)?.name || 'restaurant';
-  document.getElementById('cprev-' + id).innerHTML = '<div class="iload"><div class="ispin"></div><span class="ilt">FLUX...</span></div>';
-  
-  try {
-    const fluxUrl = await generateWithFlux(p.imagePrompt || p.title, p.type === 'story', restName, p.type);
-    if (fluxUrl) {
-      p.imageData = fluxUrl;
-      p.imageSource = 'flux';
-      injectImg(id, fluxUrl, 'flux');
-      toast('✨ Imagen FLUX generada');
-    }
-  } catch(e) {
-    toast('❌ Error FLUX: ' + e.message);
-    injectImg(id, p.imageData, 'pexels');
-  }
 }
 
 function toggleSel(id) {
@@ -1229,6 +928,15 @@ async function confirmBulk() {
   renderCal();
 }
 
+async function saveScheduled() {
+  if (!currentUser || !currentRestId) return;
+  setSyncState('spin', 'Guardando...');
+  await db.collection('users').doc(currentUser.uid).collection('restaurants').doc(currentRestId).update({ 
+    scheduled: scheduled.map(s => ({...s})) 
+  });
+  setSyncState('ok', 'Guardado');
+}
+
 function renderCal() {
   document.getElementById('calTitle').textContent = MONTHS[calMon] + ' ' + calYr;
   const cont = document.getElementById('calDays');
@@ -1264,7 +972,7 @@ function renderSList() {
         <div style="flex:1;min-width:0">
           <div class="sd8">${fmtDate(s.date)} · ${s.time}</div>
           <div class="stit">${s.title}</div>
-          <div class="styp">${s.type==='post'?'Post':'Story'}</div>
+          <div class="styp">${s.type==='post'?'Post':'Story'} · ${MODELS[s.imageSource]?.name || s.imageSource || 'Sin img'}</div>
         </div>
         <button onclick="remSched(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:4px">×</button>
       </div>
@@ -1288,6 +996,85 @@ function showSec(n, btn) {
   const s = document.getElementById('sec-'+n); s.style.display = 'flex'; s.style.flexDirection = 'column';
   if (btn) btn.classList.add('active');
   if (n === 'calendar') renderCal();
+}
+
+// Backoffice simplificado
+let allBoImages = [];
+
+async function loadBackoffice() {
+  const grid = document.getElementById('boGrid');
+  
+  // Recopilar imágenes de las propuestas guardadas
+  allBoImages = [];
+  restaurants.forEach(r => {
+    if (r.scheduled) {
+      r.scheduled.forEach(s => {
+        if (s.imageData) {
+          allBoImages.push({
+            url: s.imageData,
+            restaurant: r.name,
+            type: s.type,
+            prompt: s.imagePrompt || s.title,
+            date: s.date,
+            source: s.imageSource || 'unknown'
+          });
+        }
+      });
+    }
+  });
+  
+  // También buscar en propuestas actuales
+  proposals.forEach(p => {
+    if (p.imageData) {
+      allBoImages.push({
+        url: p.imageData,
+        restaurant: restaurants.find(r => r.id === currentRestId)?.name || 'Actual',
+        type: p.type,
+        prompt: p.imagePrompt || p.title,
+        date: 'Reciente',
+        source: p.imageSource || 'unknown'
+      });
+    }
+  });
+  
+  const rests = [...new Set(allBoImages.map(i => i.restaurant).filter(Boolean))];
+  const sel = document.getElementById('boFilterRest');
+  sel.innerHTML = '<option value="">Todos los restaurantes</option>' +
+    rests.map(r => `<option value="${r}">${r}</option>`).join('');
+  
+  document.getElementById('imgBadge').textContent = allBoImages.length || '·';
+  filterBo();
+}
+
+function filterBo() {
+  const rest = document.getElementById('boFilterRest')?.value || '';
+  const type = document.getElementById('boFilterType')?.value || '';
+  const filtered = allBoImages.filter(img =>
+    (!rest || img.restaurant === rest) && (!type || img.type === type)
+  );
+  renderBo(filtered);
+}
+
+function renderBo(images) {
+  const grid = document.getElementById('boGrid');
+  document.getElementById('boCount').textContent = images.length + ' imágenes';
+  if (!images.length) {
+    grid.innerHTML = '<div class="bo-empty"><p>No hay imágenes aún. Genera contenido primero.</p></div>';
+    return;
+  }
+  grid.innerHTML = images.map((img, i) => `
+    <div class="bo-card ${img.type==='story'?'story':''}">
+      <img src="${img.url}" alt="" loading="lazy" onerror="this.style.opacity='.2'">
+      <div class="bo-meta">
+        <div class="bo-rest">${img.restaurant||'Restaurant'} · ${MODELS[img.source]?.name || img.source}</div>
+        <div class="bo-prm">${img.prompt||''}</div>
+        <div class="bo-dt">${img.date || ''}</div>
+      </div>
+      <div class="bo-act">
+        <button onclick="navigator.clipboard.writeText('${img.url}').then(()=>toast('✓ URL copiada'))">📋 Copiar</button>
+        <button onclick="window.open('${img.url}', '_blank')">Ver</button>
+      </div>
+    </div>`).join('');
 }
 
 function fmtDate(d) { if (!d) return ''; const [y,m,dd] = d.split('-'); return `${dd} ${MONTHS[parseInt(m)-1].slice(0,3)} ${y}`; }
