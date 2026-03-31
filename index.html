@@ -1454,25 +1454,41 @@ async function igGenerate() {
 
     try {
       if (hasReplicate) {
-        // ── Replicate via proxy PHP (guarda en servidor directamente) ──
+        // ── Replicate via proxy PHP → fallback a HuggingFace si falla ──
         const proxyUrl = getBaseUrl() + 'replicate-proxy.php';
-        const res = await fetch(proxyUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            token: getReplicateToken(),
-            prompt: prompt + ', professional food photography, 8k, detailed',
-            aspect_ratio: isStory ? '9:16' : '1:1',
-            restaurant: restName,
-            type: igState.format
-          })
-        });
-        if (!res.ok) throw new Error('Proxy HTTP ' + res.status);
-        const data = await res.json();
-        if (!data.success) throw new Error(data.error || 'Error Replicate');
-        item.serverUrl = data.url;
-        item.engine = 'Replicate';
-        item.saved = true;
+        try {
+          const res = await fetch(proxyUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              token: getReplicateToken(),
+              prompt: prompt + ', professional food photography, 8k, detailed',
+              aspect_ratio: isStory ? '9:16' : '1:1',
+              restaurant: restName,
+              type: igState.format
+            })
+          });
+          if (!res.ok) {
+            const errBody = await res.text();
+            let errMsg = 'Proxy HTTP ' + res.status;
+            try { const j = JSON.parse(errBody); errMsg += ': ' + (j.error || j.message || errBody.slice(0,120)); } catch(_) { errMsg += ': ' + errBody.slice(0,120); }
+            console.error('Replicate proxy error body:', errBody);
+            throw new Error(errMsg);
+          }
+          const data = await res.json();
+          if (!data.success) throw new Error(data.error || 'Error Replicate');
+          item.serverUrl = data.url;
+          item.engine = 'Replicate';
+          item.saved = true;
+        } catch(replicateErr) {
+          console.warn('Replicate falló, fallback HF:', replicateErr.message);
+          toast('⚠️ Replicate falló · Usando HF...');
+          const blobUrl = await generateImageHF(prompt, isStory);
+          item.blobUrl = blobUrl;
+          item.engine = 'HF (fallback)';
+          item.saved = false;
+          igUploadOne(i);
+        }
 
       } else {
         // ── HuggingFace FLUX.1-schnell (gratis) ──
@@ -1485,7 +1501,7 @@ async function igGenerate() {
       }
 
     } catch (e) {
-      item.error = e.message.slice(0, 80);
+      item.error = e.message.slice(0, 120);
       console.error('igGenerate error #' + i, e);
     }
 
