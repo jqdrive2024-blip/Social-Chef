@@ -9,7 +9,6 @@
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
 <script src="https://js.puter.com/v2/"></script>
-
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
@@ -59,18 +58,15 @@ select option{background:var(--surface2)}
 .bp{background:var(--accent);color:#0e0e0e;border:none;padding:12px 24px;border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif}
 .bp:hover{background:var(--accent2)}
 .bp:disabled{opacity:.4;cursor:not-allowed}
-.bp.secondary{background:var(--surface2);color:var(--text);border:1px solid var(--border2)}
-.bp.secondary:hover{border-color:var(--accent);color:var(--accent)}
 .bs{background:var(--surface2);color:var(--text);border:1px solid var(--border2);padding:10px 18px;border-radius:var(--rs);font-size:13px;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif}
 .bs:hover{border-color:var(--accent);color:var(--accent)}
-.kbar{display:flex;align-items:center;gap:10px;padding:12px 16px;background:var(--accent-bg);border:1px solid rgba(232,201,126,.2);border-radius:var(--rs);margin-bottom:20px;flex-wrap:wrap}
-.kbar .lbl{font-size:12px;color:var(--accent);white-space:nowrap;font-weight:500}
-.kbar input{flex:1;font-size:12px;padding:7px 10px}
-.kbar button{padding:7px 14px;font-size:12px;white-space:nowrap}
+/* kbar */
+.kbar{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--accent-bg);border:1px solid rgba(232,201,126,.2);border-radius:var(--rs);margin-bottom:20px}
+.kbar .lbl{font-size:12px;color:var(--accent);font-weight:500}
 .kst{font-size:11px;padding:3px 9px;border-radius:20px;white-space:nowrap}
 .kst.on{background:rgba(126,201,142,.15);color:var(--green)}
 .kst.off{background:rgba(160,157,152,.1);color:var(--text3)}
-.kst.error{background:rgba(232,126,126,.15);color:var(--red)}
+/* Proposals */
 .ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px}
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:20px}
 .pcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;transition:all .2s;position:relative}
@@ -80,25 +76,26 @@ select option{background:var(--surface2)}
 .pcard.sel .sbadge{display:block}
 .cprev{aspect-ratio:1;background:var(--surface2);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;cursor:pointer}
 .cprev.story{aspect-ratio:9/16;max-height:220px}
-.cprev img{width:100%;height:100%;object-fit:cover}
-.iload{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--surface2);gap:8px}
+.cprev img{width:100%;height:100%;object-fit:cover;position:absolute;inset:0}
+.iload{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
 .ispin{width:22px;height:22px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .ilt{font-size:11px;color:var(--text3)}
-.img-tag{position:absolute;bottom:8px;left:8px;background:rgba(0,0,0,0.7);color:var(--text);font-size:10px;padding:2px 8px;border-radius:20px;backdrop-filter:blur(4px)}
+.img-src-tag{position:absolute;bottom:8px;left:8px;background:rgba(0,0,0,.6);color:#fff;font-size:10px;padding:2px 7px;border-radius:20px;z-index:3}
 .cbody{padding:16px}
 .tbadge{display:inline-flex;align-items:center;font-size:11px;padding:3px 10px;border-radius:20px;margin-bottom:10px}
 .tbadge.post{background:rgba(126,179,232,.15);color:var(--blue)}
 .tbadge.story{background:rgba(126,201,142,.15);color:var(--green)}
 .ccap{font-size:13px;color:var(--text2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.cact{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border)}
-.cact button{flex:1;padding:7px;border-radius:var(--rs);font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.cact{display:flex;gap:6px;padding:10px 14px;border-top:1px solid var(--border);flex-wrap:wrap}
+.cact button{flex:1;min-width:0;padding:7px 6px;border-radius:var(--rs);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap}
 .bsel{background:var(--accent-bg);border:1px solid var(--accent);color:var(--accent)}
 .bsel:hover,.pcard.sel .bsel{background:var(--accent);color:#0e0e0e}
 .bedit{background:var(--surface2);border:1px solid var(--border2);color:var(--text2)}
 .bedit:hover{border-color:var(--border);color:var(--text)}
-.bflux{background:var(--surface3);border:1px solid var(--border2);color:var(--accent);font-size:11px}
-.bflux:hover{border-color:var(--accent)}
+.bgen{background:none;border:1px solid var(--border2);color:var(--text3)}
+.bgen:hover{border-color:var(--green);color:var(--green)}
+/* Calendar */
 .cal-area{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start}
 .calbox{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:24px}
 .calhd{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
@@ -125,17 +122,17 @@ select option{background:var(--surface2)}
 .stit{font-size:13px;font-weight:500;margin-bottom:2px}
 .styp{font-size:11px;color:var(--text2)}
 .sthumb{width:36px;height:36px;border-radius:6px;object-fit:cover;flex-shrink:0}
-.empty{text-align:center;padding:40px 20px;color:var(--text3)}
-.empty .ei{font-size:32px;display:block;margin-bottom:12px;opacity:.4}
-.empty p{font-size:13px}
+/* Config */
 .cfggrid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
 .cfgcard{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:24px}
 .cfgcard h3{font-size:15px;font-weight:500;margin-bottom:18px;padding-bottom:12px;border-bottom:1px solid var(--border)}
+/* Loading */
 .lbox{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:40px;text-align:center;display:none}
 .lbox.vis{display:block}
 .lspin{width:36px;height:36px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
 .ltxt{font-size:14px;color:var(--text2)}
 .lstep{font-size:12px;color:var(--text3);margin-top:8px}
+/* Modals */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;z-index:100;opacity:0;pointer-events:none;transition:opacity .2s}
 .ov.open{opacity:1;pointer-events:all}
 .modal{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rl);width:540px;max-height:88vh;overflow-y:auto;padding:28px}
@@ -155,30 +152,40 @@ select option{background:var(--surface2)}
 .ightags{font-size:12px;color:var(--blue);margin-top:6px}
 .dtp{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
 .hdiv{height:1px;background:var(--border);margin:18px 0}
-.toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--accent);color:var(--accent);padding:12px 20px;border-radius:var(--rs);font-size:13px;transform:translateY(100px);opacity:0;transition:all .3s;z-index:200;max-width:320px}
+/* Backoffice / Libreria */
+.bo-tabs{display:flex;gap:4px;background:var(--surface2);padding:4px;border-radius:var(--r);margin-bottom:20px;width:fit-content}
+.bo-tab{padding:7px 16px;border-radius:var(--rs);font-size:13px;cursor:pointer;color:var(--text2);border:none;background:none;font-family:'DM Sans',sans-serif;transition:all .15s}
+.bo-tab.active{background:var(--surface);color:var(--text)}
+.bo-filters{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.bo-filters select,.bo-filters input{padding:7px 12px;font-size:13px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:var(--rs);font-family:'DM Sans',sans-serif;outline:none}
+.bo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+.bo-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:all .15s}
+.bo-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.bo-card.selected{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
+.bo-card img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
+.bo-card.story img{aspect-ratio:9/16;max-height:200px}
+.bo-meta{padding:8px 10px}
+.bo-src{font-size:10px;color:var(--accent);font-weight:500;text-transform:uppercase;letter-spacing:.5px}
+.bo-caption{font-size:11px;color:var(--text3);margin-top:2px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.bo-act{display:flex;gap:4px;padding:6px 8px;border-top:1px solid var(--border)}
+.bo-act button{flex:1;padding:5px;border-radius:var(--rs);font-size:10px;cursor:pointer;font-family:'DM Sans',sans-serif;background:none;border:1px solid var(--border2);color:var(--text3);transition:all .15s}
+.bo-act button:hover{border-color:var(--accent);color:var(--accent)}
+.bo-act .bo-use{background:var(--accent-bg);border-color:var(--accent);color:var(--accent)}
+.bo-empty{text-align:center;padding:60px 20px;color:var(--text3);grid-column:1/-1}
+.bo-gen-area{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:24px;margin-bottom:20px}
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--accent);color:var(--accent);padding:12px 20px;border-radius:var(--rs);font-size:13px;transform:translateY(100px);opacity:0;transition:all .3s;z-index:200;max-width:340px}
 .toast.show{transform:translateY(0);opacity:1}
-.toast.error{border-color:var(--red);color:var(--red)}
+/* Init */
 .init-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:16px}
 .init-screen h1{font-family:'DM Serif Display',serif;font-size:32px;color:var(--accent)}
 .init-screen p{color:var(--text3);font-size:14px}
 .init-spin{width:40px;height:40px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
 .cbadge{background:var(--accent-bg);color:var(--accent);font-size:11px;padding:2px 7px;border-radius:20px;margin-left:6px}
+.empty{text-align:center;padding:40px 20px;color:var(--text3)}
+.empty .ei{font-size:32px;display:block;margin-bottom:12px;opacity:.4}
+.empty p{font-size:13px}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
-.bo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px;margin-top:20px}
-.bo-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
-.bo-card img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
-.bo-card.story img{aspect-ratio:9/16;max-height:220px}
-.bo-meta{padding:8px 12px}
-.bo-rest{font-size:11px;color:var(--accent);font-weight:500;margin-bottom:2px}
-.bo-prm{font-size:11px;color:var(--text3);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.bo-dt{font-size:10px;color:var(--text3);margin-top:4px}
-.bo-act{display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--border)}
-.bo-act button{flex:1;padding:5px 4px;border-radius:var(--rs);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;border:1px solid var(--border2);background:none;color:var(--text2)}
-.bo-act button:hover{border-color:var(--accent);color:var(--accent)}
-.bo-act .del:hover{border-color:#e87e7e;color:#e87e7e}
-.bo-filters{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:4px}
-.bo-filters select{padding:7px 12px;font-size:13px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:var(--rs);font-family:'DM Sans',sans-serif;outline:none}
-.bo-empty{text-align:center;padding:60px 20px;color:var(--text3)}
 @media(max-width:900px){.app{grid-template-columns:1fr}.sidebar{display:none}.cal-area,.cfggrid,.fgrid{grid-template-columns:1fr}}
 </style>
 </head>
@@ -206,9 +213,8 @@ select option{background:var(--surface2)}
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendario
         <span class="cbadge" id="calBadge">0</span>
       </button>
-      <button class="ni" onclick="showSec('backoffice',this);loadBackoffice()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Imágenes
-        <span class="cbadge" id="imgBadge">·</span>
+      <button class="ni" onclick="showSec('library',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Librería
       </button>
       <button class="ni" onclick="showSec('config',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M5.34 18.66l-1.41 1.41M21 12h-2M5 12H3M19.07 19.07l-1.41-1.41M5.34 5.34L3.93 3.93M12 21v-2M12 5V3"/></svg>Configuración
@@ -221,13 +227,13 @@ select option{background:var(--surface2)}
   </aside>
 
   <main class="main">
+
+    <!-- GENERAR -->
     <div id="sec-generate" class="content">
-      <div class="kbar" style="padding:10px 16px;justify-content:space-between">
-        <span class="lbl">🤖 Imatges amb IA (Puter.js · gpt-image-1) — gratuït sota demanda</span>
-        <span class="kst on" id="imgEngineSt">Actiu</span>
-        <span id="imgEngineLbl" style="display:none"></span>
+      <div class="kbar">
+        <span class="lbl">🤖 Textos: GPT-4o-mini · Imatges: Nanobanana (FLUX)</span>
+        <span class="kst on" id="nbSt">Actiu</span>
       </div>
-      
       <div class="gform">
         <h3>Nueva generación de contenido</h3>
         <div class="fgrid">
@@ -249,8 +255,8 @@ select option{background:var(--surface2)}
             </select>
           </div>
           <div class="fg full">
-            <label>Contexto adicional (obligatorio para imágenes)</label>
-            <textarea id="ctx" rows="2" placeholder="Ej: Hamburguesa de ternera con queso cheddar, Menú degustación de trufas, Paella valenciana..."></textarea>
+            <label>Contexto adicional (obligatorio)</label>
+            <textarea id="ctx" rows="2" placeholder="Ej: Patatas bravas con salsa especial, Menú degustación de trufa, Paella valenciana..."></textarea>
           </div>
         </div>
         <div class="fg" style="margin-bottom:20px">
@@ -259,39 +265,34 @@ select option{background:var(--surface2)}
             <button class="tag on" onclick="this.classList.toggle('on')">Post cuadrado</button>
             <button class="tag on" onclick="this.classList.toggle('on')">Story vertical</button>
             <button class="tag" onclick="this.classList.toggle('on')">Carrusel</button>
-            <button class="tag" onclick="this.classList.toggle('on')">Reel corto</button>
           </div>
         </div>
-        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:12px">
           <button class="bp" onclick="genProposals()" id="genBtn">✦ Generar propuestas</button>
-          <button class="bp secondary" onclick="genWithFluxOnly()" id="fluxBtn" style="display:none">🎨 Solo FLUX</button>
-          <span style="font-size:12px;color:var(--text3)">Textos con Claude + imágenes con Pexels/FLUX.1</span>
+          <span style="font-size:12px;color:var(--text3)">Textos amb IA · Imatges sota demanda</span>
         </div>
       </div>
-
       <div class="lbox" id="lbox">
         <div class="lspin"></div>
-        <div class="ltxt">Creando propuestas para tu restaurante...</div>
-        <div class="lstep" id="lstep">Analizando estilo y voz del restaurante</div>
+        <div class="ltxt">Creando propuestas...</div>
+        <div class="lstep" id="lstep">Analizando el restaurante</div>
       </div>
-
       <div id="propArea" style="display:none">
         <div class="ph">
           <div>
             <strong id="propCount">6 propuestas</strong>
             <span style="font-size:13px;color:var(--text3);margin-left:8px" id="selCount">0 seleccionadas</span>
           </div>
-          <div style="display:flex;gap:10px">
-            <button class="bs" onclick="regenerateImages()">🔄 Nuevas imágenes (Pexels)</button>
-            <button class="bs" onclick="genAllImages()">🖼 Generar totes les imatges</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="bs" onclick="selAll()">Seleccionar todo</button>
-            <button class="bp" onclick="schedSel()" id="schedBtn" disabled>Programar seleccionadas →</button>
+            <button class="bp" onclick="schedSel()" id="schedBtn" disabled>Programar →</button>
           </div>
         </div>
         <div class="pgrid" id="propGrid"></div>
       </div>
     </div>
 
+    <!-- CALENDARIO -->
     <div id="sec-calendar" class="content" style="display:none">
       <div class="cal-area">
         <div class="calbox">
@@ -315,6 +316,75 @@ select option{background:var(--surface2)}
       </div>
     </div>
 
+    <!-- LIBRERÍA D'IMATGES -->
+    <div id="sec-library" class="content" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+        <div>
+          <h2 style="font-size:18px;font-weight:500">Librería de imágenes</h2>
+          <p style="font-size:13px;color:var(--text3);margin-top:2px" id="libRestInfo">Imágenes del restaurante activo</p>
+        </div>
+      </div>
+
+      <!-- Tabs: Instagram / Web / Generades -->
+      <div class="bo-tabs">
+        <button class="bo-tab active" onclick="switchLibTab('instagram',this)">📷 Instagram</button>
+        <button class="bo-tab" onclick="switchLibTab('web',this)">🌐 Web</button>
+        <button class="bo-tab" onclick="switchLibTab('generated',this)">🤖 Generades IA</button>
+      </div>
+
+      <!-- Instagram tab -->
+      <div id="lib-instagram">
+        <div class="bo-gen-area">
+          <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Entra el nom d'usuari d'Instagram del restaurante per carregar les seves imatges públiques.</p>
+          <div style="display:flex;gap:10px;align-items:center">
+            <input type="text" id="igUsername" placeholder="@larampa23" style="flex:1;max-width:300px" oninput="updateIgFromInput()">
+            <button class="bp" onclick="loadInstagramImages()" style="padding:10px 20px">Cargar imágenes</button>
+          </div>
+          <p style="font-size:11px;color:var(--text3);margin-top:8px">💡 Carrega fins a 12 imatges recents del perfil públic</p>
+        </div>
+        <div id="igGrid" class="bo-grid">
+          <div class="bo-empty"><p>Entra un usuari d'Instagram i clica "Cargar imágenes"</p></div>
+        </div>
+      </div>
+
+      <!-- Web tab -->
+      <div id="lib-web" style="display:none">
+        <div class="bo-gen-area">
+          <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Entra la URL de la web del restaurante per extreure les seves imatges.</p>
+          <div style="display:flex;gap:10px;align-items:center">
+            <input type="url" id="webUrl" placeholder="https://larampa.cat" style="flex:1;max-width:400px" oninput="updateWebFromInput()">
+            <button class="bp" onclick="loadWebImages()" style="padding:10px 20px">Extreure imatges</button>
+          </div>
+          <p style="font-size:11px;color:var(--text3);margin-top:8px">💡 Extreu imatges de la pàgina principal de la web</p>
+        </div>
+        <div id="webGrid" class="bo-grid">
+          <div class="bo-empty"><p>Entra una URL i clica "Extreure imatges"</p></div>
+        </div>
+      </div>
+
+      <!-- Generades tab -->
+      <div id="lib-generated" style="display:none">
+        <div class="bo-gen-area">
+          <h3 style="font-size:15px;font-weight:500;margin-bottom:12px">Generar nova imatge amb Nanobanana</h3>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <textarea id="genImgPrompt" rows="2" placeholder="Descriu la imatge: plat de bravas crujients amb salsa especial de la casa, fotografia professional de menjar..."></textarea>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <select id="genImgRatio" style="padding:8px 12px;font-size:13px;width:160px">
+                <option value="1:1">Post (1:1)</option>
+                <option value="9:16">Story (9:16)</option>
+              </select>
+              <button class="bp" onclick="genLibraryImage()" id="genLibBtn">🤖 Generar amb Nanobanana</button>
+              <span style="font-size:11px;color:var(--text3)" id="nbCredit"></span>
+            </div>
+          </div>
+        </div>
+        <div id="genGrid" class="bo-grid">
+          <div class="bo-empty"><p>Les imatges generades apareixeran aquí</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONFIGURACIÓ -->
     <div id="sec-config" class="content" style="display:none">
       <div class="cfggrid">
         <div class="cfgcard">
@@ -323,8 +393,8 @@ select option{background:var(--surface2)}
             <div class="fg"><label>Nombre</label><input type="text" id="cfgName"></div>
             <div class="fg"><label>Tipo de cocina</label><input type="text" id="cfgCuisine"></div>
             <div class="fg"><label>Descripción / voz de marca</label><textarea rows="3" id="cfgDesc"></textarea></div>
-            <div class="fg"><label>Web</label><input type="url" placeholder="https://..." id="cfgWeb"></div>
-            <div class="fg"><label>Instagram (@)</label><input type="text" placeholder="@mi_restaurante" id="cfgIG"></div>
+            <div class="fg"><label>Web del restaurante</label><input type="url" placeholder="https://larampa.cat" id="cfgWeb"></div>
+            <div class="fg"><label>Instagram (@usuario)</label><input type="text" placeholder="@larampa23" id="cfgIG"></div>
             <button class="bp" style="width:fit-content" onclick="saveCfg()">Guardar perfil</button>
           </div>
         </div>
@@ -332,56 +402,33 @@ select option{background:var(--surface2)}
           <h3>Preferencias de contenido</h3>
           <div style="display:flex;flex-direction:column;gap:14px">
             <div class="fg"><label>Idioma</label>
-              <select id="cfgLang"><option>Español</option><option>Catalán</option><option>Inglés</option><option>Bilingüe ES/EN</option></select></div>
+              <select id="cfgLang"><option>Español</option><option>Catalán</option><option>Inglés</option><option>Bilingüe ES/EN</option></select>
+            </div>
             <div class="fg"><label>Frecuencia ideal</label>
-              <select id="cfgFreq"><option>Diaria</option><option>3 veces por semana</option><option>Semanal</option></select></div>
+              <select id="cfgFreq"><option>Diaria</option><option>3 veces por semana</option><option>Semanal</option></select>
+            </div>
             <div class="fg"><label>Hashtags fijos</label><textarea rows="2" id="cfgTags"></textarea></div>
             <div class="fg"><label>CTA habitual</label><input type="text" id="cfgCTA"></div>
-<div class="fg">
-              <label>API Key Replicate (FLUX.1 premium)</label>
-              <input type="password" id="cfgReplicateKey" placeholder="r8_..." autocomplete="off" value="r8_e1KCvK21l1VWdHhanVOM5lmUPMn6EJI3Xncv4">
-              <span style="font-size:11px;color:var(--text3);margin-top:3px">Token de Replicate para FLUX.1</span>
-            </div>
+            <div class="hdiv" style="margin:4px 0"></div>
             <div class="fg">
-              <label>URL de tu servidor (upload.php)</label>
-              <input type="url" id="cfgServerUrl" placeholder="https://www.jordiqterrassa.com/upload.php" value="https://www.jordiqterrassa.com/upload.php">
-              <span style="font-size:11px;color:var(--text3);margin-top:3px">Ej: https://www.jordiqterrassa.com/upload.php</span>
+              <label>API Key Nanobanana (opcional)</label>
+              <input type="password" id="cfgNbKey" placeholder="nb_..." autocomplete="off">
+              <span style="font-size:11px;color:var(--text3);margin-top:3px">Si tens crèdits propis de Nanobanana · Sense key usa Puter gratuït</span>
             </div>
             <button class="bp" style="width:fit-content" onclick="saveCfg()">Guardar</button>
           </div>
         </div>
       </div>
     </div>
-    <!-- BACKOFFICE IMATGES -->
-    <div id="sec-backoffice" class="content" style="display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
-        <div>
-          <h2 style="font-size:18px;font-weight:500">Librería de imágenes</h2>
-          <p style="font-size:13px;color:var(--text3);margin-top:2px">Generadas con FLUX.1 · Guardadas en tu servidor</p>
-        </div>
-        <button class="bs" onclick="loadBackoffice()">↺ Actualizar</button>
-      </div>
-      <div class="bo-filters">
-        <select id="boFilterRest" onchange="filterBo()"><option value="">Todos los restaurantes</option></select>
-        <select id="boFilterType" onchange="filterBo()">
-          <option value="">Todos los formatos</option>
-          <option value="post">Post</option>
-          <option value="story">Story</option>
-        </select>
-        <span style="font-size:13px;color:var(--text3)" id="boCount"></span>
-      </div>
-      <div id="boGrid" class="bo-grid">
-        <div class="bo-empty"><p style="font-size:13px">Haz clic en "Imágenes" para cargar la galería.</p></div>
-      </div>
-    </div>
 
   </main>
 </div>
 
+<!-- Modal preview -->
 <div class="ov" id="ovPrev" onclick="closeOvIf(event,'ovPrev')">
   <div class="modal">
     <h3 id="mpTitle">Previsualizar</h3>
-    <p class="msub" id="mpSub">Vista previa de la publicación</p>
+    <p class="msub" id="mpSub">Vista previa</p>
     <div class="igprev" id="mpPrev"></div>
     <div class="hdiv"></div>
     <div class="fg" style="margin-bottom:14px"><label>Editar texto</label><textarea rows="4" id="mpCap"></textarea></div>
@@ -393,16 +440,17 @@ select option{background:var(--surface2)}
   </div>
 </div>
 
+<!-- Modal bulk -->
 <div class="ov" id="ovBulk" onclick="closeOvIf(event,'ovBulk')">
   <div class="modal">
     <h3>Programar seleccionadas</h3>
-    <p class="msub">Asigna fecha y hora para cada publicación</p>
+    <p class="msub">Asigna fecha y hora</p>
     <div id="bulkList" style="max-height:300px;overflow-y:auto;margin-bottom:20px"></div>
     <div style="display:flex;align-items:center;gap:10px;padding:12px;background:var(--surface2);border-radius:var(--rs);margin-bottom:16px">
       <span style="font-size:12px;color:var(--text2);white-space:nowrap">Aplicar a todas:</span>
       <input type="date" id="bdDate" style="flex:1">
       <input type="time" id="bdTime" value="12:00" style="width:100px">
-      <button class="bs" onclick="applyBulk()" style="font-size:12px;padding:6px 12px;white-space:nowrap">Aplicar</button>
+      <button class="bs" onclick="applyBulk()" style="font-size:12px;padding:6px 12px">Aplicar</button>
     </div>
     <div class="mact">
       <button class="bs" onclick="closeOv('ovBulk')">Cancelar</button>
@@ -411,16 +459,22 @@ select option{background:var(--surface2)}
   </div>
 </div>
 
+<!-- Modal seleccionar imatge de la librería -->
+<div class="ov" id="ovLibPick" onclick="closeOvIf(event,'ovLibPick')">
+  <div class="modal" style="width:680px;max-width:95vw">
+    <h3>Seleccionar imatge per a la proposta</h3>
+    <p class="msub">Tria una imatge de la librería o genera-ne una nova</p>
+    <div id="libPickGrid" class="bo-grid" style="max-height:400px;overflow-y:auto"></div>
+    <div class="mact"><button class="bs" onclick="closeOv('ovLibPick')">Cancelar</button></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 // =====================================================
-// CONFIGURACIÓN
+// CONFIG
 // =====================================================
-const DEFAULT_UPLOAD_URL = 'https://www.jordiqterrassa.com/upload.php';
-const DEFAULT_REPLICATE_TOKEN = 'r8_e1KCvK21l1VWdHhanVOM5lmUPMn6EJI3Xncv4';
-
-
 const firebaseConfig = {
   apiKey: "AIzaSyB1HefWkEqitPqHNE9G_slYDFzf9Z7jf9I",
   authDomain: "social-chef-55f11.firebaseapp.com",
@@ -437,618 +491,464 @@ let restaurants = [];
 let proposals = [], scheduled = [], bulkItems = [];
 let selIds = new Set();
 let calMon = new Date().getMonth(), calYr = new Date().getFullYear(), editP = null;
+let libImages = []; // imatges de la librería (IG + web + generades)
+let currentLibTab = 'instagram';
+let pickingForProp = null; // id proposta quan s'obre ovLibPick
 
 // =====================================================
-// GENERACIÓ D'IMATGES: Hugging Face FLUX.1-schnell
-// Gratuït · Sense CORS · Base64 · Funciona des de GitHub Pages
+// NANOBANANA / PUTER IMAGE GENERATION
 // =====================================================
+function getNbKey() {
+  return localStorage.getItem('sc_nb_key') || document.getElementById('cfgNbKey')?.value?.trim() || '';
+}
 
-// =====================================================
-// GENERACIÓ D'IMATGES: Puter.js (gratuït, sota demanda)
-// Model: gpt-image-1 (OpenAI) via Puter — cada usuari usa els seus crèdits
-// =====================================================
+async function generateImageNb(prompt, isStory) {
+  const fullPrompt = prompt + ', professional food photography, appetizing, restaurant quality, natural lighting, high detail, 8k';
+  const size = isStory ? '1024x1792' : '1024x1024';
 
-async function generateImagePuter(prompt, isStory) {
-  const w = isStory ? 1024 : 1024;
-  const h = isStory ? 1792 : 1024;
-  const full = prompt + ', professional food photography, appetizing, restaurant quality, natural lighting, high detail';
-  const imgEl = await puter.ai.txt2img(full, {
-    model: 'gpt-image-1',
-    quality: 'low',   // 'low' = ràpid i suficient per xarxes socials
-    size: isStory ? '1024x1792' : '1024x1024'
+  // Si hi ha API key de Nanobanana pròpia, usar-la via puter amb model nanobanana
+  // Si no, usar puter gratuït amb flux-schnell (crèdits de l'usuari)
+  const nbKey = getNbKey();
+
+  const imgEl = await puter.ai.txt2img(fullPrompt, {
+    model: nbKey ? 'black-forest-labs/flux.1-schnell' : 'black-forest-labs/flux.1-schnell',
+    ...(nbKey ? { apiKey: nbKey } : {}),
+    size
   });
   return imgEl.src;
 }
 
-function getBaseUrl() {
-  const raw = document.getElementById('cfgServerUrl')?.value?.trim() || 'https://www.jordiqterrassa.com/upload.php';
-  return raw.replace(/\/[^\/]+$/, '/');
-}
-
-function injectImg(cardId, url, source) {
+function injectImg(cardId, url) {
   const box = document.getElementById('cprev-' + cardId);
   if (!box) return;
-  const img = new Image();
-  img.style.cssText = 'width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s;position:absolute;inset:0';
-  img.onload  = () => img.style.opacity = '1';
-  img.onerror = () => {
-    if (box.querySelector('.iload'))
-      box.querySelector('.iload').innerHTML = '<span style="font-size:20px">⚠️</span><span class="ilt">Error carregant</span>';
+  // Eliminar spinner i botons anteriors
+  const existingImg = box.querySelector('img');
+  if (existingImg) existingImg.remove();
+  const loader = box.querySelector('.iload');
+
+  const img = document.createElement('img');
+  img.style.cssText = 'width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s;position:absolute;inset:0;z-index:1';
+  img.onload = () => {
+    img.style.opacity = '1';
+    if (loader) loader.style.display = 'none';
   };
-  box.style.position = 'relative';
-  // Conservar el spinner si ja existeix
-  if (!box.querySelector('.iload'))
-    box.innerHTML = '<div class="iload"><div class="ispin"></div><span class="ilt">Carregant...</span></div>';
+  img.onerror = () => {
+    img.remove();
+    if (loader) loader.innerHTML = '<span style="font-size:20px">⚠️</span><span class="ilt">Error</span>';
+  };
   box.appendChild(img);
   img.src = url;
 }
 
-// Alias per compatibilitat
-function injectHFImage(cardId, url) { injectImg(cardId, url, 'flux'); }
-async function fetchPexelsImage(context, theme, isStory, index) { return { url: null, source: 'flux' }; }
-function fetchPicsumImage(isStory, index) { return { url: null, source: 'flux' }; }
-
-
-
-// =====================================================
-// SUBIR IMAGEN A SERVIDOR
-// =====================================================
-async function uploadImageToServer(imageUrl, filename) {
-  const uploadUrl = document.getElementById('cfgServerUrl')?.value?.trim() || DEFAULT_UPLOAD_URL;
-  
-  try {
-    const response = await fetch(imageUrl);
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    
-    const blob = await response.blob();
-    const base64 = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-    
-    const uploadResponse = await fetch(uploadUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ image: base64 })
-    });
-    
-    if (!uploadResponse.ok) {
-      const errorText = await uploadResponse.text();
-      throw new Error(`HTTP ${uploadResponse.status}: ${errorText}`);
-    }
-    
-    const result = await uploadResponse.json();
-    if (!result.success) throw new Error(result.error);
-    
-    return result.url;
-  } catch (error) {
-    console.error('Error upload:', error);
-    toast('⚠️ Error al subir: ' + error.message);
-    return null;
+// Generar imatge per una proposta concreta (sota demanda)
+async function genImageForProp(propId) {
+  const p = proposals.find(x => x.id === propId);
+  if (!p) return;
+  const box = document.getElementById('cprev-' + propId);
+  const btn = document.getElementById('imgbtn-' + propId);
+  if (box) {
+    box.innerHTML = '<div class="iload"><div class="ispin"></div><span class="ilt">Generant...</span></div>';
   }
-}
-
-// =====================================================
-// FLUX.1
-// =====================================================
-function getReplicateToken() {
-  return document.getElementById('cfgReplicateKey')?.value?.trim() || DEFAULT_REPLICATE_TOKEN;
-}
-function getBaseUrl() {
-  const raw = document.getElementById('cfgServerUrl')?.value?.trim() || DEFAULT_UPLOAD_URL;
-  return raw.replace(/\/[^\/]+$/, '/');
-}
-
-async function generateWithFlux(prompt, isStory, restName, propType) {
-  const token = getReplicateToken();
-  if (!token || token.length < 10) {
-    throw new Error('Token FLUX no configurado');
-  }
-  
-  const proxyUrl = getBaseUrl() + 'replicate-proxy.php';
-  
+  if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
   try {
-    console.log('🎨 FLUX:', prompt.substring(0, 50) + '...');
-    
-    const res = await fetch(proxyUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        token,
-        prompt: prompt + ', professional food photography, 8k, detailed',
-        aspect_ratio: isStory ? '9:16' : '1:1',
-        restaurant: restName || 'restaurant',
-        type: propType || 'post'
-      })
-    });
-    
-    if (!res.ok) {
-      const errText = await res.text();
-      throw new Error(`Proxy error ${res.status}: ${errText}`);
-    }
-    
-    const data = await res.json();
-    if (!data.success) throw new Error(data.error || 'Error desconocido');
-    
-    console.log('✅ FLUX OK:', data.filename);
-    return data.url;
+    const ctx = document.getElementById('ctx')?.value?.trim() || '';
+    const url = await generateImageNb(p.imagePrompt || p.title + (ctx ? ' ' + ctx : ''), p.type === 'story');
+    proposals[proposals.indexOf(p)].imageData = url;
+    // Afegir a la librería
+    addToLibrary({ url, source: 'generated', prompt: p.imagePrompt || p.title, type: p.type, restId: currentRestId });
+    injectImg(propId, url);
+    // Eliminar botó generar
+    const newBtn = document.getElementById('imgbtn-' + propId);
+    if (newBtn) newBtn.remove();
+    const srcTag = document.getElementById('srctag-' + propId);
+    if (srcTag) { srcTag.textContent = '🤖 Nanobanana'; srcTag.style.display = 'block'; }
   } catch(e) {
-    console.error('❌ FLUX Error:', e.message);
-    throw e;
+    console.error('Gen img error:', e);
+    const b = document.getElementById('cprev-' + propId);
+    if (b) b.innerHTML = '<div class="iload"><span style="font-size:18px">⚠️</span><span class="ilt">' + (e.message||'Error').slice(0,50) + '</span></div>';
+    const btn2 = document.getElementById('imgbtn-' + propId);
+    if (btn2) { btn2.disabled = false; btn2.textContent = '🤖 Generar'; }
   }
 }
 
-// =====================================================
-// BACKOFFICE
-// =====================================================
-let allBoImages = [];
-
-async function loadBackoffice() {
-  const grid = document.getElementById('boGrid');
-  grid.innerHTML = '<div class="bo-empty"><p>Cargando...</p></div>';
-  
-  try {
-    const galleryUrl = getBaseUrl() + 'gallery.php?action=list&t=' + Date.now();
-    const res = await fetch(galleryUrl);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    allBoImages = data.images || [];
-    document.getElementById('imgBadge').textContent = allBoImages.length || '·';
-    
-    const rests = [...new Set(allBoImages.map(i => i.restaurant).filter(Boolean))];
-    const sel = document.getElementById('boFilterRest');
-    sel.innerHTML = '<option value="">Todos los restaurantes</option>' +
-      rests.map(r => `<option value="${r}">${r}</option>`).join('');
-    filterBo();
-  } catch(e) {
-    grid.innerHTML = `<div class="bo-empty"><p>Error: ${e.message}</p></div>`;
-  }
+// Obrir librería per seleccionar imatge per una proposta
+function pickImageForProp(propId) {
+  pickingForProp = propId;
+  renderLibPickGrid();
+  document.getElementById('ovLibPick').classList.add('open');
 }
 
-function filterBo() {
-  const rest = document.getElementById('boFilterRest')?.value || '';
-  const type = document.getElementById('boFilterType')?.value || '';
-  const filtered = allBoImages.filter(img =>
-    (!rest || img.restaurant === rest) && (!type || img.type === type)
-  );
-  renderBo(filtered);
-}
-
-function renderBo(images) {
-  const grid = document.getElementById('boGrid');
-  document.getElementById('boCount').textContent = images.length + ' imágenes';
-  if (!images.length) {
-    grid.innerHTML = '<div class="bo-empty"><p>No hay imágenes aún.</p></div>';
+function renderLibPickGrid() {
+  const grid = document.getElementById('libPickGrid');
+  if (!libImages.length) {
+    grid.innerHTML = '<div class="bo-empty" style="grid-column:1/-1"><p>No hi ha imatges a la librería.<br>Carrega imatges des de Instagram o la web del restaurant.</p></div>';
     return;
   }
-  grid.innerHTML = images.map((img, i) => `
-    <div class="bo-card ${img.type==='story'?'story':''}">
+  grid.innerHTML = libImages.map((img, i) => `
+    <div class="bo-card" onclick="applyLibImage(${i})">
       <img src="${img.url}" alt="" loading="lazy" onerror="this.style.opacity='.2'">
       <div class="bo-meta">
-        <div class="bo-rest">${img.restaurant||'Restaurant'} · ${img.type||'post'}</div>
-        <div class="bo-prm">${img.prompt||''}</div>
-        <div class="bo-dt">${img.date ? new Date(img.date*1000).toLocaleDateString('ca-ES') : ''}</div>
-      </div>
-      <div class="bo-act">
-        <button onclick="navigator.clipboard.writeText('${img.url}').then(()=>toast('✓ URL copiada'))">📋 Copiar</button>
-        <button class="del" onclick="deleteBo('${img.filename}',${i})">🗑 Eliminar</button>
+        <div class="bo-src">${img.source === 'instagram' ? '📷 Instagram' : img.source === 'web' ? '🌐 Web' : '🤖 Nanobanana'}</div>
+        <div class="bo-caption">${img.caption || img.prompt || ''}</div>
       </div>
     </div>`).join('');
 }
 
-async function deleteBo(filename, idx) {
-  if (!confirm('¿Eliminar esta imagen?')) return;
-  try {
-    const res = await fetch(getBaseUrl() + 'gallery.php?action=delete&file=' + encodeURIComponent(filename));
-    const data = await res.json();
-    if (data.success) {
-      allBoImages = allBoImages.filter(i => i.filename !== filename);
-      filterBo();
-      toast('✓ Imagen eliminada');
-    }
-  } catch(e) { toast('Error: ' + e.message); }
+function applyLibImage(imgIdx) {
+  if (!pickingForProp) return;
+  const img = libImages[imgIdx];
+  const pIdx = proposals.findIndex(x => x.id === pickingForProp);
+  if (pIdx > -1) {
+    proposals[pIdx].imageData = img.url;
+    injectImg(pickingForProp, img.url);
+    const btn = document.getElementById('imgbtn-' + pickingForProp);
+    if (btn) btn.remove();
+    const srcTag = document.getElementById('srctag-' + pickingForProp);
+    if (srcTag) { srcTag.textContent = img.source === 'instagram' ? '📷 IG' : img.source === 'web' ? '🌐 Web' : '🤖 IA'; srcTag.style.display = 'block'; }
+  }
+  closeOv('ovLibPick');
+  toast('✓ Imatge aplicada a la proposta');
 }
 
 // =====================================================
-// FIREBASE
+// LIBRERÍA — INSTAGRAM
 // =====================================================
-async function initApp() {
-  setInitMsg('Conectando...');
+function updateIgFromInput() {
+  // Sync amb el camp del config si es vol
+}
+function updateWebFromInput() {}
+
+async function loadInstagramImages() {
+  const igRaw = document.getElementById('igUsername').value.trim();
+  const ig = igRaw.replace('@','').replace('https://www.instagram.com/','').replace(/\//g,'').trim();
+  if (!ig) { toast('Entra un nom d\'usuari d\'Instagram'); return; }
+
+  const grid = document.getElementById('igGrid');
+  grid.innerHTML = '<div class="bo-empty"><div class="ispin" style="margin:0 auto"></div><p style="margin-top:12px">Carregant imatges d\'Instagram...</p></div>';
+
+  // Usar una API pública per obtenir les imatges recents del perfil públic
+  // Picuki és un visor web d'Instagram sense auth
   try {
-    firebase.initializeApp(firebaseConfig);
-    auth = firebase.auth();
-    db = firebase.firestore();
-    const cred = await auth.signInAnonymously();
-    currentUser = cred.user;
-    setSyncState('spin', 'Cargando...');
-    await loadUserData();
-    setSyncState('ok', 'Listo');
-    document.getElementById('initScreen').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'grid';
-    renderCal();
-    updateImgEngineLabel();
-  } catch (err) {
-    setInitMsg('Error: ' + err.message);
+    // Estratègia: usar el feed RSS públic / scraper via allorigins proxy
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent('https://www.instagram.com/' + ig + '/?__a=1&__d=dis')}`;
+    const res = await fetch(proxyUrl);
+    const data = await res.json();
+    let images = [];
+
+    try {
+      const json = JSON.parse(data.contents);
+      const edges = json?.graphql?.user?.edge_owner_to_timeline_media?.edges || [];
+      images = edges.slice(0, 12).map(e => ({
+        url: e.node.display_url || e.node.thumbnail_src,
+        caption: e.node.edge_media_to_caption?.edges?.[0]?.node?.text || '',
+        source: 'instagram',
+        type: 'post',
+        restId: currentRestId
+      })).filter(i => i.url);
+    } catch {
+      // Fallback: intenta amb l'endpoint de media
+      images = [];
+    }
+
+    if (!images.length) {
+      // Fallback: mostrar instruccions alternatives
+      grid.innerHTML = `<div class="bo-empty" style="grid-column:1/-1">
+        <p style="font-size:13px">Instagram bloqueja l'accés directe als perfils.<br><br>
+        <strong>Alternatives:</strong><br>
+        1. Usa <a href="https://picuki.com/profile/${ig}" target="_blank" style="color:var(--accent)">Picuki.com</a> per veure les imatges i copiar-les<br>
+        2. Descarrega les teves fotos des de l'app d'Instagram<br>
+        3. Arrastra imatges aquí des del teu ordinador</p>
+        <div id="igDropZone" style="margin-top:16px;border:2px dashed var(--border2);border-radius:var(--r);padding:24px;cursor:pointer;transition:border .15s"
+          ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
+          ondragleave="this.style.borderColor='var(--border2)'"
+          ondrop="handleImgDrop(event,'instagram')"
+          onclick="document.getElementById('igFileInput').click()">
+          <p style="font-size:13px;color:var(--text3)">📁 Arrossega imatges aquí o clica per seleccionar</p>
+        </div>
+        <input type="file" id="igFileInput" multiple accept="image/*" style="display:none" onchange="handleFileInput(event,'instagram')">
+      </div>`;
+      return;
+    }
+
+    // Afegir a la librería i renderitzar
+    images.forEach(img => addToLibrary(img));
+    renderIgGrid(images);
+    toast('✓ ' + images.length + ' imatges carregades d\'Instagram');
+  } catch(e) {
+    // Mostrar zona d'upload
+    grid.innerHTML = `<div class="bo-empty" style="grid-column:1/-1">
+      <p style="font-size:13px;margin-bottom:12px">No s'han pogut carregar les imatges automàticament.<br>Puja les imatges manualment:</p>
+      <div id="igDropZone" style="border:2px dashed var(--border2);border-radius:var(--r);padding:24px;cursor:pointer;transition:border .15s"
+        ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
+        ondragleave="this.style.borderColor='var(--border2)'"
+        ondrop="handleImgDrop(event,'instagram')"
+        onclick="document.getElementById('igFileInput').click()">
+        <p style="font-size:13px;color:var(--text3)">📁 Arrossega imatges aquí o clica per seleccionar</p>
+      </div>
+      <input type="file" id="igFileInput" multiple accept="image/*" style="display:none" onchange="handleFileInput(event,'instagram')">
+    </div>`;
   }
 }
 
-function setInitMsg(msg) { document.getElementById('initMsg').textContent = msg; }
-function setSyncState(state, txt) {
-  const dot = document.getElementById('syncDot');
-  dot.className = 'sync-dot ' + (state === 'ok' ? 'ok' : state === 'spin' ? 'spin' : '');
-  document.getElementById('syncTxt').textContent = txt;
+async function loadWebImages() {
+  const url = document.getElementById('webUrl').value.trim();
+  if (!url || !url.startsWith('http')) { toast('Entra una URL vàlida'); return; }
+
+  const grid = document.getElementById('webGrid');
+  grid.innerHTML = '<div class="bo-empty"><div class="ispin" style="margin:0 auto"></div><p style="margin-top:12px">Extraient imatges de la web...</p></div>';
+
+  try {
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
+    const res = await fetch(proxyUrl);
+    const data = await res.json();
+    const html = data.contents || '';
+
+    // Extreure URLs d'imatge del HTML
+    const imgRegex = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi;
+    const srcRegex = /src=["']([^"']+)["']/i;
+    const baseUrl = new URL(url);
+    let images = [];
+    let match;
+
+    while ((match = imgRegex.exec(html)) !== null) {
+      try {
+        const srcMatch = match[0].match(srcRegex);
+        if (!srcMatch) continue;
+        let imgUrl = srcMatch[1];
+        // Convertir relatives a absolutes
+        if (imgUrl.startsWith('//')) imgUrl = 'https:' + imgUrl;
+        else if (imgUrl.startsWith('/')) imgUrl = baseUrl.origin + imgUrl;
+        else if (!imgUrl.startsWith('http')) imgUrl = baseUrl.origin + '/' + imgUrl;
+        // Filtrar icones petites i SVG
+        if (imgUrl.includes('.svg') || imgUrl.includes('icon') || imgUrl.includes('logo') ||
+            imgUrl.includes('favicon') || imgUrl.includes('pixel') || imgUrl.length < 10) continue;
+        images.push({ url: imgUrl, source: 'web', caption: '', type: 'post', restId: currentRestId });
+      } catch {}
+    }
+
+    // Deduplicar i limitar
+    const seen = new Set();
+    images = images.filter(img => { if (seen.has(img.url)) return false; seen.add(img.url); return true; }).slice(0, 20);
+
+    if (!images.length) {
+      grid.innerHTML = '<div class="bo-empty" style="grid-column:1/-1"><p>No s\'han trobat imatges a la web.<br>Prova a pujar-les manualment.</p></div>';
+      return;
+    }
+
+    images.forEach(img => addToLibrary(img));
+    renderWebGrid(images);
+    toast('✓ ' + images.length + ' imatges trobades a la web');
+  } catch(e) {
+    grid.innerHTML = `<div class="bo-empty" style="grid-column:1/-1">
+      <p style="font-size:13px;margin-bottom:12px">Error accedint a la web. Puja les imatges manualment:</p>
+      <div style="border:2px dashed var(--border2);border-radius:var(--r);padding:24px;cursor:pointer"
+        ondragover="event.preventDefault()" ondrop="handleImgDrop(event,'web')"
+        onclick="document.getElementById('webFileInput').click()">
+        <p style="font-size:13px;color:var(--text3)">📁 Arrossega imatges o clica per seleccionar</p>
+      </div>
+      <input type="file" id="webFileInput" multiple accept="image/*" style="display:none" onchange="handleFileInput(event,'web')">
+    </div>`;
+  }
 }
 
-// =====================================================
-// USER DATA
-// =====================================================
-async function loadUserData() {
-  const snap = await db.collection('users').doc(currentUser.uid).collection('restaurants').orderBy('createdAt').get();
-  restaurants = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  if (restaurants.length === 0) await createDefaultRestaurant();
-  renderRestSelector();
-  currentRestId = restaurants[0].id;
-  await loadRestaurant(currentRestId);
+function renderIgGrid(images) {
+  const grid = document.getElementById('igGrid');
+  grid.innerHTML = images.map((img, i) => `
+    <div class="bo-card" onclick="pickOrUseLibImg(${libImages.indexOf(img)})">
+      <img src="${img.url}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'">
+      <div class="bo-meta"><div class="bo-src">📷 Instagram</div><div class="bo-caption">${img.caption?.slice(0,60)||''}</div></div>
+      <div class="bo-act"><button class="bo-use" onclick="event.stopPropagation();useLibImgNow(${libImages.indexOf(img)})">Usar</button></div>
+    </div>`).join('');
 }
 
-async function createDefaultRestaurant() {
-  const data = {
-    name: 'La Taberna del Mar', cuisine: 'Mediterránea', desc: 'Restaurante familiar',
-    web: '', ig: '@latabernadelmar', lang: 'Español', freq: 'Diaria',
-    tags: '#gastronomia', cta: '¡Reserva!', scheduled: [],
-    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  };
-  const ref = await db.collection('users').doc(currentUser.uid).collection('restaurants').add(data);
-  restaurants.push({ id: ref.id, ...data });
-  currentRestId = ref.id;
+function renderWebGrid(images) {
+  const grid = document.getElementById('webGrid');
+  grid.innerHTML = images.map((img, i) => `
+    <div class="bo-card" onclick="pickOrUseLibImg(${libImages.indexOf(img)})">
+      <img src="${img.url}" alt="" loading="lazy" onerror="this.parentElement.style.display='none'">
+      <div class="bo-meta"><div class="bo-src">🌐 Web</div></div>
+      <div class="bo-act"><button class="bo-use" onclick="event.stopPropagation();useLibImgNow(${libImages.indexOf(img)})">Usar</button></div>
+    </div>`).join('');
 }
 
-async function loadRestaurant(id) {
-  currentRestId = id;
-  const doc = await db.collection('users').doc(currentUser.uid).collection('restaurants').doc(id).get();
-  if (!doc.exists) return;
-  const d = doc.data();
-  document.getElementById('cfgName').value = d.name || '';
-  document.getElementById('cfgCuisine').value = d.cuisine || '';
-  document.getElementById('cfgDesc').value = d.desc || '';
-  document.getElementById('cfgWeb').value = d.web || '';
-  document.getElementById('cfgIG').value = d.ig || '';
-  document.getElementById('cfgLang').value = d.lang || 'Español';
-  document.getElementById('cfgFreq').value = d.freq || 'Diaria';
-  document.getElementById('cfgTags').value = d.tags || '';
-  document.getElementById('cfgCTA').value = d.cta || '';
-  document.getElementById('cfgServerUrl').value = d.serverUrl || DEFAULT_UPLOAD_URL;
-  if (d.replicateKey) document.getElementById('cfgReplicateKey').value = d.replicateKey;
-
-  scheduled = (d.scheduled || []).map(s => ({...s}));
-  updBadge();
-  renderCal();
-}
-
-function renderRestSelector() {
-  const sel = document.getElementById('restSel');
-  sel.innerHTML = restaurants.map(r => `<option value="${r.id}">${r.name}</option>`).join('');
-  if (currentRestId) sel.value = currentRestId;
-}
-
-async function changeRest() {
-  const id = document.getElementById('restSel').value;
-  if (id === currentRestId) return;
-  setSyncState('spin', 'Cargando...');
-  await loadRestaurant(id);
-  setSyncState('ok', 'Listo');
-  toast('Restaurante cambiado');
-}
-
-async function addRest() {
-  const n = prompt('Nombre:');
-  if (!n) return;
-  const data = {
-    name: n, cuisine: 'Tipo', desc: 'Descripción', web: '', ig: '@' + n.toLowerCase().replace(/\s+/g,''),
-    lang: 'Español', freq: 'Diaria', tags: '#restaurante', cta: '¡Reserva!',
-    scheduled: [], createdAt: firebase.firestore.FieldValue.serverTimestamp()
-  };
-  const ref = await db.collection('users').doc(currentUser.uid).collection('restaurants').add(data);
-  restaurants.push({ id: ref.id, ...data });
-  renderRestSelector();
-  document.getElementById('restSel').value = ref.id;
-  await loadRestaurant(ref.id);
-  setSyncState('ok', 'Listo');
-  toast(`✓ "${n}" creado`);
-}
-
-async function saveCfg() {
-  if (!currentUser || !currentRestId) return;
-  const data = {
-    name: document.getElementById('cfgName').value,
-    cuisine: document.getElementById('cfgCuisine').value,
-    desc: document.getElementById('cfgDesc').value,
-    web: document.getElementById('cfgWeb').value,
-    ig: document.getElementById('cfgIG').value,
-    lang: document.getElementById('cfgLang').value,
-    freq: document.getElementById('cfgFreq').value,
-    tags: document.getElementById('cfgTags').value,
-    cta: document.getElementById('cfgCTA').value,
-    serverUrl: document.getElementById('cfgServerUrl').value,
-    replicateKey: document.getElementById('cfgReplicateKey').value,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-  };
-  setSyncState('spin', 'Guardando...');
-  await db.collection('users').doc(currentUser.uid).collection('restaurants').doc(currentRestId).update(data);
-  const r = restaurants.find(x => x.id === currentRestId);
-  if (r) Object.assign(r, data);
-  renderRestSelector();
-  updateImgEngineLabel();
-  setSyncState('ok', 'Guardado');
-  toast('✓ Perfil guardado');
-}
-
-async function saveScheduled() {
-  if (!currentUser || !currentRestId) return;
-  setSyncState('spin', 'Guardando...');
-  await db.collection('users').doc(currentUser.uid).collection('restaurants').doc(currentRestId).update({ 
-    scheduled: scheduled.map(s => ({...s})) 
-  });
-  setSyncState('ok', 'Guardado');
-}
-
-function updateImgEngineLabel() {
-  const hfTok = getHFToken();
-  const st = document.getElementById('imgEngineSt');
-  if (st) { st.textContent = hfTok ? 'HF ✓' : 'Actiu'; st.className = 'kst on'; }
-  const fluxBtn = document.getElementById('fluxBtn');
-  if (fluxBtn) fluxBtn.style.display = getReplicateToken()?.length > 10 ? 'inline-block' : 'none';
-}
-
-// =====================================================
-// GENERAR PROPUESTAS (CON IMÁGENES RELEVANTES)
-// =====================================================
-async function genProposals() {
-  const context = document.getElementById('ctx').value.trim();
-  if (!context) {
-    toast('⚠️ Escribe un contexto (ej: "Hamburguesa de ternera") para obtener imágenes relevantes');
-    document.getElementById('ctx').focus();
+function renderGenGrid() {
+  const generated = libImages.filter(i => i.source === 'generated' && i.restId === currentRestId);
+  const grid = document.getElementById('genGrid');
+  if (!generated.length) {
+    grid.innerHTML = '<div class="bo-empty"><p>Les imatges generades apareixeran aquí</p></div>';
     return;
   }
+  grid.innerHTML = generated.map((img, i) => `
+    <div class="bo-card">
+      <img src="${img.url}" alt="" loading="lazy">
+      <div class="bo-meta"><div class="bo-src">🤖 Nanobanana</div><div class="bo-caption">${img.prompt||''}</div></div>
+      <div class="bo-act">
+        <button class="bo-use" onclick="useLibImgNow(${libImages.indexOf(img)})">Usar</button>
+        <button onclick="downloadImg('${img.url}')">↓</button>
+      </div>
+    </div>`).join('');
+}
+
+function downloadImg(url) {
+  const a = document.createElement('a'); a.href = url; a.download = 'socialchef_' + Date.now() + '.jpg';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+// Upload manual de fitxers
+function handleImgDrop(e, source) {
+  e.preventDefault();
+  const files = Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/'));
+  processFiles(files, source);
+}
+function handleFileInput(e, source) {
+  const files = Array.from(e.target.files);
+  processFiles(files, source);
+}
+function processFiles(files, source) {
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = { url: e.target.result, source, caption: file.name, type: 'post', restId: currentRestId };
+      addToLibrary(img);
+      if (source === 'instagram') renderIgGrid(libImages.filter(i => i.source === 'instagram' && i.restId === currentRestId));
+      else renderWebGrid(libImages.filter(i => i.source === 'web' && i.restId === currentRestId));
+    };
+    reader.readAsDataURL(file);
+  });
+  toast('✓ ' + files.length + ' imatges afegides');
+}
+
+// Afegir imatge a la librería (deduplicant per URL)
+function addToLibrary(img) {
+  if (!libImages.find(i => i.url === img.url)) {
+    libImages.push(img);
+  }
+}
+
+function useLibImgNow(imgIdx) {
+  toast('Selecciona una proposta per aplicar aquesta imatge');
+  // Destacar totes les targetes per indicar que es pot clicar
+}
+
+function pickOrUseLibImg(imgIdx) {
+  if (pickingForProp) { applyLibImage(imgIdx); return; }
+  // Si no estem en mode pick, copiar la URL
+  const img = libImages[imgIdx];
+  if (img) { navigator.clipboard.writeText(img.url).then(() => toast('✓ URL copiada')); }
+}
+
+// Generar imatge des de la librería
+async function genLibraryImage() {
+  const prompt = document.getElementById('genImgPrompt').value.trim();
+  if (!prompt) { toast('Descriu la imatge que vols generar'); return; }
+  const ratio = document.getElementById('genImgRatio').value;
+  const isStory = ratio === '9:16';
+  const btn = document.getElementById('genLibBtn');
+  btn.disabled = true; btn.textContent = '⏳ Generant...';
+  try {
+    const url = await generateImageNb(prompt, isStory);
+    const img = { url, source: 'generated', prompt, type: isStory ? 'story' : 'post', restId: currentRestId };
+    addToLibrary(img);
+    renderGenGrid();
+    toast('✓ Imatge generada!');
+  } catch(e) {
+    toast('Error: ' + (e.message || 'Error generant').slice(0,60));
+  } finally {
+    btn.disabled = false; btn.textContent = '🤖 Generar amb Nanobanana';
+  }
+}
+
+function switchLibTab(tab, btn) {
+  currentLibTab = tab;
+  document.querySelectorAll('.bo-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('lib-instagram').style.display = tab === 'instagram' ? 'block' : 'none';
+  document.getElementById('lib-web').style.display = tab === 'web' ? 'block' : 'none';
+  document.getElementById('lib-generated').style.display = tab === 'generated' ? 'block' : 'none';
+  if (tab === 'generated') renderGenGrid();
+}
+
+// =====================================================
+// GENERAR PROPOSTES
+// =====================================================
+async function genProposals() {
+  const ctx = document.getElementById('ctx').value.trim();
+  if (!ctx) { toast('⚠ Escriu el context (plat, esdeveniment...)'); document.getElementById('ctx').focus(); return; }
 
   document.getElementById('genBtn').disabled = true;
   document.getElementById('propArea').style.display = 'none';
   document.getElementById('lbox').classList.add('vis');
   selIds.clear();
 
-  const theme = document.getElementById('theme').value;
-  const tone = document.getElementById('tone').value;
+  const theme    = document.getElementById('theme').value;
+  const tone     = document.getElementById('tone').value;
   const restName = restaurants.find(r => r.id === currentRestId)?.name || document.getElementById('cfgName').value;
-  const cuisine = document.getElementById('cfgCuisine').value;
-  const desc = document.getElementById('cfgDesc').value;
-  const tags = document.getElementById('cfgTags').value;
-  const cta = document.getElementById('cfgCTA').value;
-  const lang = document.getElementById('cfgLang').value;
-  const hasFlux = !!getReplicateToken() && getReplicateToken().length > 10;
+  const cuisine  = document.getElementById('cfgCuisine').value;
+  const desc     = document.getElementById('cfgDesc').value;
+  const tags     = document.getElementById('cfgTags').value;
+  const cta      = document.getElementById('cfgCTA').value;
+  const lang     = document.getElementById('cfgLang').value;
 
-  // Generar textos
+  const steps = ['Analitzant el restaurant...','Generant idees creatives...','Redactant textos...','Preparant propostes...'];
+  let si = 0;
+  const iv = setInterval(() => { document.getElementById('lstep').textContent = steps[++si % steps.length]; }, 1800);
+
+  const sysMsg = 'Ets un expert en marketing de restaurants per Instagram. Respon SEMPRE amb JSON vàlid i res més.';
+  let userMsg = 'Genera 6 propostes de contingut per Instagram (3 post + 3 story):\n';
+  userMsg += 'Restaurant: ' + restName + '\nCuina: ' + cuisine + '\nDescripció: ' + desc + '\n';
+  userMsg += 'Idioma: ' + lang + '\nHashtags: ' + tags + '\nCTA: ' + cta + '\n';
+  userMsg += 'Temàtica: ' + theme + '\nTo: ' + tone + '\n';
+  userMsg += '*** CONTEXT IMPORTANT (usa\'l als textos): ' + ctx + ' ***\n';
+  userMsg += 'JSON sense markdown:\n{"proposals":[{"id":"p1","type":"post","emoji":"🍽️","title":"Títol","caption":"Text 2-3 frases sense hashtags","hashtags":"#tag1 #tag2 #tag3","imagePrompt":"English: detailed food photo description for AI generation"}]}';
+
   try {
-    document.getElementById('lstep').textContent = 'Generando textos con IA...';
-    const systemMsg = 'Eres experto en marketing gastronómico. Responde SIEMPRE con JSON válido.';
-    const userMsg = `Genera 6 propuestas para ${restName} (${cuisine}). Contexto: ${context}. Temática: ${theme}. Tono: ${tone}. Idioma: ${lang}. Incluye emojis. JSON: {"proposals":[{"id":"p1","type":"post","emoji":"🍽️","title":"Título","caption":"Texto 2-3 frases","hashtags":"${tags}","imagePrompt":"Descripción detallada foto"}]}`;
-
-    const resp = await puter.ai.chat([
-      { role: 'system', content: systemMsg },
-      { role: 'user', content: userMsg }
-    ], { model: 'gpt-4o-mini' });
-    
+    document.getElementById('lstep').textContent = 'Generant textos amb GPT-4o-mini...';
+    const resp = await puter.ai.chat(
+      [{ role: 'system', content: sysMsg }, { role: 'user', content: userMsg }],
+      { model: 'gpt-4o-mini' }
+    );
     let raw = typeof resp === 'string' ? resp : resp?.message?.content || JSON.stringify(resp);
-    raw = raw.replace(/```json|```/gi, '').trim();
+    raw = raw.replace(/```json|```/gi,'').trim();
     const j0 = raw.indexOf('{'), j1 = raw.lastIndexOf('}');
+    if (j0 === -1) throw new Error('No JSON');
     proposals = JSON.parse(raw.slice(j0, j1+1)).proposals;
-    
+    if (!proposals?.length) throw new Error('Buit');
   } catch(e) {
-    console.error('Error IA:', e);
-    proposals = fallbackProposals(restName, context);
-    toast('⚠️ Usando plantilla de ejemplo');
+    console.error('IA error:', e);
+    proposals = fallback(restName, ctx);
+    toast('⚠ IA no disponible · Contingut de mostra');
   }
 
-
-  // ── Imatges amb HuggingFace FLUX.1 (en paral·lel) ─────────────────────────
+  clearInterval(iv);
   document.getElementById('lbox').classList.remove('vis');
   document.getElementById('genBtn').disabled = false;
   renderProps();
-  toast('✓ Textos generats · Generant imatges FLUX.1...');
-
-  // Mostra les targetes amb botó "Generar imatge" — sota demanda per estalviar crèdits
-  document.getElementById('lbox').classList.remove('vis');
-  document.getElementById('genBtn').disabled = false;
-  renderProps();
-  toast('✓ ' + proposals.length + ' propuestas generadas · Clica "🖼 Generar" per crear cada imatge');
+  toast('✓ ' + proposals.length + ' propostes generades · Clica 🤖 per generar imatge o 🖼 per triar de la librería');
 }
 
-// Genera la imatge d'una proposta concreta (sota demanda)
-async function genImageForCard(propId) {
-  const p = proposals.find(x => x.id === propId);
-  if (!p) return;
-  const box = document.getElementById('cprev-' + propId);
-  const btn = document.getElementById('imgbtn-' + propId);
-  if (box) box.innerHTML = '<div class="iload"><div class="ispin"></div><span class="ilt">Generant...</span></div>';
-  if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
-  try {
-    const url = await generateImagePuter(p.imagePrompt || p.title, p.type === 'story');
-    proposals[proposals.indexOf(p)].imageData = url;
-    injectImg(propId, url, 'puter');
-    if (btn) btn.remove();
-  } catch(e) {
-    console.error('Puter img error:', e);
-    if (box) box.innerHTML = '<div class="iload"><span style="font-size:18px">⚠️</span><span class="ilt">' + (e.message||'Error').slice(0,40) + '</span></div>';
-    if (btn) { btn.disabled = false; btn.textContent = '🖼 Reintentar'; }
-  }
-}
-
-// Generar todas las imágenes con FLUX
-async function generateFluxForAll(restName) {
-  toast('🎨 Generando imágenes FLUX en segundo plano...');
-  
-  for (let i = 0; i < proposals.length; i++) {
-    try {
-      const p = proposals[i];
-      const fluxUrl = await generateWithFlux(
-        p.imagePrompt || p.title, 
-        p.type === 'story', 
-        restName, 
-        p.type
-      );
-      
-      if (fluxUrl) {
-        proposals[i].imageData = fluxUrl;
-        proposals[i].imageSource = 'flux';
-        injectImg(p.id, fluxUrl, 'flux');
-      }
-    } catch(e) {
-      console.error('FLUX error item', i, e);
-    }
-  }
-  
-  toast('✨ Imágenes FLUX completadas');
-}
-
-// Regenerar imágenes con Pexels (nuevas búsquedas)
-async function regenerateImages() {
-  const context = document.getElementById('ctx').value.trim() || 'restaurant food';
-  const theme = document.getElementById('theme').value;
-  
-  toast('🔄 Buscando nuevas imágenes...');
-  
-  for (let i = 0; i < proposals.length; i++) {
-    const imgData = await fetchPexelsImage(context + ' ' + (i+1), theme, proposals[i].type === 'story', i + 100);
-    proposals[i].imageData = imgData.url;
-    proposals[i].imageSource = imgData.source;
-    injectImg(proposals[i].id, imgData.url, imgData.source);
-  }
-  
-  renderProps();
-  toast('✓ Nuevas imágenes cargadas');
-}
-
-// Mejorar propuestas actuales con FLUX
-async function genAllImages() {
-  toast('Generant totes les imatges...');
-  for (const p of proposals) {
-    await genImageForCard(p.id);
-  }
-  toast('✓ Totes les imatges generades!');
-}
-
-async function upgradeToFlux() {
-  const restName = restaurants.find(r => r.id === currentRestId)?.name || 'restaurant';
-  const token = getReplicateToken();
-  
-  if (!token || token.length < 10) {
-    toast('❌ Configura tu API Key de Replicate primero');
-    showSec('config', document.querySelectorAll('.ni')[3]);
-    return;
-  }
-  
-  document.getElementById('lbox').classList.add('vis');
-  document.getElementById('lstep').textContent = 'Generando imágenes FLUX...';
-  
-  for (let i = 0; i < proposals.length; i++) {
-    document.getElementById('lstep').textContent = `FLUX ${i+1}/${proposals.length}...`;
-    try {
-      const fluxUrl = await generateWithFlux(
-        proposals[i].imagePrompt || proposals[i].title,
-        proposals[i].type === 'story',
-        restName,
-        proposals[i].type
-      );
-      
-      if (fluxUrl) {
-        proposals[i].imageData = fluxUrl;
-        proposals[i].imageSource = 'flux';
-        injectImg(proposals[i].id, fluxUrl, 'flux');
-      }
-    } catch(e) {
-      toast(`❌ Error FLUX en imagen ${i+1}: ${e.message}`);
-      break;
-    }
-  }
-  
-  document.getElementById('lbox').classList.remove('vis');
-  toast('✨ Proceso FLUX completado');
-}
-
-// Generar solo con FLUX (sin Pexels)
-async function genWithFluxOnly() {
-  const context = document.getElementById('ctx').value.trim();
-  if (!context) {
-    toast('⚠️ Escribe un contexto primero');
-    return;
-  }
-  
-  document.getElementById('genBtn').disabled = true;
-  document.getElementById('propArea').style.display = 'none';
-  document.getElementById('lbox').classList.add('vis');
-  
-  // Generar textos primero (igual que antes)
-  await genProposals();
-  
-  // Luego reemplazar todas las imágenes con FLUX
-  await upgradeToFlux();
-}
-
-function fallbackProposals(name, context) {
-  const ctx = context || 'gourmet dish';
+function fallback(name, ctx) {
+  const c = ctx || 'plat especial';
   return [
-    {id:'p1',type:'post',emoji:'🍽️',title:`${ctx} especial`,caption:`Descubre nuestro ${ctx} en ${name}. Ingredientes frescos y sabor único.`,hashtags:'#gastronomia',imagePrompt:`Professional food photography of ${ctx}`},
-    {id:'p2',type:'story',emoji:'👨‍🍳',title:'Preparación',caption:`Así preparamos nuestro ${ctx}.`,hashtags:'#chef',imagePrompt:`Chef preparing ${ctx} in kitchen`},
-    {id:'p3',type:'post',emoji:'📸',title:'Plato estrella',caption:`El ${ctx} que todos adoran.`,hashtags:'#foodie',imagePrompt:`Beautiful ${ctx} on plate`},
-    {id:'p4',type:'story',emoji:'✨',title:'Detalles',caption:`Los pequeños detalles marcan la diferencia.`,hashtags:'#gourmet',imagePrompt:`Close up ${ctx} details`},
-    {id:'p5',type:'post',emoji:'🔥',title:'Recién hecho',caption:`${ctx} recién preparado para ti.`,hashtags:'#fresh',imagePrompt:`Fresh ${ctx} restaurant`},
-    {id:'p6',type:'story',emoji:'❤️',title:'Clientes felices',caption:`¿Ya probaste nuestro ${ctx}?`,hashtags:'#happy',imagePrompt:`Customers enjoying ${ctx}`}
+    {id:'p1',type:'post',emoji:'🍽️',title:c+' especial',caption:`Descobreix el nostre ${c} a ${name}. Ingredients frescos i sabor únic. ${document.getElementById('cfgCTA')?.value||'Reserva!'}`,hashtags:'#gastronomia #restaurante',imagePrompt:`Professional food photography of ${c}, natural light, rustic table`},
+    {id:'p2',type:'story',emoji:'👨‍🍳',title:'Preparació',caption:`Així preparem el nostre ${c} a ${name}. Tot fet amb cura i amor.`,hashtags:'#chef #cocina',imagePrompt:`Chef preparing ${c} in professional kitchen`},
+    {id:'p3',type:'post',emoji:'📸',title:'El plat estrella',caption:`El ${c} que tothom demana a ${name}. Vine a provar-lo!`,hashtags:'#foodie #restaurante',imagePrompt:`Beautiful ${c} on elegant plate overhead shot`},
+    {id:'p4',type:'story',emoji:'✨',title:'Detalls',caption:`Els petits detalls marquen la diferència. El nostre ${c} t\'espera.`,hashtags:'#gourmet',imagePrompt:`Close up detail ${c} food photography`},
+    {id:'p5',type:'post',emoji:'🔥',title:'Acabat de fer',caption:`${c} acabat de preparar per a tu a ${name}. Fresc cada dia.`,hashtags:'#fresh #km0',imagePrompt:`Fresh ${c} restaurant quality`},
+    {id:'p6',type:'story',emoji:'❤️',title:'Gràcies',caption:`Gràcies per triar ${name}. El ${c} és el nostre homenatge al bon menjar.`,hashtags:'#gracias #restaurante',imagePrompt:`Happy dining restaurant warm atmosphere ${c}`}
   ];
 }
 
-function injectImg(cardId, url, source) {
-  const box = document.getElementById('cprev-' + cardId);
-  if (!box) return;
-  
-  const img = new Image();
-  img.style.cssText = 'width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s;position:absolute;inset:0';
-  img.onload = () => { img.style.opacity = '1'; };
-  img.onerror = () => {
-    const fallback = fetchPicsumImage(false, Math.random()).url;
-    const img2 = new Image();
-    img2.style.cssText = img.style.cssText;
-    img2.onload = () => { img2.style.opacity = '1'; };
-    box.innerHTML = '';
-    box.appendChild(img2);
-    img2.src = fallback;
-  };
-  
-  box.innerHTML = '<div class="iload"><div class="ispin"></div><span class="ilt">Cargando...</span></div>';
-  
-  // Añadir tag de fuente
-  const tag = document.createElement('div');
-  tag.className = 'img-tag';
-  tag.textContent = source === 'flux' ? 'FLUX' : source === 'pexels' ? 'Pexels' : 'Picsum';
-  box.appendChild(tag);
-  
-  box.appendChild(img);
-  img.src = url;
-}
-
-// =====================================================
-// RENDER Y UI (resto del código)
-// =====================================================
 function renderProps() {
   const g = document.getElementById('propGrid');
   g.innerHTML = proposals.map(p => `
     <div class="pcard" id="card-${p.id}">
       <span class="sbadge">✓ Seleccionada</span>
-      p.type==='story'?'story':''}" id="cprev-${p.id}" onclick="toggleSel('${p.id}')">
-        <div class="iload" style="flex-direction:column;gap:10px">
-          <button id="imgbtn-${p.id}" onclick="event.stopPropagation();genImageForCard('${p.id}')" style="background:var(--accent);color:#0e0e0e;border:none;padding:8px 16px;border-radius:var(--rs);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">🖼 Generar imatge</button>
-          <span class="ilt">Puter.js · gpt-image-1</span>
+      <div class="cprev ${p.type==='story'?'story':''}" id="cprev-${p.id}" onclick="toggleSel('${p.id}')">
+        <div class="iload">
+          <span style="font-size:28px">${p.emoji}</span>
+          <span class="ilt" style="text-align:center;padding:0 12px;font-size:11px">${p.title}</span>
         </div>
+        <div id="srctag-${p.id}" class="img-src-tag" style="display:none"></div>
       </div>
       <div class="cbody">
         <span class="tbadge ${p.type}">${p.type==='post'?'□ Post':'□ Story'}</span>
@@ -1058,31 +958,13 @@ function renderProps() {
       <div class="cact">
         <button class="bsel" onclick="toggleSel('${p.id}')">Seleccionar</button>
         <button class="bedit" onclick="openPrev('${p.id}')">Editar</button>
-      </div></div>`).join('');
-  document.getElementById('propCount').textContent = proposals.length + ' propuestas';
+        <button class="bgen" id="imgbtn-${p.id}" onclick="genImageForProp('${p.id}')" title="Generar imatge amb Nanobanana">🤖 IA</button>
+        <button class="bgen" onclick="pickImageForProp('${p.id}')" title="Triar de la librería">🖼 Lib</button>
+      </div>
+    </div>`).join('');
+  document.getElementById('propCount').textContent = proposals.length + ' propuestas generadas';
   document.getElementById('propArea').style.display = 'block';
   updSelUI();
-}
-
-async function regenerateOneFlux(id) {
-  const p = proposals.find(x => x.id === id);
-  if (!p) return;
-  
-  const restName = restaurants.find(r => r.id === currentRestId)?.name || 'restaurant';
-  document.getElementById('cprev-' + id).innerHTML = '<div class="iload"><div class="ispin"></div><span class="ilt">FLUX...</span></div>';
-  
-  try {
-    const fluxUrl = await generateWithFlux(p.imagePrompt || p.title, p.type === 'story', restName, p.type);
-    if (fluxUrl) {
-      p.imageData = fluxUrl;
-      p.imageSource = 'flux';
-      injectImg(id, fluxUrl, 'flux');
-      toast('✨ Imagen FLUX generada');
-    }
-  } catch(e) {
-    toast('❌ Error FLUX: ' + e.message);
-    injectImg(id, p.imageData, 'pexels');
-  }
 }
 
 function toggleSel(id) {
@@ -1095,107 +977,105 @@ function selAll() { proposals.forEach(p => { selIds.add(p.id); document.getEleme
 function updSelUI() {
   const n = selIds.size;
   document.getElementById('selCount').textContent = n + ' seleccionadas';
-  const b = document.getElementById('schedBtn'); 
-  b.disabled = n === 0;
-  b.textContent = n > 0 ? `Programar ${n} →` : 'Programar seleccionadas →';
+  const b = document.getElementById('schedBtn'); b.disabled = n === 0;
+  b.textContent = n > 0 ? `Programar ${n} → ` : 'Programar →';
 }
 
+// =====================================================
+// PREVIEW MODAL
+// =====================================================
 function openPrev(id) {
   const p = proposals.find(x => x.id === id); if (!p) return;
   editP = p;
-  const ig = document.getElementById('cfgIG').value || '@restaurant';
+  const ig = document.getElementById('cfgIG').value || '@mi_restaurante';
   document.getElementById('mpTitle').textContent = p.title;
-  document.getElementById('mpSub').textContent = p.type === 'post' ? 'Post de Instagram' : 'Story';
+  document.getElementById('mpSub').textContent = p.type === 'post' ? 'Vista previa · Post' : 'Vista previa · Story';
   document.getElementById('mpCap').value = p.caption;
   document.getElementById('mpDate').value = new Date().toISOString().split('T')[0];
-  const imgH = p.imageData ? `<img src="${p.imageData}" alt="">` : `<div style="display:flex;align-items:center;justify-content:center;height:100%"><span style="font-size:48px">${p.emoji}</span></div>`;
+  const imgH = p.imageData
+    ? `<img src="${p.imageData}" alt="" style="width:100%;height:100%;object-fit:cover">`
+    : `<div style="display:flex;align-items:center;justify-content:center;height:200px;flex-direction:column;gap:8px"><span style="font-size:48px">${p.emoji}</span><span style="font-size:12px;color:var(--text3)">${p.title}</span></div>`;
   document.getElementById('mpPrev').innerHTML = `
     <div class="ighd"><div class="igav">${p.emoji}</div><div><div class="igun">${ig}</div><div class="igti">Instagram</div></div></div>
     <div class="igimg ${p.type==='story'?'story':''}">${imgH}</div>
     <div class="igca"><div class="igcatxt">${p.caption}</div><div class="ightags">${p.hashtags}</div></div>`;
   document.getElementById('ovPrev').classList.add('open');
 }
-
 function closeOv(id) { document.getElementById(id).classList.remove('open'); }
 function closeOvIf(e, id) { if (e.target.id === id) closeOv(id); }
 
 async function confirmSched() {
   if (!editP) return;
   const date = document.getElementById('mpDate').value, time = document.getElementById('mpTime').value;
-  if (!date) { toast('Selecciona fecha'); return; }
+  if (!date) { toast('Selecciona una fecha'); return; }
   editP.caption = document.getElementById('mpCap').value;
   scheduled.push({ ...editP, date, time });
   updBadge(); closeOv('ovPrev');
   await saveScheduled();
-  toast('✓ Programada: ' + fmtDate(date));
+  toast('✓ Programada per al ' + fmtDate(date) + ' a les ' + time);
   renderCal();
 }
 
+// =====================================================
+// BULK SCHEDULE
+// =====================================================
 function schedSel() {
   bulkItems = proposals.filter(p => selIds.has(p.id)).map(p => ({ ...p, date: new Date().toISOString().split('T')[0], time: '12:00' }));
   document.getElementById('bulkList').innerHTML = bulkItems.map((p, i) => `
-    <div style="display:grid;grid-template-columns:40px 24px 1fr auto auto;gap:8px;align-items:center;padding:10px;background:var(--surface2);border-radius:var(--rs);margin-bottom:8px">
-      ${p.imageData ? `<img src="${p.imageData}" style="width:36px;height:36px;border-radius:6px;object-fit:cover">` : ''}
-      <span style="font-size:18px">${p.emoji}</span>
-      <div><div style="font-size:13px;font-weight:500">${p.title}</div><span class="tbadge ${p.type}" style="font-size:10px;padding:1px 6px">${p.type}</span></div>
+    <div style="display:flex;align-items:center;gap:8px;padding:10px;background:var(--surface2);border-radius:var(--rs);margin-bottom:8px">
+      ${p.imageData ? `<img src="${p.imageData}" style="width:36px;height:36px;border-radius:6px;object-fit:cover">` : `<span style="font-size:20px;width:36px;text-align:center">${p.emoji}</span>`}
+      <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500">${p.title}</div><span class="tbadge ${p.type}" style="font-size:10px;padding:1px 6px">${p.type}</span></div>
       <input type="date" value="${p.date}" onchange="bulkItems[${i}].date=this.value" style="font-size:11px;padding:5px 8px;width:130px">
       <input type="time" value="${p.time}" onchange="bulkItems[${i}].time=this.value" style="font-size:11px;padding:5px 8px;width:90px">
     </div>`).join('');
   document.getElementById('bdDate').value = new Date().toISOString().split('T')[0];
   document.getElementById('ovBulk').classList.add('open');
 }
-
 function applyBulk() {
-  const d = document.getElementById('bdDate').value, t = document.getElementById('bdTime').value; 
-  if (!d) return;
-  bulkItems.forEach((_, i) => { bulkItems[i].date = d; bulkItems[i].time = t; });
-  document.getElementById('bulkList').querySelectorAll('input[type="date"]').forEach(inp => inp.value = d);
-  document.getElementById('bulkList').querySelectorAll('input[type="time"]').forEach(inp => inp.value = t);
+  const d = document.getElementById('bdDate').value, t = document.getElementById('bdTime').value; if (!d) return;
+  bulkItems.forEach((_,i) => { bulkItems[i].date=d; bulkItems[i].time=t; });
+  document.getElementById('bulkList').querySelectorAll('input[type="date"]').forEach(inp => inp.value=d);
+  document.getElementById('bulkList').querySelectorAll('input[type="time"]').forEach(inp => inp.value=t);
 }
-
 async function confirmBulk() {
-  bulkItems.forEach(item => { if (item.date) scheduled.push({ ...item }); });
+  bulkItems.forEach(item => { if(item.date) scheduled.push({...item}); });
   updBadge(); closeOv('ovBulk');
   await saveScheduled();
-  toast('✓ ' + bulkItems.length + ' programadas');
-  selIds.clear(); 
-  proposals.forEach(p => document.getElementById('card-'+p.id)?.classList.remove('sel'));
-  updSelUI(); 
-  renderCal();
+  toast('✓ ' + bulkItems.length + ' publicaciones programadas');
+  selIds.clear(); proposals.forEach(p => document.getElementById('card-'+p.id)?.classList.remove('sel'));
+  updSelUI(); renderCal();
 }
 
+// =====================================================
+// CALENDAR
+// =====================================================
 function renderCal() {
   document.getElementById('calTitle').textContent = MONTHS[calMon] + ' ' + calYr;
   const cont = document.getElementById('calDays');
-  const first = new Date(calYr, calMon, 1), last = new Date(calYr, calMon+1, 0);
-  let sd = first.getDay(); sd = sd === 0 ? 6 : sd - 1;
+  const first = new Date(calYr,calMon,1), last = new Date(calYr,calMon+1,0);
+  let sd = first.getDay(); sd = sd===0?6:sd-1;
   const today = new Date(); let html = '';
-  const pl = new Date(calYr, calMon, 0).getDate();
-  for (let i = sd-1; i >= 0; i--) html += `<div class="cday om"><span class="cdnum">${pl-i}</span></div>`;
-  for (let d = 1; d <= last.getDate(); d++) {
-    const ds = `${calYr}-${String(calMon+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const iT = d===today.getDate()&&calMon===today.getMonth()&&calYr===today.getFullYear();
-    const posts = scheduled.filter(s => s.date === ds);
-    const dots = posts.map(p => `<div class="pdot ${p.type==='story'?'story':''}"></div>`).join('');
-    html += `<div class="cday ${iT?'today':''} ${posts.length?'hp':''}"><span class="cdnum">${d}</span><div style="display:flex;gap:2px;flex-wrap:wrap;margin-top:2px">${dots}</div></div>`;
+  const pl = new Date(calYr,calMon,0).getDate();
+  for (let i=sd-1;i>=0;i--) html+=`<div class="cday om"><span class="cdnum">${pl-i}</span></div>`;
+  for (let d=1;d<=last.getDate();d++) {
+    const ds=`${calYr}-${String(calMon+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const iT=d===today.getDate()&&calMon===today.getMonth()&&calYr===today.getFullYear();
+    const posts=scheduled.filter(s=>s.date===ds);
+    const dots=posts.map(p=>`<div class="pdot ${p.type==='story'?'story':''}"></div>`).join('');
+    html+=`<div class="cday ${iT?'today':''} ${posts.length?'hp':''}"><span class="cdnum">${d}</span><div style="display:flex;gap:2px;flex-wrap:wrap;margin-top:2px">${dots}</div></div>`;
   }
-  const rem = (sd + last.getDate()) % 7; const fill = rem === 0 ? 0 : 7 - rem;
-  for (let i = 1; i <= fill; i++) html += `<div class="cday om"><span class="cdnum">${i}</span></div>`;
-  cont.innerHTML = html;
-  renderSList();
+  const rem=(sd+last.getDate())%7; const fill=rem===0?0:7-rem;
+  for (let i=1;i<=fill;i++) html+=`<div class="cday om"><span class="cdnum">${i}</span></div>`;
+  cont.innerHTML=html; renderSList();
 }
-
 function renderSList() {
-  const c = document.getElementById('schedItems');
-  if (!scheduled.length) { 
-    c.innerHTML = `<div class="empty"><span class="ei">📅</span><p>Sin publicaciones.</p></div>`; 
-    return; 
-  }
-  const sorted = [...scheduled].sort((a,b) => (a.date+a.time).localeCompare(b.date+b.time));
-  c.innerHTML = sorted.map((s, i) => `
+  const c=document.getElementById('schedItems');
+  if (!scheduled.length){c.innerHTML=`<div class="empty"><span class="ei">📅</span><p>Sin publicaciones aún.</p></div>`;return;}
+  const sorted=[...scheduled].sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
+  c.innerHTML=sorted.map((s,i)=>`
     <div class="sitem ${s.type==='story'?'story':''}">
       <div style="display:flex;align-items:center;gap:10px">
-        ${s.imageData ? `<img src="${s.imageData}" class="sthumb" alt="">` : `<span style="font-size:22px">${s.emoji}</span>`}
+        ${s.imageData?`<img src="${s.imageData}" class="sthumb" alt="">`:`<span style="font-size:22px">${s.emoji}</span>`}
         <div style="flex:1;min-width:0">
           <div class="sd8">${fmtDate(s.date)} · ${s.time}</div>
           <div class="stit">${s.title}</div>
@@ -1205,35 +1085,175 @@ function renderSList() {
       </div>
     </div>`).join('');
 }
+async function remSched(i){scheduled.splice(i,1);updBadge();await saveScheduled();renderCal();toast('Eliminada');}
+function chMonth(d){calMon+=d;if(calMon>11){calMon=0;calYr++;}if(calMon<0){calMon=11;calYr--;}renderCal();}
+function updBadge(){document.getElementById('calBadge').textContent=scheduled.length;}
 
-async function remSched(i) {
-  scheduled.splice(i, 1);
-  updBadge();
-  await saveScheduled();
-  renderCal();
-  toast('Publicación eliminada');
+// =====================================================
+// FIREBASE
+// =====================================================
+async function initApp() {
+  setInitMsg('Conectando con Firebase...');
+  try {
+    firebase.initializeApp(firebaseConfig);
+    auth = firebase.auth();
+    db = firebase.firestore();
+    const cred = await auth.signInAnonymously();
+    currentUser = cred.user;
+    setSyncState('spin','Cargando...');
+    await loadUserData();
+    setSyncState('ok','Sincronizado · ' + currentUser.uid.slice(0,8));
+    document.getElementById('initScreen').style.display = 'none';
+    document.getElementById('mainApp').style.display = 'grid';
+    renderCal();
+    const nbKey = localStorage.getItem('sc_nb_key');
+    if (nbKey && document.getElementById('cfgNbKey')) document.getElementById('cfgNbKey').value = nbKey;
+  } catch(err) {
+    setInitMsg('Error: ' + err.message);
+    console.error(err);
+  }
+}
+function setInitMsg(msg){document.getElementById('initMsg').textContent=msg;}
+function setSyncState(state,txt){
+  const dot=document.getElementById('syncDot');
+  dot.className='sync-dot '+(state==='ok'?'ok':state==='spin'?'spin':'');
+  document.getElementById('syncTxt').textContent=txt;
 }
 
-function chMonth(d) { calMon += d; if (calMon > 11) { calMon = 0; calYr++; } if (calMon < 0) { calMon = 11; calYr--; } renderCal(); }
-function updBadge() { document.getElementById('calBadge').textContent = scheduled.length; }
+async function loadUserData() {
+  const snap = await db.collection('users').doc(currentUser.uid).collection('restaurants').orderBy('createdAt').get();
+  restaurants = snap.docs.map(d=>({id:d.id,...d.data()}));
+  if (!restaurants.length) await createDefaultRestaurant();
+  renderRestSelector();
+  currentRestId = restaurants[0].id;
+  await loadRestaurant(currentRestId);
+}
 
-function showSec(n, btn) {
-  document.querySelectorAll('.content').forEach(s => s.style.display = 'none');
-  document.querySelectorAll('.ni').forEach(b => b.classList.remove('active'));
-  const s = document.getElementById('sec-'+n); s.style.display = 'flex'; s.style.flexDirection = 'column';
+async function createDefaultRestaurant() {
+  const data = {
+    name:'La Taberna del Mar',cuisine:'Mediterránea',desc:'Restaurant familiar al port.',
+    web:'',ig:'@latabernadelmar',lang:'Español',freq:'Diaria',
+    tags:'#gastronomia #restaurante',cta:'¡Reserva!',scheduled:[],
+    createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  };
+  const ref = await db.collection('users').doc(currentUser.uid).collection('restaurants').add(data);
+  restaurants.push({id:ref.id,...data});
+  currentRestId = ref.id;
+}
+
+async function loadRestaurant(id) {
+  currentRestId = id;
+  const doc = await db.collection('users').doc(currentUser.uid).collection('restaurants').doc(id).get();
+  if (!doc.exists) return;
+  const d = doc.data();
+  document.getElementById('cfgName').value = d.name||'';
+  document.getElementById('cfgCuisine').value = d.cuisine||'';
+  document.getElementById('cfgDesc').value = d.desc||'';
+  document.getElementById('cfgWeb').value = d.web||'';
+  document.getElementById('cfgIG').value = d.ig||'';
+  document.getElementById('cfgLang').value = d.lang||'Español';
+  document.getElementById('cfgFreq').value = d.freq||'Diaria';
+  document.getElementById('cfgTags').value = d.tags||'';
+  document.getElementById('cfgCTA').value = d.cta||'';
+  // Pre-emplenar camps de la librería
+  const igEl = document.getElementById('igUsername');
+  if (igEl && d.ig) igEl.value = d.ig;
+  const webEl = document.getElementById('webUrl');
+  if (webEl && d.web) webEl.value = d.web;
+  // Actualitzar info librería
+  const li = document.getElementById('libRestInfo');
+  if (li) li.textContent = 'Imatges de ' + (d.name||'el restaurant actiu');
+  scheduled = (d.scheduled||[]).map(s=>({...s}));
+  updBadge(); renderCal();
+}
+
+function renderRestSelector() {
+  const sel = document.getElementById('restSel');
+  sel.innerHTML = restaurants.map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
+  if (currentRestId) sel.value = currentRestId;
+}
+
+async function changeRest() {
+  const id = document.getElementById('restSel').value;
+  if (id===currentRestId) return;
+  setSyncState('spin','Cargando...');
+  await loadRestaurant(id);
+  libImages = []; // Reset librería per nou restaurant
+  setSyncState('ok','Sincronizado');
+  toast('Restaurante cambiado');
+}
+
+async function addRest() {
+  const n = prompt('Nombre del nuevo restaurante:'); if (!n) return;
+  const data = {
+    name:n,cuisine:'Tipo de cocina',desc:'Descripción.',web:'',ig:'@'+n.toLowerCase().replace(/\s+/g,''),
+    lang:'Español',freq:'Diaria',tags:'#restaurante',cta:'¡Reserva!',
+    scheduled:[],createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  };
+  const ref = await db.collection('users').doc(currentUser.uid).collection('restaurants').add(data);
+  restaurants.push({id:ref.id,...data});
+  renderRestSelector();
+  document.getElementById('restSel').value = ref.id;
+  await loadRestaurant(ref.id);
+  toast('✓ "'+n+'" creat');
+}
+
+async function saveCfg() {
+  if (!currentUser||!currentRestId) return;
+  const nbKey = document.getElementById('cfgNbKey')?.value?.trim();
+  if (nbKey) localStorage.setItem('sc_nb_key', nbKey);
+  const data = {
+    name:document.getElementById('cfgName').value,
+    cuisine:document.getElementById('cfgCuisine').value,
+    desc:document.getElementById('cfgDesc').value,
+    web:document.getElementById('cfgWeb').value,
+    ig:document.getElementById('cfgIG').value,
+    lang:document.getElementById('cfgLang').value,
+    freq:document.getElementById('cfgFreq').value,
+    tags:document.getElementById('cfgTags').value,
+    cta:document.getElementById('cfgCTA').value,
+    updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+  };
+  setSyncState('spin','Guardando...');
+  await db.collection('users').doc(currentUser.uid).collection('restaurants').doc(currentRestId).update(data);
+  const r = restaurants.find(x=>x.id===currentRestId);
+  if (r) Object.assign(r,data);
+  renderRestSelector(); document.getElementById('restSel').value = currentRestId;
+  // Actualitzar camps librería
+  const igEl = document.getElementById('igUsername'); if (igEl) igEl.value = data.ig||'';
+  const webEl = document.getElementById('webUrl'); if (webEl) webEl.value = data.web||'';
+  setSyncState('ok','Guardado ✓');
+  toast('✓ Perfil guardat a Firebase');
+}
+
+async function saveScheduled() {
+  if (!currentUser||!currentRestId) return;
+  setSyncState('spin','Guardando...');
+  await db.collection('users').doc(currentUser.uid).collection('restaurants').doc(currentRestId)
+    .update({scheduled:scheduled.map(s=>({...s,imageData:s.imageData||null}))});
+  setSyncState('ok','Guardado ✓');
+}
+
+// =====================================================
+// NAV + HELPERS
+// =====================================================
+function showSec(n,btn) {
+  document.querySelectorAll('.content').forEach(s=>s.style.display='none');
+  document.querySelectorAll('.ni').forEach(b=>b.classList.remove('active'));
+  const s=document.getElementById('sec-'+n); s.style.display='flex'; s.style.flexDirection='column';
   if (btn) btn.classList.add('active');
-  if (n === 'calendar') renderCal();
+  if (n==='calendar') renderCal();
+  if (n==='library') {
+    // Pre-emplenar camps si vénen del config
+    const ig = document.getElementById('cfgIG')?.value||'';
+    const web = document.getElementById('cfgWeb')?.value||'';
+    if (ig && document.getElementById('igUsername')) document.getElementById('igUsername').value = ig;
+    if (web && document.getElementById('webUrl')) document.getElementById('webUrl').value = web;
+  }
 }
 
-function fmtDate(d) { if (!d) return ''; const [y,m,dd] = d.split('-'); return `${dd} ${MONTHS[parseInt(m)-1].slice(0,3)} ${y}`; }
-function toast(msg, isError) { 
-  const t = document.getElementById('toast'); 
-  t.textContent = msg; 
-  if (isError) t.classList.add('error');
-  else t.classList.remove('error');
-  t.classList.add('show'); 
-  setTimeout(() => t.classList.remove('show'), 3500); 
-}
+function fmtDate(d){if(!d)return'';const[y,m,dd]=d.split('-');return`${dd} ${MONTHS[parseInt(m)-1].slice(0,3)} ${y}`;}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
 
 window.onload = initApp;
 </script>
