@@ -335,12 +335,19 @@ select option{background:var(--surface2)}
       <!-- Instagram tab -->
       <div id="lib-instagram">
         <div class="bo-gen-area">
-          <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Entra el nom d'usuari d'Instagram del restaurante per carregar les seves imatges públiques.</p>
-          <div style="display:flex;gap:10px;align-items:center">
+          <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Cargar imágenes del perfil de Instagram del restaurante.</p>
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
             <input type="text" id="igUsername" placeholder="@larampa23" style="flex:1;max-width:300px" oninput="updateIgFromInput()">
             <button class="bp" onclick="loadInstagramImages()" style="padding:10px 20px">Cargar imágenes</button>
+            <button class="bs" onclick="openIgProfile()" style="padding:10px 14px;font-size:13px" title="Abrir perfil en Instagram">↗ Ver perfil</button>
           </div>
-          <p style="font-size:11px;color:var(--text3);margin-top:8px">💡 Carrega fins a 12 imatges recents del perfil públic</p>
+          <div style="margin-top:10px;padding:10px 14px;background:rgba(232,201,126,.06);border:1px solid rgba(232,201,126,.15);border-radius:var(--rs)">
+            <p style="font-size:12px;color:var(--text3);line-height:1.6">
+              ⚠️ <strong style="color:var(--text2)">Instagram bloqueja scraping extern.</strong> Si no carreguen automàticament, tens dues opcions:<br>
+              1. <a id="igDirectLink" href="#" target="_blank" style="color:var(--accent)">Obre el perfil a Instagram →</a>, captura pantalla o descarrega les imatges, i puja-les manualment aquí baix.<br>
+              2. Puja directament des del teu dispositiu (JPG/PNG).
+            </p>
+          </div>
         </div>
         <div id="igGrid" class="bo-grid">
           <div class="bo-empty"><p>Entra un usuari d'Instagram i clica "Cargar imágenes"</p></div>
@@ -373,7 +380,7 @@ select option{background:var(--surface2)}
                 <option value="1:1">Post (1:1)</option>
                 <option value="9:16">Story (9:16)</option>
               </select>
-              <button class="bp" onclick="genLibraryImage()" id="genLibBtn">🤖 Generar amb Nanobanana</button>
+              <button class="bp" onclick="genLibraryImage()" id="genLibBtn">🎨 Generar imatge</button>
               <span style="font-size:11px;color:var(--text3)" id="nbCredit"></span>
             </div>
           </div>
@@ -411,11 +418,14 @@ select option{background:var(--surface2)}
             <div class="fg"><label>CTA habitual</label><input type="text" id="cfgCTA"></div>
             <div class="hdiv" style="margin:4px 0"></div>
             <div class="fg">
-              <label>API Key Nanobanana (opcional)</label>
-              <input type="password" id="cfgNbKey" placeholder="nb_..." autocomplete="off">
-              <span style="font-size:11px;color:var(--text3);margin-top:3px">Si tens crèdits propis de Nanobanana · Sense key usa Puter gratuït</span>
+              <label>Google Gemini API Key</label>
+              <input type="password" id="cfgGeminiKey" placeholder="AIza..." autocomplete="off">
+              <span style="font-size:11px;color:var(--text3);margin-top:3px">Para Imagen 3 · Consíguela gratis en <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent)">aistudio.google.com</a></span>
             </div>
-            <button class="bp" style="width:fit-content" onclick="saveCfg()">Guardar</button>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+              <button class="bp" style="width:fit-content" onclick="saveCfg()">Guardar</button>
+              <button onclick="deleteCurrentRest()" style="background:none;border:1px solid var(--red);color:var(--red);padding:10px 18px;border-radius:var(--rs);font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s" onmouseover="this.style.background='rgba(232,126,126,.1)'" onmouseout="this.style.background='none'">🗑 Eliminar este restaurante</button>
+            </div>
           </div>
         </div>
       </div>
@@ -497,23 +507,100 @@ let currentLibTab = 'instagram';
 let pickingForProp = null; // id proposta quan s'obre ovLibPick
 
 // =====================================================
-// NANOBANANA / PUTER IMAGE GENERATION
+// GENERACIÓ D'IMATGES — Gemini Imagen 3 + Puter fallback
 // =====================================================
-function getNbKey() {
-  return localStorage.getItem('sc_nb_key') || document.getElementById('cfgNbKey')?.value?.trim() || '';
+function getGeminiKey() {
+  return localStorage.getItem('sc_gemini_key') || document.getElementById('cfgGeminiKey')?.value?.trim() || '';
+}
+
+// Prompt engineering para Gemini Imagen 3 — mucho más detallado
+function buildImagePrompt(prompt, isStory) {
+  const orient = isStory
+    ? 'vertical portrait 9:16 composition, tall format'
+    : 'square 1:1 composition, centered subject';
+  return [
+    prompt,
+    'professional food photography',
+    'appetizing and delicious looking',
+    'restaurant quality plating',
+    'shot with a high-end DSLR camera',
+    'shallow depth of field',
+    'warm natural side lighting',
+    'rich vibrant colors',
+    'photorealistic, ultra detailed, 8k resolution',
+    orient,
+    'clean background, editorial style'
+  ].join(', ');
+}
+
+async function generateWithGemini(prompt, isStory) {
+  const apiKey = getGeminiKey();
+  if (!apiKey) throw new Error('No Gemini key');
+
+  const fullPrompt = buildImagePrompt(prompt, isStory);
+  const aspectRatio = isStory ? '9:16' : '1:1';
+
+  // Intentar Imagen 3 primero (mejor calidad)
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/imagen-3.0-generate-002:predict?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          instances: [{ prompt: fullPrompt }],
+          parameters: { sampleCount: 1, aspectRatio, safetyFilterLevel: 'block_few', personGeneration: 'allow_adult' }
+        })
+      }
+    );
+    if (!res.ok) throw new Error('Imagen3 HTTP ' + res.status);
+    const data = await res.json();
+    const b64 = data?.predictions?.[0]?.bytesBase64Encoded;
+    const mime = data?.predictions?.[0]?.mimeType || 'image/png';
+    if (!b64) throw new Error('No image data');
+    return 'data:' + mime + ';base64,' + b64;
+  } catch(e) {
+    console.warn('Imagen 3 falló, probando Gemini Flash imagen:', e.message);
+  }
+
+  // Fallback: Gemini 2.0 Flash image generation
+  const res2 = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${apiKey}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: fullPrompt }] }],
+        generationConfig: { responseModalities: ['IMAGE'] }
+      })
+    }
+  );
+  if (!res2.ok) throw new Error('Gemini Flash HTTP ' + res2.status + ': ' + (await res2.text()).slice(0, 120));
+  const data2 = await res2.json();
+  const part = data2?.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
+  if (!part?.inlineData?.data) throw new Error('Sin imagen en respuesta Gemini');
+  return 'data:' + (part.inlineData.mimeType || 'image/png') + ';base64,' + part.inlineData.data;
 }
 
 async function generateImageNb(prompt, isStory) {
-  const fullPrompt = prompt + ', professional food photography, appetizing, restaurant quality, natural lighting, high detail, 8k';
+  const geminiKey = getGeminiKey();
+
+  // Intentar Gemini/Imagen 3 si hay key
+  if (geminiKey) {
+    try {
+      const url = await generateWithGemini(prompt, isStory);
+      return url;
+    } catch(e) {
+      console.warn('Gemini falló, usando Puter FLUX como fallback:', e.message);
+      toast('⚠️ Gemini: ' + e.message.slice(0,50) + ' · Usant Puter...');
+    }
+  }
+
+  // Fallback: Puter FLUX.1-schnell (gratuït)
+  const fullPrompt = buildImagePrompt(prompt, isStory);
   const size = isStory ? '1024x1792' : '1024x1024';
-
-  // Si hi ha API key de Nanobanana pròpia, usar-la via puter amb model nanobanana
-  // Si no, usar puter gratuït amb flux-schnell (crèdits de l'usuari)
-  const nbKey = getNbKey();
-
   const imgEl = await puter.ai.txt2img(fullPrompt, {
-    model: nbKey ? 'black-forest-labs/flux.1-schnell' : 'black-forest-labs/flux.1-schnell',
-    ...(nbKey ? { apiKey: nbKey } : {}),
+    model: 'black-forest-labs/flux.1-schnell',
     size
   });
   return imgEl.src;
@@ -555,8 +642,10 @@ async function genImageForProp(propId) {
     const ctx = document.getElementById('ctx')?.value?.trim() || '';
     const url = await generateImageNb(p.imagePrompt || p.title + (ctx ? ' ' + ctx : ''), p.type === 'story');
     proposals[proposals.indexOf(p)].imageData = url;
-    // Afegir a la librería
-    addToLibrary({ url, source: 'generated', prompt: p.imagePrompt || p.title, type: p.type, restId: currentRestId });
+    // Afegir a la librería i persistir
+    const imgData = { url, source: 'generated', prompt: p.imagePrompt || p.title, type: p.type, restId: currentRestId };
+    addToLibrary(imgData);
+    idbSaveImage(imgData);
     injectImg(propId, url);
     // Eliminar botó generar
     const newBtn = document.getElementById('imgbtn-' + propId);
@@ -695,15 +784,29 @@ function renderGenGrid() {
     grid.innerHTML = '<div class="bo-empty"><p>Les imatges generades apareixeran aquí</p></div>';
     return;
   }
-  grid.innerHTML = generated.map((img, i) => `
-    <div class="bo-card">
-      <img src="${img.url}" alt="" loading="lazy">
-      <div class="bo-meta"><div class="bo-src">🤖 Nanobanana</div><div class="bo-caption">${img.prompt||''}</div></div>
+  grid.innerHTML = generated.map((img) => {
+    const idx = libImages.indexOf(img);
+    return `
+    <div class="bo-card" id="gencard-${img.idbId||idx}">
+      <img src="${img.url}" alt="" loading="lazy" onerror="this.style.opacity='.2'">
+      <div class="bo-meta"><div class="bo-src">🎨 IA Generada</div><div class="bo-caption">${img.prompt||''}</div></div>
       <div class="bo-act">
-        <button class="bo-use" onclick="useLibImgNow(${libImages.indexOf(img)})">Usar</button>
-        <button onclick="downloadImg('${img.url}')">↓</button>
+        <button class="bo-use" onclick="event.stopPropagation();pickOrUseLibImg(${idx})">Usar</button>
+        <button onclick="event.stopPropagation();downloadImg('${img.url}')">↓</button>
+        <button style="color:var(--red)" onclick="event.stopPropagation();deleteGenImage(${img.idbId||'null'},${idx})" title="Eliminar">🗑</button>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
+}
+
+async function deleteGenImage(idbId, libIdx) {
+  if (!confirm('¿Eliminar esta imagen de la librería?')) return;
+  // Eliminar de IndexedDB
+  if (idbId) await idbDeleteImage(idbId);
+  // Eliminar de libImages
+  libImages.splice(libIdx, 1);
+  renderGenGrid();
+  toast('✓ Imagen eliminada de la librería');
 }
 
 function downloadImg(url) {
@@ -775,17 +878,26 @@ async function genLibraryImage() {
   const ratio = document.getElementById('genImgRatio').value;
   const isStory = ratio === '9:16';
   const btn = document.getElementById('genLibBtn');
-  btn.disabled = true; btn.textContent = '⏳ Generant...';
+  const geminiKey = getGeminiKey();
+  btn.disabled = true;
+  btn.textContent = geminiKey ? '⏳ Generant amb Gemini...' : '⏳ Generant amb Puter...';
   try {
     const url = await generateImageNb(prompt, isStory);
-    const img = { url, source: 'generated', prompt, type: isStory ? 'story' : 'post', restId: currentRestId };
-    addToLibrary(img);
+    const imgData = { url, source: 'generated', prompt, type: isStory ? 'story' : 'post', restId: currentRestId };
+    addToLibrary(imgData);
+    // Guardar en IndexedDB para persistencia
+    await idbSaveImage(imgData);
+    // Actualitzar idbId de l'últim item
+    const savedItems = await idbLoadImages(currentRestId);
+    const last = savedItems[savedItems.length - 1];
+    if (last) { const li = libImages.find(i => i.url === url); if (li) li.idbId = last.id; }
     renderGenGrid();
-    toast('✓ Imatge generada!');
+    toast('✓ Imatge generada i guardada a la librería!');
   } catch(e) {
-    toast('Error: ' + (e.message || 'Error generant').slice(0,60));
+    toast('❌ Error: ' + (e.message || 'Error generant').slice(0,80));
   } finally {
-    btn.disabled = false; btn.textContent = '🤖 Generar amb Nanobanana';
+    btn.disabled = false;
+    btn.textContent = '🎨 Generar imatge';
   }
 }
 
@@ -1037,8 +1149,8 @@ async function initApp() {
     document.getElementById('initScreen').style.display = 'none';
     document.getElementById('mainApp').style.display = 'grid';
     renderCal();
-    const nbKey = localStorage.getItem('sc_nb_key');
-    if (nbKey && document.getElementById('cfgNbKey')) document.getElementById('cfgNbKey').value = nbKey;
+    const geminiKey = localStorage.getItem('sc_gemini_key');
+    if (geminiKey && document.getElementById('cfgGeminiKey')) document.getElementById('cfgGeminiKey').value = geminiKey;
   } catch(err) {
     setInitMsg('Error: ' + err.message);
     console.error(err);
@@ -1096,6 +1208,9 @@ async function loadRestaurant(id) {
   if (li) li.textContent = 'Imatges de ' + (d.name||'el restaurant actiu');
   scheduled = (d.scheduled||[]).map(s=>({...s}));
   updBadge(); renderCal();
+  // Carregar imatges generades guardades (IndexedDB)
+  libImages = libImages.filter(i => i.source !== 'generated');
+  loadPersistedImages(id);
 }
 
 function renderRestSelector() {
@@ -1131,8 +1246,8 @@ async function addRest() {
 
 async function saveCfg() {
   if (!currentUser||!currentRestId) return;
-  const nbKey = document.getElementById('cfgNbKey')?.value?.trim();
-  if (nbKey) localStorage.setItem('sc_nb_key', nbKey);
+  const geminiKey = document.getElementById('cfgGeminiKey')?.value?.trim();
+  if (geminiKey) localStorage.setItem('sc_gemini_key', geminiKey);
   const data = {
     name:document.getElementById('cfgName').value,
     cuisine:document.getElementById('cfgCuisine').value,
@@ -1185,6 +1300,131 @@ function showSec(n,btn) {
 
 function fmtDate(d){if(!d)return'';const[y,m,dd]=d.split('-');return`${dd} ${MONTHS[parseInt(m)-1].slice(0,3)} ${y}`;}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
+
+// =====================================================
+// ELIMINAR RESTAURANTE
+// =====================================================
+async function deleteCurrentRest() {
+  const rest = restaurants.find(r => r.id === currentRestId);
+  if (!rest) return;
+  if (restaurants.length <= 1) { toast('❌ No pots eliminar l'únic restaurant'); return; }
+  if (!confirm('¿Eliminar el restaurante "' + rest.name + '"? Esta acción no se puede deshacer.')) return;
+  try {
+    setSyncState('spin', 'Eliminant...');
+    await db.collection('users').doc(currentUser.uid).collection('restaurants').doc(currentRestId).delete();
+    // Eliminar imágenes de IDB
+    await idbClearRestImages(currentRestId);
+    restaurants = restaurants.filter(r => r.id !== currentRestId);
+    currentRestId = restaurants[0].id;
+    renderRestSelector();
+    document.getElementById('restSel').value = currentRestId;
+    libImages = [];
+    await loadRestaurant(currentRestId);
+    setSyncState('ok', 'Guardado');
+    toast('✓ Restaurante "' + rest.name + '" eliminat');
+  } catch(e) {
+    setSyncState('ok', 'Error');
+    toast('❌ Error eliminant: ' + e.message);
+  }
+}
+
+// =====================================================
+// INDEXEDDB — Persistencia de imágenes generadas
+// =====================================================
+const IDB_NAME = 'SocialChefDB', IDB_STORE = 'generatedImages', IDB_VER = 1;
+let idb = null;
+
+function openIDB() {
+  return new Promise((resolve, reject) => {
+    if (idb) { resolve(idb); return; }
+    const req = indexedDB.open(IDB_NAME, IDB_VER);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(IDB_STORE)) {
+        const store = db.createObjectStore(IDB_STORE, { keyPath: 'id', autoIncrement: true });
+        store.createIndex('restId', 'restId', { unique: false });
+      }
+    };
+    req.onsuccess = e => { idb = e.target.result; resolve(idb); };
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbSaveImage(img) {
+  try {
+    const db = await openIDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(IDB_STORE, 'readwrite');
+      tx.objectStore(IDB_STORE).add({ ...img, savedAt: Date.now() });
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch(e) { console.warn('idbSaveImage error:', e); }
+}
+
+async function idbDeleteImage(id) {
+  try {
+    const db = await openIDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(IDB_STORE, 'readwrite');
+      tx.objectStore(IDB_STORE).delete(id);
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch(e) { console.warn('idbDeleteImage error:', e); }
+}
+
+async function idbLoadImages(restId) {
+  try {
+    const db = await openIDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(IDB_STORE, 'readonly');
+      const idx = tx.objectStore(IDB_STORE).index('restId');
+      const req = idx.getAll(restId);
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => reject(req.error);
+    });
+  } catch(e) { console.warn('idbLoadImages error:', e); return []; }
+}
+
+async function idbClearRestImages(restId) {
+  try {
+    const db = await openIDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(IDB_STORE, 'readwrite');
+      const idx = tx.objectStore(IDB_STORE).index('restId');
+      const req = idx.getAllKeys(restId);
+      req.onsuccess = () => {
+        req.result.forEach(k => tx.objectStore(IDB_STORE).delete(k));
+        tx.oncomplete = resolve;
+      };
+      req.onerror = () => reject(req.error);
+    });
+  } catch(e) { console.warn('idbClearRestImages error:', e); }
+}
+
+// Cargar imágenes guardadas del restaurant activo en la librería
+async function loadPersistedImages(restId) {
+  const saved = await idbLoadImages(restId);
+  saved.forEach(img => {
+    if (!libImages.find(i => i.idbId === img.id)) {
+      libImages.push({ ...img, source: 'generated', idbId: img.id });
+    }
+  });
+  if (saved.length) renderGenGrid();
+}
+
+function openIgProfile() {
+  const ig = document.getElementById('igUsername')?.value?.trim().replace('@','') || '';
+  if (!ig) { toast('Entra un usuari d'Instagram primer'); return; }
+  window.open('https://www.instagram.com/' + ig + '/', '_blank');
+}
+
+function updateIgFromInput() {
+  const ig = document.getElementById('igUsername')?.value?.trim().replace('@','') || '';
+  const link = document.getElementById('igDirectLink');
+  if (link && ig) link.href = 'https://www.instagram.com/' + ig + '/';
+}
 
 window.onload = initApp;
 </script>
