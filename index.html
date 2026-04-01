@@ -484,6 +484,7 @@ const firebaseConfig = {
   appId: "1:511034535800:web:21fa1c72fd232eb597a28d"
 };
 
+const SCRAPER_URL = 'https://jordiqterrassa.com/scraper.php';
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
 let db, auth, currentUser, currentRestId;
@@ -620,130 +621,50 @@ function updateWebFromInput() {}
 
 async function loadInstagramImages() {
   const igRaw = document.getElementById('igUsername').value.trim();
-  const ig = igRaw.replace('@','').replace('https://www.instagram.com/','').replace(/\//g,'').trim();
-
-  if (!ig) {
-    toast('Entra un nom d\'usuari d\'Instagram');
-    return;
-  }
-
+  const ig = igRaw.replace('@','').replace('https://www.instagram.com/','').replace(/[/\\]/g,'').trim();
+  if (!ig) { toast("Entra un nom d'usuari d'Instagram"); return; }
   const grid = document.getElementById('igGrid');
-  grid.innerHTML = `
-    <div class="bo-empty">
-      <div class="ispin" style="margin:0 auto"></div>
-      <p style="margin-top:12px">Carregant imatges d'Instagram...</p>
-    </div>
-  `;
-
+  grid.innerHTML = '<div class="bo-empty"><div class="ispin" style="margin:0 auto 12px"></div><p>Carregant via scraper.php...</p></div>';
   try {
-    const res = await fetch(`https://socialchef-api.onrender.com/ig/${ig}`);
+    const res = await fetch(SCRAPER_URL + '?action=instagram&username=' + encodeURIComponent(ig));
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-
-    if (!data.images || !data.images.length) {
-      throw new Error('Sense imatges');
+    if (!data.success || !data.images?.length) {
+      grid.innerHTML = '<div class="bo-empty" style="grid-column:1/-1"><p style="font-size:13px;margin-bottom:12px">' +
+        (data.error || "No s'han pogut obtenir les imatges.") + '<br>' +
+        (data.profileUrl ? '<a href="' + data.profileUrl + '" target="_blank" style="color:var(--accent)">Obre @' + ig + ' a Instagram →</a><br><br>' : '') +
+        'Puja les imatges manualment:</p>' + uploadZoneHtml('instagram') + '</div>';
+      return;
     }
-
-    const images = data.images.map(url => ({
-      url,
-      caption: '',
-      source: 'instagram',
-      type: 'post',
-      restId: currentRestId
-    }));
-
+    const images = data.images.map(img => ({...img, source:'instagram', type:'post', restId: currentRestId}));
     images.forEach(img => addToLibrary(img));
     renderIgGrid(images);
-
-    toast('✓ ' + images.length + ' imatges carregades d\'Instagram');
-
-  } catch (e) {
-    console.error(e);
-
-    grid.innerHTML = `
-      <div class="bo-empty" style="grid-column:1/-1">
-        <p style="font-size:13px">
-          No s'han pogut carregar automàticament.<br><br>
-          Pots:
-          <br>• Arrossegar imatges
-          <br>• Copiar des d'Instagram
-        </p>
-
-        <div style="margin-top:16px;border:2px dashed var(--border2);border-radius:var(--r);padding:24px;cursor:pointer"
-          ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
-          ondragleave="this.style.borderColor='var(--border2)'"
-          ondrop="handleImgDrop(event,'instagram')"
-          onclick="document.getElementById('igFileInput').click()">
-          <p style="font-size:13px;color:var(--text3)">
-            📁 Arrossega imatges aquí o clica per seleccionar
-          </p>
-        </div>
-
-        <input type="file" id="igFileInput" multiple accept="image/*"
-          style="display:none"
-          onchange="handleFileInput(event,'instagram')">
-      </div>
-    `;
+    toast('✓ ' + images.length + " imatges carregades d'Instagram");
+  } catch(e) {
+    grid.innerHTML = '<div class="bo-empty" style="grid-column:1/-1"><p style="font-size:13px;margin-bottom:12px">Error: ' + e.message + '<br>Puja les imatges manualment:</p>' + uploadZoneHtml('instagram') + '</div>';
   }
 }
 
 async function loadWebImages() {
   const url = document.getElementById('webUrl').value.trim();
-  if (!url || !url.startsWith('http')) { toast('Entra una URL vàlida'); return; }
-
+  if (!url || !url.startsWith('http')) { toast('Entra una URL vàlida (https://...)'); return; }
   const grid = document.getElementById('webGrid');
-  grid.innerHTML = '<div class="bo-empty"><div class="ispin" style="margin:0 auto"></div><p style="margin-top:12px">Extraient imatges de la web...</p></div>';
-
+  grid.innerHTML = '<div class="bo-empty"><div class="ispin" style="margin:0 auto 12px"></div><p>Extraient imatges via scraper.php...</p></div>';
   try {
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}`;
-    const res = await fetch(proxyUrl);
+    const res = await fetch(SCRAPER_URL + '?action=web&url=' + encodeURIComponent(url));
+    if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
-    const html = data.contents || '';
-
-    // Extreure URLs d'imatge del HTML
-    const imgRegex = /<img[^>]+src=["']([^"']+)["'][^>]*>/gi;
-    const srcRegex = /src=["']([^"']+)["']/i;
-    const baseUrl = new URL(url);
-    let images = [];
-    let match;
-
-    while ((match = imgRegex.exec(html)) !== null) {
-      try {
-        const srcMatch = match[0].match(srcRegex);
-        if (!srcMatch) continue;
-        let imgUrl = srcMatch[1];
-        // Convertir relatives a absolutes
-        if (imgUrl.startsWith('//')) imgUrl = 'https:' + imgUrl;
-        else if (imgUrl.startsWith('/')) imgUrl = baseUrl.origin + imgUrl;
-        else if (!imgUrl.startsWith('http')) imgUrl = baseUrl.origin + '/' + imgUrl;
-        // Filtrar icones petites i SVG
-        if (imgUrl.includes('.svg') || imgUrl.includes('icon') || imgUrl.includes('logo') ||
-            imgUrl.includes('favicon') || imgUrl.includes('pixel') || imgUrl.length < 10) continue;
-        images.push({ url: imgUrl, source: 'web', caption: '', type: 'post', restId: currentRestId });
-      } catch {}
-    }
-
-    // Deduplicar i limitar
-    const seen = new Set();
-    images = images.filter(img => { if (seen.has(img.url)) return false; seen.add(img.url); return true; }).slice(0, 20);
-
-    if (!images.length) {
-      grid.innerHTML = '<div class="bo-empty" style="grid-column:1/-1"><p>No s\'han trobat imatges a la web.<br>Prova a pujar-les manualment.</p></div>';
+    if (!data.success || !data.images?.length) {
+      grid.innerHTML = '<div class="bo-empty" style="grid-column:1/-1"><p style="font-size:13px;margin-bottom:12px">' +
+        (data.error || "No s'han trobat imatges.") + '<br>Puja-les manualment:</p>' + uploadZoneHtml('web') + '</div>';
       return;
     }
-
+    const images = data.images.map(img => ({...img, source:'web', type:'post', restId: currentRestId}));
     images.forEach(img => addToLibrary(img));
     renderWebGrid(images);
-    toast('✓ ' + images.length + ' imatges trobades a la web');
+    toast('✓ ' + data.images.length + ' imatges trobades');
   } catch(e) {
-    grid.innerHTML = `<div class="bo-empty" style="grid-column:1/-1">
-      <p style="font-size:13px;margin-bottom:12px">Error accedint a la web. Puja les imatges manualment:</p>
-      <div style="border:2px dashed var(--border2);border-radius:var(--r);padding:24px;cursor:pointer"
-        ondragover="event.preventDefault()" ondrop="handleImgDrop(event,'web')"
-        onclick="document.getElementById('webFileInput').click()">
-        <p style="font-size:13px;color:var(--text3)">📁 Arrossega imatges o clica per seleccionar</p>
-      </div>
-      <input type="file" id="webFileInput" multiple accept="image/*" style="display:none" onchange="handleFileInput(event,'web')">
-    </div>`;
+    grid.innerHTML = '<div class="bo-empty" style="grid-column:1/-1"><p style="font-size:13px;margin-bottom:12px">Error: ' + e.message + '</p>' + uploadZoneHtml('web') + '</div>';
   }
 }
 
@@ -790,6 +711,20 @@ function downloadImg(url) {
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 
+// HTML helper per zona d'upload
+function uploadZoneHtml(source) {
+  const id = source === 'instagram' ? 'igFileInput' : 'webFileInput';
+  return `<div style="border:2px dashed var(--border2);border-radius:var(--r);padding:24px;cursor:pointer;transition:border .15s;text-align:center"
+    ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
+    ondragleave="this.style.borderColor='var(--border2)'"
+    ondrop="handleImgDrop(event,'${source}')"
+    onclick="document.getElementById('${id}').click()">
+    <p style="font-size:13px;color:var(--text3)">📁 Arrossega imatges aquí o clica per seleccionar</p>
+    <p style="font-size:11px;color:var(--text3);margin-top:4px">JPG, PNG, WebP</p>
+  </div>
+  <input type="file" id="${id}" multiple accept="image/*" style="display:none" onchange="handleFileInput(event,'${source}')">`;
+}
+
 // Upload manual de fitxers
 function handleImgDrop(e, source) {
   e.preventDefault();
@@ -816,7 +751,7 @@ function processFiles(files, source) {
 
 // Afegir imatge a la librería (deduplicant per URL)
 function addToLibrary(img) {
-  if (!libImages.find(i => i.url === img.url && i.restId === img.restId)) {
+  if (!libImages.find(i => i.url === img.url)) {
     libImages.push(img);
   }
 }
