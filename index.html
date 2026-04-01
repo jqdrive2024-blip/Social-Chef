@@ -621,15 +621,7 @@ function validateImageUrl(url) {
     img.src = url;
     setTimeout(() => reject(new
 
-  // Fallback: Puter FLUX.1-schnell (gratuït)
-  const fullPrompt = buildImagePrompt(prompt, isStory);
-  const size = isStory ? '1024x1792' : '1024x1024';
-  const imgEl = await puter.ai.txt2img(fullPrompt, {
-    model: 'black-forest-labs/flux.1-schnell',
-    size
-  });
-  return imgEl.src;
-}
+
 
 function injectImg(cardId, url) {
   const box = document.getElementById('cprev-' + cardId);
