@@ -874,7 +874,7 @@ function pickOrUseLibImg(imgIdx) {
 // Generar imatge des de la librería
 async function genLibraryImage() {
   const prompt = document.getElementById('genImgPrompt').value.trim();
-  if (!prompt) { toast('Descriu la imatge que vols generar'); return; }
+  if (!prompt) { toast("Descriu la imatge que vols generar"); return; }
   const ratio = document.getElementById('genImgRatio').value;
   const isStory = ratio === '9:16';
   const btn = document.getElementById('genLibBtn');
@@ -1307,7 +1307,7 @@ function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t
 async function deleteCurrentRest() {
   const rest = restaurants.find(r => r.id === currentRestId);
   if (!rest) return;
-  if (restaurants.length <= 1) { toast('❌ No pots eliminar l'únic restaurant'); return; }
+  if (restaurants.length <= 1) { toast("❌ No pots eliminar l'únic restaurant"); return; }
   if (!confirm('¿Eliminar el restaurante "' + rest.name + '"? Esta acción no se puede deshacer.')) return;
   try {
     setSyncState('spin', 'Eliminant...');
@@ -1416,7 +1416,7 @@ async function loadPersistedImages(restId) {
 
 function openIgProfile() {
   const ig = document.getElementById('igUsername')?.value?.trim().replace('@','') || '';
-  if (!ig) { toast('Entra un usuari d'Instagram primer'); return; }
+  if (!ig) { toast("Entra un usuari d'Instagram primer"); return; }
   window.open('https://www.instagram.com/' + ig + '/', '_blank');
 }
 
