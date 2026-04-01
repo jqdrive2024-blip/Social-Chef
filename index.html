@@ -231,7 +231,7 @@ select option{background:var(--surface2)}
     <!-- GENERAR -->
     <div id="sec-generate" class="content">
       <div class="kbar">
-        <span class="lbl">🤖 Textos: GPT-4o-mini · Imatges: Nanobanana (FLUX)</span>
+        <span class="lbl">🤖 Textos: GPT-4o-mini · Imatges: FLUX (Pollinations.ai)</span>
         <span class="kst on" id="nbSt">Actiu</span>
       </div>
       <div class="gform">
@@ -416,6 +416,16 @@ select option{background:var(--surface2)}
             </div>
             <div class="fg"><label>Hashtags fijos</label><textarea rows="2" id="cfgTags"></textarea></div>
             <div class="fg"><label>CTA habitual</label><input type="text" id="cfgCTA"></div>
+                <div class="fg">
+      <label>Modelo de IA para imágenes</label>
+      <select id="cfgFluxModel" onchange="saveFluxModel()">
+        <option value="flux">FLUX.1-schnell (Rápido, gratuito)</option>
+        <option value="flux-dev">FLUX.1-dev (Calidad superior)</option>
+        <option value="flux-realism">FLUX Realism (Fotorealista)</option>
+        <option value="turbo">FLUX Turbo (Ultra rápido)</option>
+      </select>
+      <span style="font-size:11px;color:var(--text3);margin-top:4px">Proveído por Pollinations.ai · Sin coste</span>
+    </div>
             <div class="hdiv" style="margin:4px 0"></div>
             <div class="fg">
               <label>Google Gemini API Key</label>
@@ -562,42 +572,54 @@ async function callGeminiImgModel(model, fullPrompt, apiKey) {
   return 'data:' + (part.inlineData.mimeType || 'image/jpeg') + ';base64,' + part.inlineData.data;
 }
 
-async function generateWithGemini(prompt, isStory) {
-  const apiKey = getGeminiKey();
-  if (!apiKey) throw new Error('No Gemini key');
-  const fullPrompt = buildImagePrompt(prompt, isStory);
-
-  // Provar cada model fins trobar-ne un que funcioni
-  let lastErr = null;
-  for (const model of GEMINI_IMG_MODELS) {
-    try {
-      console.log('Provant Gemini model:', model);
-      const url = await callGeminiImgModel(model, fullPrompt, apiKey);
-      console.log('✅ Gemini OK amb:', model);
-      return url;
-    } catch(e) {
-      console.warn(`❌ ${model}:`, e.message);
-      lastErr = e;
-      // Si és un error d'autenticació (401/403) no té sentit provar més
-      if (e.message.includes('401') || e.message.includes('403')) break;
-    }
-  }
-  throw new Error('Tots els models Gemini han fallat: ' + (lastErr?.message || '?'));
-}
 
 async function generateImageNb(prompt, isStory) {
-  const geminiKey = getGeminiKey();
-
-  // Intentar Gemini/Imagen 3 si hay key
-  if (geminiKey) {
-    try {
-      const url = await generateWithGemini(prompt, isStory);
-      return url;
-    } catch(e) {
-      console.warn('Gemini falló, usando Puter FLUX como fallback:', e.message);
-      toast('⚠️ Gemini: ' + e.message.slice(0,50) + ' · Usant Puter...');
-    }
+  const model = localStorage.getItem('sc_flux_model') || 'flux';
+  const width = isStory ? 1024 : 1024;
+  const height = isStory ? 1792 : 1024;
+  
+  const fullPrompt = [
+    prompt,
+    'professional food photography',
+    'appetizing and delicious looking',
+    'restaurant quality plating',
+    'shot with high-end DSLR camera',
+    'shallow depth of field',
+    'warm natural lighting',
+    'rich vibrant colors',
+    'photorealistic, ultra detailed'
+  ].join(', ');
+  
+  console.log(`Generando imagen con modelo: ${model} (${isStory ? '9:16' : '1:1'})`);
+  
+  try {
+    const encodedPrompt = encodeURIComponent(fullPrompt);
+    const seed = Math.floor(Math.random() * 1000000);
+    
+    const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?` + 
+                     `model=${model}&` +
+                     `width=${width}&` +
+                     `height=${height}&` +
+                     `seed=${seed}&` +
+                     `nologo=true&` +
+                     `enhance=true`;
+    
+    await validateImageUrl(imageUrl);
+    return imageUrl;
+    
+  } catch (e) {
+    console.warn('Pollinations error:', e);
+    return await generateWithPuterFallback(prompt, isStory);
   }
+}
+
+function validateImageUrl(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(true);
+    img.onerror = () => reject(new Error('Error cargando imagen'));
+    img.src = url;
+    setTimeout(() => reject(new
 
   // Fallback: Puter FLUX.1-schnell (gratuït)
   const fullPrompt = buildImagePrompt(prompt, isStory);
@@ -1184,6 +1206,8 @@ async function initApp() {
     document.getElementById('initScreen').style.display = 'none';
     document.getElementById('mainApp').style.display = 'grid';
     renderCal();
+      // Cargar configuración de modelo FLUX
+  loadFluxConfig();
     const geminiKey = localStorage.getItem('sc_gemini_key');
     if (geminiKey && document.getElementById('cfgGeminiKey')) document.getElementById('cfgGeminiKey').value = geminiKey;
   } catch(err) {
@@ -1305,6 +1329,23 @@ async function saveCfg() {
   const webEl = document.getElementById('webUrl'); if (webEl) webEl.value = data.web||'';
   setSyncState('ok','Guardado ✓');
   toast('✓ Perfil guardat a Firebase');
+}
+
+function saveFluxModel() {
+  const select = document.getElementById('cfgFluxModel');
+  if (select) {
+    localStorage.setItem('sc_flux_model', select.value);
+    toast('Modelo guardado: ' + select.options[select.selectedIndex].text);
+  }
+}
+
+// Cargar modelo guardado al iniciar
+function loadFluxConfig() {
+  const saved = localStorage.getItem('sc_flux_model');
+  const select = document.getElementById('cfgFluxModel');
+  if (saved && select) {
+    select.value = saved;
+  }
 }
 
 async function saveScheduled() {
