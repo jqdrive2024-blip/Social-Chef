@@ -621,72 +621,68 @@ function updateWebFromInput() {}
 async function loadInstagramImages() {
   const igRaw = document.getElementById('igUsername').value.trim();
   const ig = igRaw.replace('@','').replace('https://www.instagram.com/','').replace(/\//g,'').trim();
-  if (!ig) { toast('Entra un nom d\'usuari d\'Instagram'); return; }
+
+  if (!ig) {
+    toast('Entra un nom d\'usuari d\'Instagram');
+    return;
+  }
 
   const grid = document.getElementById('igGrid');
-  grid.innerHTML = '<div class="bo-empty"><div class="ispin" style="margin:0 auto"></div><p style="margin-top:12px">Carregant imatges d\'Instagram...</p></div>';
+  grid.innerHTML = `
+    <div class="bo-empty">
+      <div class="ispin" style="margin:0 auto"></div>
+      <p style="margin-top:12px">Carregant imatges d'Instagram...</p>
+    </div>
+  `;
 
-  // Usar una API pública per obtenir les imatges recents del perfil públic
-  // Picuki és un visor web d'Instagram sense auth
   try {
-    // Estratègia: usar el feed RSS públic / scraper via allorigins proxy
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent('https://www.instagram.com/' + ig + '/?__a=1&__d=dis')}`;
-    const res = await fetch(proxyUrl);
+    const res = await fetch(`https://socialchef-api.onrender.com/ig/${ig}`);
     const data = await res.json();
-    let images = [];
 
-    try {
-      const json = JSON.parse(data.contents);
-      const edges = json?.graphql?.user?.edge_owner_to_timeline_media?.edges || [];
-      images = edges.slice(0, 12).map(e => ({
-        url: e.node.display_url || e.node.thumbnail_src,
-        caption: e.node.edge_media_to_caption?.edges?.[0]?.node?.text || '',
-        source: 'instagram',
-        type: 'post',
-        restId: currentRestId
-      })).filter(i => i.url);
-    } catch {
-      // Fallback: intenta amb l'endpoint de media
-      images = [];
+    if (!data.images || !data.images.length) {
+      throw new Error('Sense imatges');
     }
 
-    if (!images.length) {
-      // Fallback: mostrar instruccions alternatives
-      grid.innerHTML = `<div class="bo-empty" style="grid-column:1/-1">
-        <p style="font-size:13px">Instagram bloqueja l'accés directe als perfils.<br><br>
-        <strong>Alternatives:</strong><br>
-        1. Usa <a href="https://picuki.com/profile/${ig}" target="_blank" style="color:var(--accent)">Picuki.com</a> per veure les imatges i copiar-les<br>
-        2. Descarrega les teves fotos des de l'app d'Instagram<br>
-        3. Arrastra imatges aquí des del teu ordinador</p>
-        <div id="igDropZone" style="margin-top:16px;border:2px dashed var(--border2);border-radius:var(--r);padding:24px;cursor:pointer;transition:border .15s"
+    const images = data.images.map(url => ({
+      url,
+      caption: '',
+      source: 'instagram',
+      type: 'post',
+      restId: currentRestId
+    }));
+
+    images.forEach(img => addToLibrary(img));
+    renderIgGrid(images);
+
+    toast('✓ ' + images.length + ' imatges carregades d\'Instagram');
+
+  } catch (e) {
+    console.error(e);
+
+    grid.innerHTML = `
+      <div class="bo-empty" style="grid-column:1/-1">
+        <p style="font-size:13px">
+          No s'han pogut carregar automàticament.<br><br>
+          Pots:
+          <br>• Arrossegar imatges
+          <br>• Copiar des d'Instagram
+        </p>
+
+        <div style="margin-top:16px;border:2px dashed var(--border2);border-radius:var(--r);padding:24px;cursor:pointer"
           ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
           ondragleave="this.style.borderColor='var(--border2)'"
           ondrop="handleImgDrop(event,'instagram')"
           onclick="document.getElementById('igFileInput').click()">
-          <p style="font-size:13px;color:var(--text3)">📁 Arrossega imatges aquí o clica per seleccionar</p>
+          <p style="font-size:13px;color:var(--text3)">
+            📁 Arrossega imatges aquí o clica per seleccionar
+          </p>
         </div>
-        <input type="file" id="igFileInput" multiple accept="image/*" style="display:none" onchange="handleFileInput(event,'instagram')">
-      </div>`;
-      return;
-    }
 
-    // Afegir a la librería i renderitzar
-    images.forEach(img => addToLibrary(img));
-    renderIgGrid(images);
-    toast('✓ ' + images.length + ' imatges carregades d\'Instagram');
-  } catch(e) {
-    // Mostrar zona d'upload
-    grid.innerHTML = `<div class="bo-empty" style="grid-column:1/-1">
-      <p style="font-size:13px;margin-bottom:12px">No s'han pogut carregar les imatges automàticament.<br>Puja les imatges manualment:</p>
-      <div id="igDropZone" style="border:2px dashed var(--border2);border-radius:var(--r);padding:24px;cursor:pointer;transition:border .15s"
-        ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
-        ondragleave="this.style.borderColor='var(--border2)'"
-        ondrop="handleImgDrop(event,'instagram')"
-        onclick="document.getElementById('igFileInput').click()">
-        <p style="font-size:13px;color:var(--text3)">📁 Arrossega imatges aquí o clica per seleccionar</p>
+        <input type="file" id="igFileInput" multiple accept="image/*"
+          style="display:none"
+          onchange="handleFileInput(event,'instagram')">
       </div>
-      <input type="file" id="igFileInput" multiple accept="image/*" style="display:none" onchange="handleFileInput(event,'instagram')">
-    </div>`;
+    `;
   }
 }
 
@@ -820,7 +816,7 @@ function processFiles(files, source) {
 
 // Afegir imatge a la librería (deduplicant per URL)
 function addToLibrary(img) {
-  if (!libImages.find(i => i.url === img.url)) {
+  if (!libImages.find(i => i.url === img.url && i.restId === img.restId)) {
     libImages.push(img);
   }
 }
