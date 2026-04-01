@@ -180,67 +180,6 @@ select option{background:var(--surface2)}
 .bo-filters select{padding:7px 12px;font-size:13px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:var(--rs);font-family:'DM Sans',sans-serif;outline:none}
 .bo-empty{text-align:center;padding:60px 20px;color:var(--text3)}
 @media(max-width:900px){.app{grid-template-columns:1fr}.sidebar{display:none}.cal-area,.cfggrid,.fgrid{grid-template-columns:1fr}}
-
-/* ── NUEVA SECCIÓN: CREAR IMAGEN ── */
-.ig-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
-.ig-top h2{font-size:18px;font-weight:500}
-.ig-top p{font-size:13px;color:var(--text3);margin-top:2px}
-.ig-builder{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:28px;margin-bottom:24px}
-.ig-builder h3{font-size:15px;font-weight:500;margin-bottom:20px}
-.ig-prompt-wrap{position:relative;margin-bottom:20px}
-.ig-prompt-wrap textarea{width:100%;min-height:80px;font-size:14px;line-height:1.6;padding:14px;resize:vertical}
-.ig-prompt-hint{position:absolute;bottom:10px;right:12px;font-size:11px;color:var(--text3)}
-.ig-row{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;margin-bottom:20px}
-.ig-group{display:flex;flex-direction:column;gap:8px}
-.ig-group label{font-size:11px;color:var(--text2);text-transform:uppercase;letter-spacing:.6px}
-.ig-styles{display:flex;flex-wrap:wrap;gap:6px}
-.ig-style-btn{padding:6px 14px;border-radius:20px;font-size:12px;cursor:pointer;border:1px solid var(--border2);color:var(--text2);background:none;transition:all .15s;font-family:'DM Sans',sans-serif}
-.ig-style-btn.on{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
-.ig-fmt{display:flex;gap:8px}
-.ig-fmt-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:10px 16px;border-radius:var(--rs);font-size:11px;cursor:pointer;border:1px solid var(--border2);color:var(--text2);background:none;transition:all .15s;font-family:'DM Sans',sans-serif;min-width:72px}
-.ig-fmt-btn .fmt-icon{font-size:18px}
-.ig-fmt-btn.on{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
-.ig-count{display:flex;gap:6px}
-.ig-count-btn{width:36px;height:36px;border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer;border:1px solid var(--border2);color:var(--text2);background:none;transition:all .15s;font-family:'DM Sans',sans-serif;display:flex;align-items:center;justify-content:center}
-.ig-count-btn.on{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
-.ig-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.ig-engine-badge{font-size:11px;padding:4px 10px;border-radius:20px;background:rgba(126,201,142,.12);color:var(--green);border:1px solid rgba(126,201,142,.25)}
-.ig-engine-badge.hf{background:rgba(126,179,232,.12);color:var(--blue);border-color:rgba(126,179,232,.25)}
-.ig-results-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px}
-.ig-results-hd span{font-size:14px;font-weight:500}
-.ig-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:20px}
-.ig-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);overflow:hidden;transition:border .2s}
-.ig-card:hover{border-color:var(--border2)}
-.ig-img-wrap{position:relative;background:var(--surface2);overflow:hidden;display:flex;align-items:center;justify-content:center}
-.ig-img-wrap.post{aspect-ratio:1}
-.ig-img-wrap.story{aspect-ratio:9/16;max-height:280px}
-.ig-img-wrap img{width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .5s;position:absolute;inset:0}
-.ig-img-wrap img.loaded{opacity:1}
-.ig-loading{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:var(--surface2)}
-.ig-loading-bar{width:120px;height:3px;background:var(--border2);border-radius:2px;overflow:hidden}
-.ig-loading-fill{height:100%;background:var(--accent);border-radius:2px;animation:igfill 2s ease-in-out infinite}
-@keyframes igfill{0%{width:0;margin-left:0}50%{width:80%;margin-left:10%}100%{width:0;margin-left:100%}}
-.ig-loading-txt{font-size:11px;color:var(--text3)}
-.ig-badges{position:absolute;top:8px;left:8px;display:flex;gap:5px;z-index:2}
-.ig-badge{font-size:10px;padding:3px 8px;border-radius:20px;backdrop-filter:blur(6px)}
-.ig-badge.engine{background:rgba(0,0,0,.65);color:#fff}
-.ig-badge.saved{background:rgba(126,201,142,.85);color:#0a2a12;font-weight:600}
-.ig-badge.local{background:rgba(0,0,0,.5);color:var(--text2)}
-.ig-card-body{padding:14px}
-.ig-card-prompt{font-size:12px;color:var(--text3);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:12px}
-.ig-card-acts{display:flex;gap:6px}
-.ig-card-acts button{flex:1;padding:7px 6px;border-radius:var(--rs);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;border:1px solid var(--border2);background:none;color:var(--text2)}
-.ig-card-acts button:hover{border-color:var(--accent);color:var(--accent)}
-.ig-card-acts .save-btn{background:var(--accent-bg);border-color:rgba(232,201,126,.3);color:var(--accent)}
-.ig-card-acts .save-btn:hover{background:var(--accent);color:#0e0e0e}
-.ig-card-acts .save-btn:disabled{opacity:.4;cursor:not-allowed}
-.ig-empty{text-align:center;padding:60px 20px;color:var(--text3)}
-.ig-empty .ei{font-size:40px;display:block;margin-bottom:14px;opacity:.35}
-.ig-progress{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px 24px;margin-bottom:20px;display:none}
-.ig-progress.vis{display:block}
-.ig-progress-bar-wrap{height:4px;background:var(--border2);border-radius:2px;overflow:hidden;margin-top:10px}
-.ig-progress-bar{height:100%;background:var(--accent);border-radius:2px;transition:width .4s ease}
-.ig-progress-txt{font-size:13px;color:var(--text2);display:flex;justify-content:space-between;align-items:center}
 </style>
 </head>
 <body>
@@ -263,9 +202,6 @@ select option{background:var(--surface2)}
       <button class="ni active" onclick="showSec('generate',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Generar contenido
       </button>
-      <button class="ni" onclick="showSec('imagegen',this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>Crear imagen
-      </button>
       <button class="ni" onclick="showSec('calendar',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendario
         <span class="cbadge" id="calBadge">0</span>
@@ -287,7 +223,7 @@ select option{background:var(--surface2)}
   <main class="main">
     <div id="sec-generate" class="content">
       <div class="kbar" style="padding:10px 16px;justify-content:space-between">
-        <span class="lbl">🤖 FLUX.1 · Hugging Face — IA gratuïta sense límit</span>
+        <span class="lbl">🤖 Imatges amb IA (Puter.js · gpt-image-1) — gratuït sota demanda</span>
         <span class="kst on" id="imgEngineSt">Actiu</span>
         <span id="imgEngineLbl" style="display:none"></span>
       </div>
@@ -347,7 +283,7 @@ select option{background:var(--surface2)}
           </div>
           <div style="display:flex;gap:10px">
             <button class="bs" onclick="regenerateImages()">🔄 Nuevas imágenes (Pexels)</button>
-            <button class="bs" onclick="upgradeToFlux()">✨ Mejorar con FLUX</button>
+            <button class="bs" onclick="genAllImages()">🖼 Generar totes les imatges</button>
             <button class="bs" onclick="selAll()">Seleccionar todo</button>
             <button class="bp" onclick="schedSel()" id="schedBtn" disabled>Programar seleccionadas →</button>
           </div>
@@ -401,12 +337,7 @@ select option{background:var(--surface2)}
               <select id="cfgFreq"><option>Diaria</option><option>3 veces por semana</option><option>Semanal</option></select></div>
             <div class="fg"><label>Hashtags fijos</label><textarea rows="2" id="cfgTags"></textarea></div>
             <div class="fg"><label>CTA habitual</label><input type="text" id="cfgCTA"></div>
-            <div class="fg">
-              <label>Token Hugging Face (gratis · opcional)</label>
-              <input type="password" id="cfgHFToken" placeholder="hf_..." autocomplete="off">
-              <span style="font-size:11px;color:var(--text3);margin-top:3px">Sense token funciona però amb rate limit · Crea'l a huggingface.co (gratuït)</span>
-            </div>
-            <div class="fg">
+<div class="fg">
               <label>API Key Replicate (FLUX.1 premium)</label>
               <input type="password" id="cfgReplicateKey" placeholder="r8_..." autocomplete="off" value="r8_e1KCvK21l1VWdHhanVOM5lmUPMn6EJI3Xncv4">
               <span style="font-size:11px;color:var(--text3);margin-top:3px">Token de Replicate para FLUX.1</span>
@@ -421,99 +352,7 @@ select option{background:var(--surface2)}
         </div>
       </div>
     </div>
-    <!-- NUEVA SECCIÓN: CREAR IMAGEN -->
-    <div id="sec-imagegen" class="content" style="display:none">
-
-      <div class="ig-top">
-        <div>
-          <h2>Crear imagen</h2>
-          <p>Genera imágenes con IA · Se guardan automáticamente en tu servidor</p>
-        </div>
-        <div id="igEngBadge" class="ig-engine-badge">FLUX.1 Replicate</div>
-      </div>
-
-      <div class="ig-builder">
-        <h3>¿Qué quieres generar?</h3>
-
-        <div class="ig-prompt-wrap">
-          <textarea id="igSubject" placeholder="Ej: Hamburguesa doble con queso cheddar y bacon crujiente, fondo oscuro, sesión de estudio..." rows="3"></textarea>
-          <span class="ig-prompt-hint">Sé específico para mejores resultados</span>
-        </div>
-
-        <div class="ig-row">
-          <div class="ig-group" style="flex:1;min-width:200px">
-            <label>Estilo visual</label>
-            <div class="ig-styles" id="igStyles">
-              <button class="ig-style-btn on" onclick="igToggleStyle(this)">📷 Fotografía</button>
-              <button class="ig-style-btn" onclick="igToggleStyle(this)">🎨 Editorial</button>
-              <button class="ig-style-btn" onclick="igToggleStyle(this)">🌑 Dark &amp; Moody</button>
-              <button class="ig-style-btn" onclick="igToggleStyle(this)">☀️ Flat Lay</button>
-              <button class="ig-style-btn" onclick="igToggleStyle(this)">🔍 Close-up</button>
-              <button class="ig-style-btn" onclick="igToggleStyle(this)">🏮 Ambiente</button>
-            </div>
-          </div>
-
-          <div class="ig-group">
-            <label>Formato</label>
-            <div class="ig-fmt">
-              <button class="ig-fmt-btn on" id="igFmtPost" onclick="igSetFmt('post')">
-                <span class="fmt-icon">⬛</span>Post 1:1
-              </button>
-              <button class="ig-fmt-btn" id="igFmtStory" onclick="igSetFmt('story')">
-                <span class="fmt-icon">▯</span>Story 9:16
-              </button>
-            </div>
-          </div>
-
-          <div class="ig-group">
-            <label>Cantidad</label>
-            <div class="ig-count" id="igCount">
-              <button class="ig-count-btn on" onclick="igSetCount(1,this)">1</button>
-              <button class="ig-count-btn" onclick="igSetCount(2,this)">2</button>
-              <button class="ig-count-btn" onclick="igSetCount(3,this)">3</button>
-              <button class="ig-count-btn" onclick="igSetCount(4,this)">4</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="ig-actions">
-          <button class="bp" onclick="igGenerate()" id="igGenBtn">✦ Generar</button>
-          <span style="font-size:12px;color:var(--text3)" id="igHint">Replicate FLUX.1 → guardado directo en servidor</span>
-        </div>
-      </div>
-
-      <!-- Barra de progreso -->
-      <div class="ig-progress" id="igProgress">
-        <div class="ig-progress-txt">
-          <span id="igProgressTxt">Generando...</span>
-          <span id="igProgressN" style="color:var(--accent)"></span>
-        </div>
-        <div class="ig-progress-bar-wrap">
-          <div class="ig-progress-bar" id="igProgressBar" style="width:0%"></div>
-        </div>
-      </div>
-
-      <!-- Resultados -->
-      <div id="igResultsArea" style="display:none">
-        <div class="ig-results-hd">
-          <span id="igResultsCount">0 imágenes</span>
-          <div style="display:flex;gap:8px">
-            <button class="bs" onclick="igSaveAll()" id="igSaveAllBtn" style="font-size:12px;padding:7px 14px">☁ Guardar todas en servidor</button>
-            <button class="bs" onclick="igClear()" style="font-size:12px;padding:7px 14px">✕ Limpiar</button>
-          </div>
-        </div>
-        <div class="ig-grid" id="igGrid"></div>
-      </div>
-
-      <div class="ig-empty" id="igEmpty">
-        <span class="ei">🎨</span>
-        <p>Escribe una descripción y haz clic en <strong>Generar</strong></p>
-        <p style="margin-top:6px;font-size:12px">Las imágenes se guardan en tu servidor automáticamente</p>
-      </div>
-    </div>
-
     <!-- BACKOFFICE IMATGES -->
-
     <div id="sec-backoffice" class="content" style="display:none">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
         <div>
@@ -604,43 +443,50 @@ let calMon = new Date().getMonth(), calYr = new Date().getFullYear(), editP = nu
 // Gratuït · Sense CORS · Base64 · Funciona des de GitHub Pages
 // =====================================================
 
-function getHFToken() {
-  return localStorage.getItem('sc_hf_token') || document.getElementById('cfgHFToken')?.value?.trim() || '';
+// =====================================================
+// GENERACIÓ D'IMATGES: Puter.js (gratuït, sota demanda)
+// Model: gpt-image-1 (OpenAI) via Puter — cada usuari usa els seus crèdits
+// =====================================================
+
+async function generateImagePuter(prompt, isStory) {
+  const w = isStory ? 1024 : 1024;
+  const h = isStory ? 1792 : 1024;
+  const full = prompt + ', professional food photography, appetizing, restaurant quality, natural lighting, high detail';
+  const imgEl = await puter.ai.txt2img(full, {
+    model: 'gpt-image-1',
+    quality: 'low',   // 'low' = ràpid i suficient per xarxes socials
+    size: isStory ? '1024x1792' : '1024x1024'
+  });
+  return imgEl.src;
 }
 
-async function generateImageHF(prompt, isStory) {
-  const w = isStory ? 768 : 1024;
-  const h = isStory ? 1360 : 1024;
-  const full = prompt + ', professional food photography, appetizing, restaurant, high quality, natural lighting';
-  const headers = { 'Content-Type': 'application/json' };
-  const tok = getHFToken();
-  if (tok) headers['Authorization'] = 'Bearer ' + tok;
-
-  const res = await fetch(
-    'https://api-inference.huggingface.co/models/black-forest-labs/FLUX.1-schnell',
-    { method: 'POST', headers, body: JSON.stringify({ inputs: full, parameters: { width: w, height: h, num_inference_steps: 4, guidance_scale: 0 } }) }
-  );
-  if (!res.ok) throw new Error('HF ' + res.status + ': ' + (await res.text()).slice(0,100));
-  const blob = await res.blob();
-  return URL.createObjectURL(blob);
+function getBaseUrl() {
+  const raw = document.getElementById('cfgServerUrl')?.value?.trim() || 'https://www.jordiqterrassa.com/upload.php';
+  return raw.replace(/\/[^\/]+$/, '/');
 }
 
-function injectHFImage(cardId, blobUrl) {
+function injectImg(cardId, url, source) {
   const box = document.getElementById('cprev-' + cardId);
   if (!box) return;
   const img = new Image();
   img.style.cssText = 'width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .6s;position:absolute;inset:0';
-  img.onload = () => img.style.opacity = '1';
-  img.onerror = () => { if (box.querySelector('.iload')) box.querySelector('.iload').innerHTML = '<span style="font-size:20px">⚠️</span><span class="ilt">Error</span>'; };
+  img.onload  = () => img.style.opacity = '1';
+  img.onerror = () => {
+    if (box.querySelector('.iload'))
+      box.querySelector('.iload').innerHTML = '<span style="font-size:20px">⚠️</span><span class="ilt">Error carregant</span>';
+  };
   box.style.position = 'relative';
-  box.innerHTML = '<div class="iload"><div class="ispin"></div><span class="ilt">Generant FLUX...</span></div>';
+  // Conservar el spinner si ja existeix
+  if (!box.querySelector('.iload'))
+    box.innerHTML = '<div class="iload"><div class="ispin"></div><span class="ilt">Carregant...</span></div>';
   box.appendChild(img);
-  img.src = blobUrl;
+  img.src = url;
 }
 
-// Compatibilitat amb codi v7
-async function fetchPexelsImage(context, theme, isStory, index) { return { url: null, source: 'hf' }; }
-function fetchPicsumImage(isStory, index) { return { url: null, source: 'hf' }; }
+// Alias per compatibilitat
+function injectHFImage(cardId, url) { injectImg(cardId, url, 'flux'); }
+async function fetchPexelsImage(context, theme, isStory, index) { return { url: null, source: 'flux' }; }
+function fetchPicsumImage(isStory, index) { return { url: null, source: 'flux' }; }
 
 
 
@@ -822,8 +668,7 @@ async function initApp() {
     document.getElementById('initScreen').style.display = 'none';
     document.getElementById('mainApp').style.display = 'grid';
     renderCal();
-    const hfSaved = localStorage.getItem('sc_hf_token'); if (hfSaved && document.getElementById('cfgHFToken')) document.getElementById('cfgHFToken').value = hfSaved;
-  updateImgEngineLabel();
+    updateImgEngineLabel();
   } catch (err) {
     setInitMsg('Error: ' + err.message);
   }
@@ -876,7 +721,7 @@ async function loadRestaurant(id) {
   document.getElementById('cfgCTA').value = d.cta || '';
   document.getElementById('cfgServerUrl').value = d.serverUrl || DEFAULT_UPLOAD_URL;
   if (d.replicateKey) document.getElementById('cfgReplicateKey').value = d.replicateKey;
-  const hfEl = document.getElementById('cfgHFToken'); if (hfEl && d.hfToken) { hfEl.value = d.hfToken; localStorage.setItem('sc_hf_token', d.hfToken); }
+
   scheduled = (d.scheduled || []).map(s => ({...s}));
   updBadge();
   renderCal();
@@ -928,7 +773,6 @@ async function saveCfg() {
     cta: document.getElementById('cfgCTA').value,
     serverUrl: document.getElementById('cfgServerUrl').value,
     replicateKey: document.getElementById('cfgReplicateKey').value,
-    hfToken: document.getElementById('cfgHFToken')?.value || '',
     updatedAt: firebase.firestore.FieldValue.serverTimestamp()
   };
   setSyncState('spin', 'Guardando...');
@@ -1013,18 +857,31 @@ async function genProposals() {
   renderProps();
   toast('✓ Textos generats · Generant imatges FLUX.1...');
 
-  await Promise.all(proposals.map(async (p, i) => {
-    try {
-      const blobUrl = await generateImageHF(p.imagePrompt || p.title + ' ' + context, p.type === 'story');
-      proposals[i].imageData = blobUrl;
-      injectHFImage(p.id, blobUrl);
-    } catch(e) {
-      console.error('HF img ' + i + ':', e.message);
-      const box = document.getElementById('cprev-' + p.id);
-      if (box) box.innerHTML = '<div class="iload"><span style="font-size:18px">⚠️</span><span class="ilt">' + e.message.slice(0,50) + '</span></div>';
-    }
-  }));
-  toast('✓ Imatges generades amb FLUX.1!');
+  // Mostra les targetes amb botó "Generar imatge" — sota demanda per estalviar crèdits
+  document.getElementById('lbox').classList.remove('vis');
+  document.getElementById('genBtn').disabled = false;
+  renderProps();
+  toast('✓ ' + proposals.length + ' propuestas generadas · Clica "🖼 Generar" per crear cada imatge');
+}
+
+// Genera la imatge d'una proposta concreta (sota demanda)
+async function genImageForCard(propId) {
+  const p = proposals.find(x => x.id === propId);
+  if (!p) return;
+  const box = document.getElementById('cprev-' + propId);
+  const btn = document.getElementById('imgbtn-' + propId);
+  if (box) box.innerHTML = '<div class="iload"><div class="ispin"></div><span class="ilt">Generant...</span></div>';
+  if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
+  try {
+    const url = await generateImagePuter(p.imagePrompt || p.title, p.type === 'story');
+    proposals[proposals.indexOf(p)].imageData = url;
+    injectImg(propId, url, 'puter');
+    if (btn) btn.remove();
+  } catch(e) {
+    console.error('Puter img error:', e);
+    if (box) box.innerHTML = '<div class="iload"><span style="font-size:18px">⚠️</span><span class="ilt">' + (e.message||'Error').slice(0,40) + '</span></div>';
+    if (btn) { btn.disabled = false; btn.textContent = '🖼 Reintentar'; }
+  }
 }
 
 // Generar todas las imágenes con FLUX
@@ -1073,6 +930,14 @@ async function regenerateImages() {
 }
 
 // Mejorar propuestas actuales con FLUX
+async function genAllImages() {
+  toast('Generant totes les imatges...');
+  for (const p of proposals) {
+    await genImageForCard(p.id);
+  }
+  toast('✓ Totes les imatges generades!');
+}
+
 async function upgradeToFlux() {
   const restName = restaurants.find(r => r.id === currentRestId)?.name || 'restaurant';
   const token = getReplicateToken();
@@ -1179,8 +1044,11 @@ function renderProps() {
   g.innerHTML = proposals.map(p => `
     <div class="pcard" id="card-${p.id}">
       <span class="sbadge">✓ Seleccionada</span>
-      <div class="cprev ${p.type==='story'?'story':''}" id="cprev-${p.id}" onclick="toggleSel('${p.id}')">
-        <div class="iload"><div class="ispin"></div><span class="ilt">Cargando...</span></div>
+      p.type==='story'?'story':''}" id="cprev-${p.id}" onclick="toggleSel('${p.id}')">
+        <div class="iload" style="flex-direction:column;gap:10px">
+          <button id="imgbtn-${p.id}" onclick="event.stopPropagation();genImageForCard('${p.id}')" style="background:var(--accent);color:#0e0e0e;border:none;padding:8px 16px;border-radius:var(--rs);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">🖼 Generar imatge</button>
+          <span class="ilt">Puter.js · gpt-image-1</span>
+        </div>
       </div>
       <div class="cbody">
         <span class="tbadge ${p.type}">${p.type==='post'?'□ Post':'□ Story'}</span>
@@ -1190,9 +1058,7 @@ function renderProps() {
       <div class="cact">
         <button class="bsel" onclick="toggleSel('${p.id}')">Seleccionar</button>
         <button class="bedit" onclick="openPrev('${p.id}')">Editar</button>
-        <button class="bflux" onclick="regenerateOneFlux('${p.id}')">FLUX</button>
-      </div>
-    </div>`).join('');
+      </div></div>`).join('');
   document.getElementById('propCount').textContent = proposals.length + ' propuestas';
   document.getElementById('propArea').style.display = 'block';
   updSelUI();
@@ -1367,327 +1233,6 @@ function toast(msg, isError) {
   else t.classList.remove('error');
   t.classList.add('show'); 
   setTimeout(() => t.classList.remove('show'), 3500); 
-}
-
-// =====================================================
-// NUEVA SECCIÓN: CREAR IMAGEN
-// =====================================================
-const igState = {
-  format: 'post',
-  count: 1,
-  results: [],      // {id, prompt, format, blobUrl, serverUrl, engine, saving}
-};
-
-function igToggleStyle(btn) {
-  btn.classList.toggle('on');
-}
-
-function igSetFmt(fmt) {
-  igState.format = fmt;
-  document.getElementById('igFmtPost').classList.toggle('on', fmt === 'post');
-  document.getElementById('igFmtStory').classList.toggle('on', fmt === 'story');
-}
-
-function igSetCount(n, btn) {
-  igState.count = n;
-  document.querySelectorAll('.ig-count-btn').forEach(b => b.classList.remove('on'));
-  btn.classList.add('on');
-}
-
-function igGetStyles() {
-  const on = [...document.querySelectorAll('.ig-style-btn.on')].map(b => b.textContent.trim().replace(/^[^\s]+\s/,''));
-  return on.join(', ') || 'professional food photography';
-}
-
-function igBuildPrompt(subject, styles, isStory) {
-  const orient = isStory ? 'vertical composition, 9:16 aspect ratio' : 'square composition, 1:1';
-  return `${subject}, ${styles}, professional food photography, restaurant, high quality, detailed, natural lighting, appetizing, ${orient}`;
-}
-
-async function igGenerate() {
-  const subject = document.getElementById('igSubject').value.trim();
-  if (!subject) {
-    toast('⚠️ Escribe qué quieres generar');
-    document.getElementById('igSubject').focus();
-    return;
-  }
-
-  const count = igState.count;
-  const isStory = igState.format === 'story';
-  const styles = igGetStyles();
-  const prompt = igBuildPrompt(subject, styles, isStory);
-  const restName = restaurants.find(r => r.id === currentRestId)?.name || 'restaurant';
-  const hasReplicate = getReplicateToken()?.length > 10;
-
-  // Preparar estado
-  igState.results = [];
-  for (let i = 0; i < count; i++) {
-    igState.results.push({
-      id: 'ig_' + Date.now() + '_' + i,
-      prompt,
-      subject,
-      format: igState.format,
-      blobUrl: null, serverUrl: null,
-      engine: null, saving: false, saved: false, error: null
-    });
-  }
-
-  // UI: mostrar grid vacío con spinners
-  document.getElementById('igEmpty').style.display = 'none';
-  document.getElementById('igResultsArea').style.display = 'block';
-  document.getElementById('igGenBtn').disabled = true;
-  igRenderGrid();
-  igShowProgress(0, count, hasReplicate ? 'Generando con FLUX.1 Replicate...' : 'Generando con FLUX.1 HuggingFace...');
-
-  // Actualizar badge del engine
-  const badge = document.getElementById('igEngBadge');
-  badge.textContent = hasReplicate ? 'FLUX.1 Replicate' : 'FLUX.1 HF';
-  badge.className = 'ig-engine-badge' + (hasReplicate ? '' : ' hf');
-  document.getElementById('igHint').textContent = hasReplicate
-    ? 'Replicate FLUX.1 → guardado directo en servidor'
-    : 'Hugging Face FLUX.1-schnell → gratuito · se sube al servidor';
-
-  // Generar imágenes (en serie para no saturar la API)
-  for (let i = 0; i < count; i++) {
-    igShowProgress(i, count, `Generando imagen ${i + 1} de ${count}...`);
-    const item = igState.results[i];
-
-    try {
-      if (hasReplicate) {
-        // ── Replicate via proxy PHP → fallback a HuggingFace si falla ──
-        const proxyUrl = getBaseUrl() + 'replicate-proxy.php';
-        try {
-          const res = await fetch(proxyUrl, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              token: getReplicateToken(),
-              prompt: prompt + ', professional food photography, 8k, detailed',
-              aspect_ratio: isStory ? '9:16' : '1:1',
-              restaurant: restName,
-              type: igState.format
-            })
-          });
-          if (!res.ok) {
-            const errBody = await res.text();
-            let errMsg = 'Proxy HTTP ' + res.status;
-            try { const j = JSON.parse(errBody); errMsg += ': ' + (j.error || j.message || errBody.slice(0,120)); } catch(_) { errMsg += ': ' + errBody.slice(0,120); }
-            console.error('Replicate proxy error body:', errBody);
-            throw new Error(errMsg);
-          }
-          const data = await res.json();
-          if (!data.success) throw new Error(data.error || 'Error Replicate');
-          item.serverUrl = data.url;
-          item.engine = 'Replicate';
-          item.saved = true;
-        } catch(replicateErr) {
-          console.warn('Replicate falló, fallback HF:', replicateErr.message);
-          toast('⚠️ Replicate falló · Usando HF...');
-          const blobUrl = await generateImageHF(prompt, isStory);
-          item.blobUrl = blobUrl;
-          item.engine = 'HF (fallback)';
-          item.saved = false;
-          igUploadOne(i);
-        }
-
-      } else {
-        // ── HuggingFace FLUX.1-schnell (gratis) ──
-        const blobUrl = await generateImageHF(prompt, isStory);
-        item.blobUrl = blobUrl;
-        item.engine = 'HF';
-        item.saved = false;
-        // Intentar subir al servidor en background
-        igUploadOne(i);
-      }
-
-    } catch (e) {
-      item.error = e.message.slice(0, 120);
-      console.error('igGenerate error #' + i, e);
-    }
-
-    igUpdateCard(i);
-  }
-
-  igHideProgress();
-  document.getElementById('igGenBtn').disabled = false;
-  document.getElementById('igResultsCount').textContent = count + ' imagen' + (count > 1 ? 'es' : '');
-
-  const saved = igState.results.filter(r => r.saved).length;
-  if (saved === count) toast(`✓ ${count} imagen${count>1?'es':''} generada${count>1?'s':''} y guardada${count>1?'s':''} en servidor`);
-  else if (hasReplicate) toast(`✓ ${count} imagen${count>1?'es':''} generada${count>1?'s':''}`);
-  else toast(`✓ ${count} imagen${count>1?'es':''} · Subiendo al servidor...`);
-}
-
-async function igUploadOne(idx) {
-  const item = igState.results[idx];
-  if (!item.blobUrl || item.saved || item.saving) return;
-  item.saving = true;
-  igUpdateCard(idx);
-
-  try {
-    const uploadUrl = document.getElementById('cfgServerUrl')?.value?.trim() || DEFAULT_UPLOAD_URL;
-    const res = await fetch(item.blobUrl);
-    const blob = await res.blob();
-    const base64 = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-    const upRes = await fetch(uploadUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        image: base64,
-        restaurant: restaurants.find(r => r.id === currentRestId)?.name || 'restaurant',
-        type: item.format,
-        prompt: item.subject
-      })
-    });
-    if (!upRes.ok) throw new Error('HTTP ' + upRes.status);
-    const data = await upRes.json();
-    if (!data.success) throw new Error(data.error || 'Error upload');
-    item.serverUrl = data.url;
-    item.saved = true;
-    item.saving = false;
-    igUpdateCard(idx);
-  } catch (e) {
-    item.saving = false;
-    item.saved = false;
-    igUpdateCard(idx);
-    console.error('igUploadOne error', e);
-  }
-}
-
-async function igSaveAll() {
-  const toSave = igState.results.filter(r => !r.saved && !r.saving && (r.blobUrl || r.serverUrl) && !r.error);
-  if (!toSave.length) { toast('✓ Todas ya guardadas'); return; }
-  toast('☁ Subiendo ' + toSave.length + ' imágenes...');
-  for (let i = 0; i < igState.results.length; i++) {
-    if (!igState.results[i].saved && igState.results[i].blobUrl) await igUploadOne(i);
-  }
-  toast('✓ Guardadas en servidor');
-}
-
-function igClear() {
-  igState.results = [];
-  document.getElementById('igGrid').innerHTML = '';
-  document.getElementById('igResultsArea').style.display = 'none';
-  document.getElementById('igEmpty').style.display = 'block';
-}
-
-function igRenderGrid() {
-  const grid = document.getElementById('igGrid');
-  grid.innerHTML = igState.results.map((item, i) => `
-    <div class="ig-card" id="igcard-${i}">
-      <div class="ig-img-wrap ${item.format}" id="igwrap-${i}">
-        <div class="ig-loading" id="igload-${i}">
-          <div class="ig-loading-bar"><div class="ig-loading-fill"></div></div>
-          <span class="ig-loading-txt">Generando...</span>
-        </div>
-        <div class="ig-badges" id="igbadges-${i}"></div>
-        <img id="igimg-${i}" src="" alt="" onload="this.classList.add('loaded')">
-      </div>
-      <div class="ig-card-body">
-        <div class="ig-card-prompt" id="igprompt-${i}">${item.subject}</div>
-        <div class="ig-card-acts" id="igacts-${i}">
-          <button onclick="igDownload(${i})" disabled id="igdl-${i}">↓ Descargar</button>
-          <button onclick="igCopyUrl(${i})" disabled id="igcp-${i}">📋 URL</button>
-          <button class="save-btn" onclick="igUploadOne(${i})" disabled id="igsv-${i}">☁ Guardar</button>
-        </div>
-      </div>
-    </div>`).join('');
-}
-
-function igUpdateCard(idx) {
-  const item = igState.results[idx];
-  const imgEl = document.getElementById('igimg-' + idx);
-  const loadEl = document.getElementById('igload-' + idx);
-  const badgesEl = document.getElementById('igbadges-' + idx);
-  const dlBtn = document.getElementById('igdl-' + idx);
-  const cpBtn = document.getElementById('igcp-' + idx);
-  const svBtn = document.getElementById('igsv-' + idx);
-
-  if (!imgEl) return;
-
-  const displayUrl = item.serverUrl || item.blobUrl;
-
-  if (item.error) {
-    if (loadEl) loadEl.innerHTML = `<span style="font-size:11px;color:var(--red);text-align:center;padding:10px">⚠️ ${item.error}</span>`;
-    return;
-  }
-
-  if (displayUrl) {
-    if (loadEl) loadEl.style.display = 'none';
-    imgEl.src = displayUrl;
-
-    // Badges
-    let badges = `<span class="ig-badge engine">${item.engine || 'FLUX'}</span>`;
-    if (item.saving) badges += `<span class="ig-badge local">Subiendo...</span>`;
-    else if (item.saved) badges += `<span class="ig-badge saved">✓ Guardado</span>`;
-    else badges += `<span class="ig-badge local">Local</span>`;
-    if (badgesEl) badgesEl.innerHTML = badges;
-
-    // Botones
-    if (dlBtn) dlBtn.disabled = false;
-    if (cpBtn) {
-      cpBtn.disabled = !item.serverUrl;
-      cpBtn.title = item.serverUrl || 'Guarda primero en servidor';
-    }
-    if (svBtn) {
-      if (item.saved) {
-        svBtn.textContent = '✓ Guardado';
-        svBtn.disabled = true;
-      } else if (item.saving) {
-        svBtn.textContent = '⏳ Subiendo...';
-        svBtn.disabled = true;
-      } else if (item.blobUrl) {
-        svBtn.textContent = '☁ Guardar';
-        svBtn.disabled = false;
-      } else {
-        svBtn.disabled = true;
-      }
-    }
-  }
-}
-
-async function igDownload(idx) {
-  const item = igState.results[idx];
-  const url = item.blobUrl || item.serverUrl;
-  if (!url) return;
-  try {
-    const res = await fetch(url);
-    const blob = await res.blob();
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `socialchef_${item.format}_${idx + 1}.jpg`;
-    a.click();
-    URL.revokeObjectURL(a.href);
-  } catch(e) {
-    // Fallback: abrir en nueva pestaña
-    window.open(url, '_blank');
-  }
-}
-
-function igCopyUrl(idx) {
-  const item = igState.results[idx];
-  const url = item.serverUrl;
-  if (!url) { toast('⚠️ Guarda primero en servidor para obtener URL'); return; }
-  navigator.clipboard.writeText(url).then(() => toast('✓ URL copiada'));
-}
-
-function igShowProgress(done, total, txt) {
-  const el = document.getElementById('igProgress');
-  el.classList.add('vis');
-  document.getElementById('igProgressTxt').textContent = txt;
-  document.getElementById('igProgressN').textContent = done + '/' + total;
-  document.getElementById('igProgressBar').style.width = (done / total * 100) + '%';
-}
-
-function igHideProgress() {
-  const el = document.getElementById('igProgress');
-  document.getElementById('igProgressBar').style.width = '100%';
-  setTimeout(() => { el.classList.remove('vis'); document.getElementById('igProgressBar').style.width = '0%'; }, 800);
 }
 
 window.onload = initApp;
