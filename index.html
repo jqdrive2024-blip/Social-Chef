@@ -562,6 +562,41 @@ select option{background:var(--surface2)}
             </div>
           </div>
         </div>
+
+        <!-- Instagram Publicació automàtica -->
+        <div class="cfgcard" style="grid-column:1/-1">
+          <h3>📱 Publicació automàtica a Instagram</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div class="fg">
+                <label>Access Token de Meta</label>
+                <input type="password" id="cfgIgToken" placeholder="EAAxxxxxxx..." autocomplete="off">
+                <span style="font-size:11px;color:var(--text3);margin-top:3px">
+                  Obtén el teu token a 
+                  <a href="https://developers.facebook.com/tools/explorer/" target="_blank" style="color:var(--accent)">Graph API Explorer →</a>
+                  Necessites permisos: <code style="font-size:10px;background:var(--surface3);padding:1px 5px;border-radius:3px">instagram_basic, instagram_content_publish, pages_read_engagement</code>
+                </span>
+              </div>
+              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+                <button class="bp" id="igTestBtn" onclick="igTestConnect()" style="padding:10px 18px;font-size:13px">Verificar i connectar</button>
+                <button id="igDisconnectBtn" onclick="igDisconnect()" style="display:none;background:none;border:1px solid var(--border2);color:var(--text2);padding:9px 16px;border-radius:var(--rs);font-size:13px;cursor:pointer;font-family:inherit">Desconnectar</button>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px;justify-content:center">
+              <div style="padding:16px;background:var(--surface2);border-radius:var(--r);border:1px solid var(--border)">
+                <div style="font-size:13px;font-weight:500;margin-bottom:6px">Estat de la connexió</div>
+                <div style="font-size:13px" id="igConnectStatus">○ No connectat</div>
+                <div style="font-size:12px;color:var(--accent);margin-top:4px" id="igConnectName"></div>
+              </div>
+              <div style="padding:12px 14px;background:var(--accent-bg);border:1px solid rgba(232,201,126,.2);border-radius:var(--rs)">
+                <p style="font-size:11px;color:var(--text2);line-height:1.6">
+                  Un cop connectat, cada post del calendari tindrà un botó <strong>📱 Publicar</strong> per publicar directament a Instagram.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -650,6 +685,12 @@ let calMon = new Date().getMonth(), calYr = new Date().getFullYear(), editP = nu
 let libImages = []; // imatges de la librería (IG + web + generades)
 let currentLibTab = 'instagram';
 let pickingForProp = null; // id proposta quan s'obre ovLibPick
+
+// ── Instagram Graph API ──────────────────────────────────────────────────────
+const IG_API_URL = 'https://jordiqterrassa.com/ig-api.php';
+let igToken = localStorage.getItem('sc_ig_token') || '';
+let igUserId = localStorage.getItem('sc_ig_user_id') || '';
+let igAccountName = localStorage.getItem('sc_ig_account_name') || '';
 
 // =====================================================
 // GENERACIÓ D'IMATGES — Gemini Imagen 3 + Puter fallback
@@ -1389,13 +1430,30 @@ function renderSList() {
         <div style="flex:1;min-width:0">
           <div class="sd8">${fmtDate(s.date)} · ${s.time}</div>
           <div class="stit">${s.title}</div>
-          <div class="styp">${s.type==='post'?'Post':'Story'}</div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px">
+            <span class="styp">${s.type==='post'?'Post':'Story'}</span>
+            ${s.igStatus==='published'
+              ? '<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(126,201,142,.15);color:var(--green)">✓ Publicat</span>'
+              : igIsConnected()
+                ? `<button id="igpubBtn-${i}" onclick="igPublishPost(${i})" style="background:none;border:1px solid rgba(126,179,232,.35);color:var(--blue);cursor:pointer;border-radius:20px;font-size:10px;padding:2px 10px;font-family:inherit;transition:all .15s" onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='rgba(126,179,232,.35)'">📱 Publicar</button>`
+                : '<span style="font-size:10px;color:var(--text3)">IG no connectat</span>'
+            }
+          </div>
         </div>
         <button onclick="remSched(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:4px">×</button>
       </div>
     </div>`).join('');
 }
-async function remSched(i){scheduled.splice(i,1);updBadge();await saveScheduled();renderCal();toast('Eliminada');}
+async function remSched(i){
+  const s = scheduled[i];
+  // Eliminar imatge de IDB si existeix
+  if (s?.schedImgId) await idbDeleteSchedImage(s.schedImgId);
+  scheduled.splice(i,1);
+  updBadge();
+  await saveScheduled();
+  renderCal();
+  toast('Eliminada');
+}
 function chMonth(d){calMon+=d;if(calMon>11){calMon=0;calYr++;}if(calMon<0){calMon=11;calYr--;}renderCal();}
 function updBadge(){
   document.getElementById('calBadge').textContent=scheduled.length;
@@ -1422,6 +1480,10 @@ async function initApp() {
     renderCal();
     const geminiKey = localStorage.getItem('sc_gemini_key');
     if (geminiKey && document.getElementById('cfgGeminiKey')) document.getElementById('cfgGeminiKey').value = geminiKey;
+    // Restaurar token d'Instagram
+    const savedIgToken = localStorage.getItem('sc_ig_token');
+    if (savedIgToken && document.getElementById('cfgIgToken')) document.getElementById('cfgIgToken').value = savedIgToken;
+    updateIgConnectUI();
   } catch(err) {
     setInitMsg('Error: ' + err.message);
     console.error(err);
@@ -1484,6 +1546,8 @@ async function loadRestaurant(id) {
   if (li) li.textContent = 'Imatges de ' + (d.name||'el restaurant actiu');
   scheduled = (d.scheduled||[]).map(s=>({...s}));
   updBadge(); renderCal();
+  // Restaurar imatges dels posts programats des d'IndexedDB
+  restoreSchedImages();
   // Carregar imatges generades guardades (IndexedDB)
   libImages = libImages.filter(i => i.source !== 'generated');
   loadPersistedImages(id);
@@ -1553,9 +1617,29 @@ async function saveCfg() {
 async function saveScheduled() {
   if (!currentUser||!currentRestId) return;
   setSyncState('spin','Guardando...');
-  await db.collection('users').doc(currentUser.uid).collection('restaurants').doc(currentRestId)
-    .update({scheduled:scheduled.map(s=>({...s,imageData:s.imageData||null}))});
-  setSyncState('ok','Guardado ✓');
+  try {
+    // Guardar imatges a IDB (no a Firestore: límit 1MB doc)
+    const itemsToSave = await Promise.all(scheduled.map(async (s, i) => {
+      const item = {...s};
+      if (item.imageData && !item.imageData.startsWith('blob:')) {
+        // Guardar a IDB si no té ja un ID
+        if (!item.schedImgId) {
+          const idbId = await idbSaveSchedImage(item.imageData, currentRestId);
+          if (idbId) { item.schedImgId = idbId; scheduled[i].schedImgId = idbId; }
+        }
+      }
+      // Treure imageData de Firestore
+      const {imageData, ...noImg} = item;
+      return noImg;
+    }));
+    await db.collection('users').doc(currentUser.uid).collection('restaurants').doc(currentRestId)
+      .update({scheduled: itemsToSave});
+    setSyncState('ok','Guardado ✓');
+  } catch(e) {
+    console.error('saveScheduled error:', e);
+    setSyncState('ok','Error guardant');
+    toast('❌ Error guardant: ' + e.message.slice(0,60));
+  }
 }
 
 // =====================================================
@@ -1590,8 +1674,9 @@ async function deleteCurrentRest() {
   try {
     setSyncState('spin', 'Eliminant...');
     await db.collection('users').doc(currentUser.uid).collection('restaurants').doc(currentRestId).delete();
-    // Eliminar imágenes de IDB
+    // Eliminar imágenes de IDB (generades + programades)
     await idbClearRestImages(currentRestId);
+    await idbClearRestSchedImages(currentRestId);
     restaurants = restaurants.filter(r => r.id !== currentRestId);
     currentRestId = restaurants[0].id;
     renderRestSelector();
@@ -1607,9 +1692,10 @@ async function deleteCurrentRest() {
 }
 
 // =====================================================
-// INDEXEDDB — Persistencia de imágenes generadas
+// INDEXEDDB — Persistencia d'imatges (generades + programades)
+// v1: generatedImages  |  v2: + scheduledImages
 // =====================================================
-const IDB_NAME = 'SocialChefDB', IDB_STORE = 'generatedImages', IDB_VER = 1;
+const IDB_NAME = 'SocialChefDB', IDB_STORE = 'generatedImages', IDB_SCHED_STORE = 'scheduledImages', IDB_VER = 2;
 let idb = null;
 
 function openIDB() {
@@ -1618,14 +1704,83 @@ function openIDB() {
     const req = indexedDB.open(IDB_NAME, IDB_VER);
     req.onupgradeneeded = e => {
       const db = e.target.result;
-      if (!db.objectStoreNames.contains(IDB_STORE)) {
-        const store = db.createObjectStore(IDB_STORE, { keyPath: 'id', autoIncrement: true });
-        store.createIndex('restId', 'restId', { unique: false });
+      const oldV = e.oldVersion;
+      if (oldV < 1) {
+        const s = db.createObjectStore(IDB_STORE, { keyPath: 'id', autoIncrement: true });
+        s.createIndex('restId', 'restId', { unique: false });
+      }
+      if (oldV < 2) {
+        const ss = db.createObjectStore(IDB_SCHED_STORE, { keyPath: 'id', autoIncrement: true });
+        ss.createIndex('restId', 'restId', { unique: false });
       }
     };
     req.onsuccess = e => { idb = e.target.result; resolve(idb); };
     req.onerror = () => reject(req.error);
   });
+}
+
+// ── Helpers per a scheduled images ──────────────────────────────────────────
+async function idbSaveSchedImage(imageData, restId) {
+  try {
+    const db = await openIDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(IDB_SCHED_STORE, 'readwrite');
+      const req = tx.objectStore(IDB_SCHED_STORE).add({ imageData, restId, savedAt: Date.now() });
+      req.onsuccess = () => resolve(req.result); // returns the auto-generated id
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch(e) { console.warn('idbSaveSchedImage error:', e); return null; }
+}
+
+async function idbGetSchedImage(id) {
+  try {
+    const db = await openIDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(IDB_SCHED_STORE, 'readonly');
+      const req = tx.objectStore(IDB_SCHED_STORE).get(id);
+      req.onsuccess = () => resolve(req.result?.imageData || null);
+      req.onerror = () => reject(req.error);
+    });
+  } catch(e) { console.warn('idbGetSchedImage error:', e); return null; }
+}
+
+async function idbDeleteSchedImage(id) {
+  try {
+    const db = await openIDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(IDB_SCHED_STORE, 'readwrite');
+      tx.objectStore(IDB_SCHED_STORE).delete(id);
+      tx.oncomplete = resolve;
+      tx.onerror = () => reject(tx.error);
+    });
+  } catch(e) { console.warn('idbDeleteSchedImage error:', e); }
+}
+
+async function idbClearRestSchedImages(restId) {
+  try {
+    const db = await openIDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(IDB_SCHED_STORE, 'readwrite');
+      const idx = tx.objectStore(IDB_SCHED_STORE).index('restId');
+      const req = idx.getAllKeys(restId);
+      req.onsuccess = () => {
+        req.result.forEach(k => tx.objectStore(IDB_SCHED_STORE).delete(k));
+        tx.oncomplete = resolve;
+      };
+      req.onerror = () => reject(req.error);
+    });
+  } catch(e) { console.warn('idbClearRestSchedImages error:', e); }
+}
+
+async function restoreSchedImages() {
+  let changed = false;
+  await Promise.all(scheduled.map(async (s, i) => {
+    if (s.schedImgId && !s.imageData) {
+      const data = await idbGetSchedImage(s.schedImgId);
+      if (data) { scheduled[i].imageData = data; changed = true; }
+    }
+  }));
+  if (changed) renderCal();
 }
 
 async function idbSaveImage(img) {
@@ -1702,6 +1857,123 @@ function updateIgFromInput() {
   const ig = document.getElementById('igUsername')?.value?.trim().replace('@','') || '';
   const link = document.getElementById('igDirectLink');
   if (link && ig) link.href = 'https://www.instagram.com/' + ig + '/';
+}
+
+// =====================================================
+// INSTAGRAM GRAPH API — Publicació automàtica
+// =====================================================
+function igIsConnected() { return !!(igToken && igUserId); }
+
+function updateIgConnectUI() {
+  const statusEl = document.getElementById('igConnectStatus');
+  const nameEl   = document.getElementById('igConnectName');
+  const btnEl    = document.getElementById('igConnectBtn');
+  const disconnBtn = document.getElementById('igDisconnectBtn');
+  if (!statusEl) return;
+  if (igIsConnected()) {
+    statusEl.textContent = '● Connectat';
+    statusEl.style.color = 'var(--green)';
+    if (nameEl) nameEl.textContent = igAccountName ? '@' + igAccountName : 'Instagram';
+    if (btnEl) btnEl.style.display = 'none';
+    if (disconnBtn) disconnBtn.style.display = 'inline-flex';
+  } else {
+    statusEl.textContent = '○ No connectat';
+    statusEl.style.color = 'var(--text3)';
+    if (nameEl) nameEl.textContent = '';
+    if (btnEl) btnEl.style.display = 'inline-flex';
+    if (disconnBtn) disconnBtn.style.display = 'none';
+  }
+  // Actualitzar botons publicar al calendari
+  renderSList();
+}
+
+async function igTestConnect() {
+  const token = document.getElementById('cfgIgToken')?.value?.trim();
+  if (!token) { toast("Entra el token d'accés d'Instagram"); return; }
+  const btn = document.getElementById('igTestBtn');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Verificant...'; }
+  try {
+    const res = await fetch(IG_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'test_connection', token })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Error desconegut');
+    igToken  = token;
+    igUserId = data.user_id;
+    igAccountName = data.username || '';
+    localStorage.setItem('sc_ig_token',        igToken);
+    localStorage.setItem('sc_ig_user_id',      igUserId);
+    localStorage.setItem('sc_ig_account_name', igAccountName);
+    updateIgConnectUI();
+    toast('✓ Connectat com @' + igAccountName);
+  } catch(e) {
+    toast('❌ ' + e.message.slice(0,80));
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Verificar i connectar'; }
+  }
+}
+
+function igDisconnect() {
+  if (!confirm("Desconnectar el compte d'Instagram?")) return;
+  igToken = igUserId = igAccountName = '';
+  localStorage.removeItem('sc_ig_token');
+  localStorage.removeItem('sc_ig_user_id');
+  localStorage.removeItem('sc_ig_account_name');
+  const inp = document.getElementById('cfgIgToken');
+  if (inp) inp.value = '';
+  updateIgConnectUI();
+  toast('Instagram desconnectat');
+}
+
+async function igPublishPost(schedIdx) {
+  if (!igIsConnected()) { toast('Connecta Instagram primer a Configuració'); return; }
+  const s = scheduled[schedIdx];
+  if (!s) return;
+
+  const btn = document.getElementById('igpubBtn-' + schedIdx);
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Publicant...'; }
+
+  try {
+    const caption = s.caption + (s.hashtags ? `\n\n${s.hashtags}` : '');
+
+    // Preparar payload
+    const payload = {
+      action:   'publish',
+      token:    igToken,
+      user_id:  igUserId,
+      caption,
+      media_type: s.type === 'story' ? 'STORIES' : 'FEED',
+    };
+
+    // Afegir imatge si existeix
+    if (s.imageData) {
+      if (s.imageData.startsWith('http')) {
+        payload.image_url = s.imageData;
+      } else {
+        // base64 → el PHP ho puja al servidor i retorna la URL pública
+        payload.image_data = s.imageData;
+      }
+    }
+
+    const res = await fetch(IG_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Error publicant');
+
+    scheduled[schedIdx].igStatus = 'published';
+    scheduled[schedIdx].igPostId = data.post_id || '';
+    await saveScheduled();
+    renderSList();
+    toast('✓ Publicat a Instagram!');
+  } catch(e) {
+    toast('❌ Error publicant: ' + e.message.slice(0,80));
+    if (btn) { btn.disabled = false; btn.textContent = '📱 Publicar'; }
+  }
 }
 
 // =====================================================
