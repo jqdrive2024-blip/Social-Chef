@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Social Chef</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<title>Social Design</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
@@ -12,10 +12,10 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --bg:#0e0e0e;--surface:#161616;--surface2:#1e1e1e;--surface3:#272727;
-  --border:#2a2a2a;--border2:#333;
+  --bg:#0d0d12;--surface:#131320;--surface2:#1a1a2e;--surface3:#21213a;
+  --border:#252540;--border2:#2e2e50;
   --text:#f0ede8;--text2:#a09d98;--text3:#666;
-  --accent:#e8c97e;--accent2:#c4a55a;--accent-bg:rgba(232,201,126,0.08);
+  --accent:#a78bfa;--accent2:#7c3aed;--accent-bg:rgba(167,139,250,0.08);
   --green:#7ec98e;--blue:#7eb3e8;--red:#e87e7e;
   --r:12px;--rs:8px;--rl:16px;
 }
@@ -23,7 +23,7 @@ body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;fon
 .app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
 .sidebar{background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column}
 .logo{padding:28px 24px 20px;border-bottom:1px solid var(--border)}
-.logo h1{font-family:'DM Serif Display',serif;font-size:22px;color:var(--accent)}
+.logo h1{font-family:'Space Grotesk',sans-serif;font-size:22px;color:var(--accent)}
 .logo p{font-size:11px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:1px}
 .nav{padding:16px 12px;flex:1}
 .ni{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--rs);cursor:pointer;font-size:14px;color:var(--text2);transition:all .15s;margin-bottom:2px;border:none;background:none;width:100%;text-align:left}
@@ -61,7 +61,7 @@ select option{background:var(--surface2)}
 .bs{background:var(--surface2);color:var(--text);border:1px solid var(--border2);padding:10px 18px;border-radius:var(--rs);font-size:13px;cursor:pointer;transition:all .15s;font-family:'DM Sans',sans-serif}
 .bs:hover{border-color:var(--accent);color:var(--accent)}
 /* kbar */
-.kbar{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--accent-bg);border:1px solid rgba(232,201,126,.2);border-radius:var(--rs);margin-bottom:20px}
+.kbar{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--accent-bg);border:1px solid rgba(167,139,250,.2);border-radius:var(--rs);margin-bottom:20px}
 .kbar .lbl{font-size:12px;color:var(--accent);font-weight:500}
 .kst{font-size:11px;padding:3px 9px;border-radius:20px;white-space:nowrap}
 .kst.on{background:rgba(126,201,142,.15);color:var(--green)}
@@ -178,7 +178,7 @@ select option{background:var(--surface2)}
 .toast.show{transform:translateY(0);opacity:1}
 /* Init */
 .init-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:16px}
-.init-screen h1{font-family:'DM Serif Display',serif;font-size:32px;color:var(--accent)}
+.init-screen h1{font-family:'Space Grotesk',sans-serif;font-size:32px;color:var(--accent)}
 .init-screen p{color:var(--text3);font-size:14px}
 .init-spin{width:40px;height:40px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
 .cbadge{background:var(--accent-bg);color:var(--accent);font-size:11px;padding:2px 7px;border-radius:20px;margin-left:6px}
@@ -217,7 +217,7 @@ select option{background:var(--surface2)}
     display:flex;align-items:center;justify-content:space-between;
     padding:12px 16px 0;margin-bottom:4px;
   }
-  .mobile-topbar h1{font-family:'DM Serif Display',serif;font-size:18px;color:var(--accent)}
+  .mobile-topbar h1{font-family:'Space Grotesk',sans-serif;font-size:18px;color:var(--accent)}
   .mobile-topbar select{
     background:var(--surface2);border:1px solid var(--border2);color:var(--text);
     padding:6px 10px;border-radius:var(--rs);font-size:12px;
@@ -267,15 +267,15 @@ select option{background:var(--surface2)}
 
 <div class="init-screen" id="initScreen">
   <div class="init-spin"></div>
-  <h1>Social Chef</h1>
-  <p id="initMsg">Conectando con Firebase...</p>
+  <h1>Social Design</h1>
+  <p id="initMsg">Connectant amb Firebase...</p>
 </div>
 
 <div class="app" id="mainApp" style="display:none">
 
   <!-- ── MOBILE TOP BAR ── -->
   <div class="mobile-topbar">
-    <h1>Social Chef</h1>
+    <h1>Social Design</h1>
     <div style="display:flex;align-items:center;gap:8px">
       <select id="restSelMobile" onchange="changeRestMobile()" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:6px 10px;border-radius:var(--rs);font-size:12px;font-family:'DM Sans',sans-serif;outline:none;max-width:140px"></select>
       <button onclick="openDrawer()" style="background:none;border:1px solid var(--border2);color:var(--text2);width:34px;height:34px;border-radius:var(--rs);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center">☰</button>
@@ -286,27 +286,27 @@ select option{background:var(--surface2)}
   <div class="mobile-drawer" id="mobileDrawer" onclick="closeDrawerIf(event)">
     <div class="mobile-drawer-inner">
       <div class="logo" style="padding:20px 20px 16px">
-        <h1 style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--accent)">Social Chef</h1>
-        <p style="font-size:11px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:1px">Gestión de contenido</p>
+        <h1 style="font-family:'Space Grotesk',sans-serif;font-size:22px;color:var(--accent)">Social Design</h1>
+        <p style="font-size:11px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:1px">Gestió de disseny</p>
       </div>
       <div style="padding:0 12px 12px">
         <label style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px">Restaurante</label>
         <select id="restSelDrawer" onchange="changeRestDrawer()" style="width:100%;background:var(--surface3);border:1px solid var(--border2);color:var(--text);padding:8px 10px;border-radius:var(--rs);font-size:13px;font-family:'DM Sans',sans-serif;outline:none"></select>
-        <button class="add-btn" onclick="addRest();closeDrawer()" style="margin-top:8px">+ Añadir restaurante</button>
+        <button class="add-btn" onclick="addRest();closeDrawer()" style="margin-top:8px">+ Afegir client</button>
       </div>
       <nav style="padding:8px 12px;flex:1">
         <button class="ni active" id="dniGen" onclick="showSec('generate',this);closeDrawer()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Generar contenido
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Generar contingut
         </button>
         <button class="ni" id="dniCal" onclick="showSec('calendar',this);closeDrawer()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendario
           <span class="cbadge" id="calBadgeMob">0</span>
         </button>
         <button class="ni" id="dniLib" onclick="showSec('library',this);closeDrawer()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Librería
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Arxiu visual
         </button>
         <button class="ni" id="dniCfg" onclick="showSec('config',this);closeDrawer()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M5.34 18.66l-1.41 1.41M21 12h-2M5 12H3M19.07 19.07l-1.41-1.41M5.34 5.34L3.93 3.93M12 21v-2M12 5V3"/></svg>Configuración
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M5.34 18.66l-1.41 1.41M21 12h-2M5 12H3M19.07 19.07l-1.41-1.41M5.34 5.34L3.93 3.93M12 21v-2M12 5V3"/></svg>Configuració
         </button>
       </nav>
       <div style="padding:12px 16px;border-top:1px solid var(--border);font-size:11px;display:flex;align-items:center;gap:6px">
@@ -325,7 +325,7 @@ select option{background:var(--surface2)}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendario
     </button>
     <button id="mbn-library" onclick="showSec('library',this);syncMobileNav('library')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Librería
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Arxiu visual
     </button>
     <button id="mbn-config" onclick="showSec('config',this);syncMobileNav('config')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M5.34 18.66l-1.41 1.41M21 12h-2M5 12H3M19.07 19.07l-1.41-1.41M5.34 5.34L3.93 3.93M12 21v-2M12 5V3"/></svg>Config
@@ -333,25 +333,25 @@ select option{background:var(--surface2)}
   </nav>
 
   <aside class="sidebar">
-    <div class="logo"><h1>Social Chef</h1><p>Gestión de contenido</p></div>
+    <div class="logo"><h1>Social Design</h1><p>Gestió de disseny</p></div>
     <div class="rsel-box">
-      <label>Restaurante activo</label>
+      <label>Client / Estudi actiu</label>
       <select id="restSel" onchange="changeRest()"></select>
-      <button class="add-btn" onclick="addRest()">+ Añadir restaurante</button>
+      <button class="add-btn" onclick="addRest()">+ Afegir client</button>
     </div>
     <nav class="nav">
       <button class="ni active" onclick="showSec('generate',this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Generar contenido
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Generar contingut
       </button>
       <button class="ni" onclick="showSec('calendar',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendario
         <span class="cbadge" id="calBadge">0</span>
       </button>
       <button class="ni" onclick="showSec('library',this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Librería
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Arxiu visual
       </button>
       <button class="ni" onclick="showSec('config',this)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M5.34 18.66l-1.41 1.41M21 12h-2M5 12H3M19.07 19.07l-1.41-1.41M5.34 5.34L3.93 3.93M12 21v-2M12 5V3"/></svg>Configuración
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M5.34 18.66l-1.41 1.41M21 12h-2M5 12H3M19.07 19.07l-1.41-1.41M5.34 5.34L3.93 3.93M12 21v-2M12 5V3"/></svg>Configuració
       </button>
     </nav>
     <div class="sync" id="syncBar">
@@ -369,28 +369,28 @@ select option{background:var(--surface2)}
         <span class="kst on" id="nbSt">Actiu</span>
       </div>
       <div class="gform">
-        <h3>Nueva generación de contenido</h3>
+        <h3>Nova generació de contingut</h3>
         <div class="fgrid">
           <div class="fg">
-            <label>Temática principal</label>
+            <label>Tipus de peça</label>
             <select id="theme">
-              <option>Plato destacado del día</option><option>Evento especial</option>
-              <option>Detrás del escenario</option><option>Testimonio de cliente</option>
-              <option>Temporada / Festividad</option><option>Nuevo producto o menú</option>
-              <option>Historia del restaurante</option>
+              <option>Identitat corporativa</option><option>Campanya publicitària</option>
+              <option>Procés creatiu</option><option>Cas d'èxit de client</option>
+              <option>Tendències de disseny</option><option>Nou projecte o servei</option>
+              <option>Filosofia de l'estudi</option>
             </select>
           </div>
           <div class="fg">
-            <label>Tono de comunicación</label>
+            <label>Estil visual</label>
             <select id="tone">
-              <option>Cálido y cercano</option><option>Elegante y sofisticado</option>
-              <option>Divertido y joven</option><option>Informativo y profesional</option>
-              <option>Nostálgico y emocional</option>
+              <option>Proper i humà</option><option>Elegant i minimalista</option>
+              <option>Creatiu i disruptiu</option><option>Tècnic i professional</option>
+              <option>Emocional i narratiu</option>
             </select>
           </div>
           <div class="fg full">
-            <label>Contexto adicional (obligatorio)</label>
-            <textarea id="ctx" rows="2" placeholder="Ej: Patatas bravas con salsa especial, Menú degustación de trufa, Paella valenciana..."></textarea>
+            <label>Briefing (obligatori)</label>
+            <textarea id="ctx" rows="2" placeholder="Ex: Redisseny de marca per a startup fintech, campanya de llançament de nou servei, branding sostenible..."></textarea>
           </div>
         </div>
         <div class="fg" style="margin-bottom:20px">
@@ -402,14 +402,14 @@ select option{background:var(--surface2)}
           </div>
         </div>
         <div style="display:flex;align-items:center;gap:12px">
-          <button class="bp" onclick="genProposals()" id="genBtn">✦ Generar propuestas</button>
+          <button class="bp" onclick="genProposals()" id="genBtn">✦ Generar propostes</button>
           <span style="font-size:12px;color:var(--text3)">Textos amb IA · Imatges sota demanda</span>
         </div>
       </div>
       <div class="lbox" id="lbox">
         <div class="lspin"></div>
-        <div class="ltxt">Creando propuestas...</div>
-        <div class="lstep" id="lstep">Analizando el restaurante</div>
+        <div class="ltxt">Creant propostes...</div>
+        <div class="lstep" id="lstep">Analizando el client</div>
       </div>
       <div id="propArea" style="display:none">
         <div class="ph">
@@ -418,7 +418,7 @@ select option{background:var(--surface2)}
             <span style="font-size:13px;color:var(--text3);margin-left:8px" id="selCount">0 seleccionadas</span>
           </div>
           <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="bs" onclick="selAll()">Seleccionar todo</button>
+            <button class="bs" onclick="selAll()">Seleccionar tot</button>
             <button class="bp" onclick="schedSel()" id="schedBtn" disabled>Programar →</button>
           </div>
         </div>
@@ -444,8 +444,8 @@ select option{background:var(--surface2)}
           <div class="caldays" id="calDays"></div>
         </div>
         <div class="slist">
-          <h4>Publicaciones programadas</h4>
-          <div id="schedItems"><div class="empty"><span class="ei">📅</span><p>Sin publicaciones aún.</p></div></div>
+          <h4>Publicacions programades</h4>
+          <div id="schedItems"><div class="empty"><span class="ei">📅</span><p>Sense publicacions encara.</p></div></div>
         </div>
       </div>
     </div>
@@ -454,14 +454,14 @@ select option{background:var(--surface2)}
     <div id="sec-library" class="content" style="display:none">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
         <div>
-          <h2 style="font-size:18px;font-weight:500">Librería de imágenes</h2>
-          <p style="font-size:13px;color:var(--text3);margin-top:2px" id="libRestInfo">Imágenes del restaurante activo</p>
+          <h2 style="font-size:18px;font-weight:500">Arxiu visual de imágenes</h2>
+          <p style="font-size:13px;color:var(--text3);margin-top:2px" id="libRestInfo">Imatges del client actiu</p>
         </div>
       </div>
 
       <!-- Tabs: Instagram / Web / Generades -->
       <div class="bo-tabs">
-        <button class="bo-tab active" onclick="switchLibTab('instagram',this)">📷 Instagram</button>
+        <button class="bo-tab active" onclick="switchLibTab('instagram',this)">📷 Xarxes socials</button>
         <button class="bo-tab" onclick="switchLibTab('web',this)">🌐 Web</button>
         <button class="bo-tab" onclick="switchLibTab('generated',this)">🤖 Generades IA</button>
       </div>
@@ -469,9 +469,9 @@ select option{background:var(--surface2)}
       <!-- Instagram tab -->
       <div id="lib-instagram">
         <div class="bo-gen-area">
-          <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Cargar imágenes del perfil de Instagram del restaurante.</p>
+          <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Cargar imágenes del perfil de Instagram del client.</p>
           <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-            <input type="text" id="igUsername" placeholder="@larampa23" style="flex:1;max-width:300px" oninput="updateIgFromInput()">
+            <input type="text" id="igUsername" placeholder="@estudiodisseny" style="flex:1;max-width:300px" oninput="updateIgFromInput()">
             <button class="bp" onclick="loadInstagramImages()" style="padding:10px 20px">Cargar imágenes</button>
             <button class="bs" onclick="openIgProfile()" style="padding:10px 14px;font-size:13px" title="Abrir perfil en Instagram">↗ Ver perfil</button>
           </div>
@@ -491,9 +491,9 @@ select option{background:var(--surface2)}
       <!-- Web tab -->
       <div id="lib-web" style="display:none">
         <div class="bo-gen-area">
-          <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Entra la URL de la web del restaurante per extreure les seves imatges.</p>
+          <p style="font-size:13px;color:var(--text2);margin-bottom:12px">Entra la URL de la web del client per extreure les seves imatges.</p>
           <div style="display:flex;gap:10px;align-items:center">
-            <input type="url" id="webUrl" placeholder="https://larampa.cat" style="flex:1;max-width:400px" oninput="updateWebFromInput()">
+            <input type="url" id="webUrl" placeholder="https://meuEstudi.cat" style="flex:1;max-width:400px" oninput="updateWebFromInput()">
             <button class="bp" onclick="loadWebImages()" style="padding:10px 20px">Extreure imatges</button>
           </div>
           <p style="font-size:11px;color:var(--text3);margin-top:8px">💡 Extreu imatges de la pàgina principal de la web</p>
@@ -506,7 +506,7 @@ select option{background:var(--surface2)}
       <!-- Generades tab -->
       <div id="lib-generated" style="display:none">
         <div class="bo-gen-area">
-          <h3 style="font-size:15px;font-weight:500;margin-bottom:12px">Generar nova imatge amb Nanobanana</h3>
+          <h3 style="font-size:15px;font-weight:500;margin-bottom:12px">Generar imatge amb Nanobanana</h3>
           <div style="display:flex;flex-direction:column;gap:10px">
             <textarea id="genImgPrompt" rows="2" placeholder="Descriu la imatge: plat de bravas crujients amb salsa especial de la casa, fotografia professional de menjar..."></textarea>
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
@@ -529,18 +529,18 @@ select option{background:var(--surface2)}
     <div id="sec-config" class="content" style="display:none">
       <div class="cfggrid">
         <div class="cfgcard">
-          <h3>Perfil del restaurante</h3>
+          <h3>Perfil del client / estudi</h3>
           <div style="display:flex;flex-direction:column;gap:14px">
             <div class="fg"><label>Nombre</label><input type="text" id="cfgName"></div>
-            <div class="fg"><label>Tipo de cocina</label><input type="text" id="cfgCuisine"></div>
-            <div class="fg"><label>Descripción / voz de marca</label><textarea rows="3" id="cfgDesc"></textarea></div>
-            <div class="fg"><label>Web del restaurante</label><input type="url" placeholder="https://larampa.cat" id="cfgWeb"></div>
-            <div class="fg"><label>Instagram (@usuario)</label><input type="text" placeholder="@larampa23" id="cfgIG"></div>
+            <div class="fg"><label>Especialitat / sector</label><input type="text" id="cfgCuisine"></div>
+            <div class="fg"><label>Descripció i veu de marca</label><textarea rows="3" id="cfgDesc"></textarea></div>
+            <div class="fg"><label>Web del client</label><input type="url" placeholder="https://meuEstudi.cat" id="cfgWeb"></div>
+            <div class="fg"><label>Instagram / Xarxes (@)</label><input type="text" placeholder="@estudiodisseny" id="cfgIG"></div>
             <button class="bp" style="width:fit-content" onclick="saveCfg()">Guardar perfil</button>
           </div>
         </div>
         <div class="cfgcard">
-          <h3>Preferencias de contenido</h3>
+          <h3>Preferències de contingut</h3>
           <div style="display:flex;flex-direction:column;gap:14px">
             <div class="fg"><label>Idioma</label>
               <select id="cfgLang"><option>Español</option><option>Catalán</option><option>Inglés</option><option>Bilingüe ES/EN</option></select>
@@ -548,7 +548,7 @@ select option{background:var(--surface2)}
             <div class="fg"><label>Frecuencia ideal</label>
               <select id="cfgFreq"><option>Diaria</option><option>3 veces por semana</option><option>Semanal</option></select>
             </div>
-            <div class="fg"><label>Hashtags fijos</label><textarea rows="2" id="cfgTags"></textarea></div>
+            <div class="fg"><label>Hashtags fixos</label><textarea rows="2" id="cfgTags"></textarea></div>
             <div class="fg"><label>CTA habitual</label><input type="text" id="cfgCTA"></div>
             <div class="hdiv" style="margin:4px 0"></div>
             <div class="fg">
@@ -565,7 +565,7 @@ select option{background:var(--surface2)}
 
         <!-- Instagram Publicació automàtica -->
         <div class="cfgcard" style="grid-column:1/-1">
-          <h3>📱 Publicació automàtica a Instagram</h3>
+          <h3>📱 Publicació automàtica</h3>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
             <div style="display:flex;flex-direction:column;gap:14px">
               <div class="fg">
@@ -588,7 +588,7 @@ select option{background:var(--surface2)}
                 <div style="font-size:13px" id="igConnectStatus">○ No connectat</div>
                 <div style="font-size:12px;color:var(--accent);margin-top:4px" id="igConnectName"></div>
               </div>
-              <div style="padding:12px 14px;background:var(--accent-bg);border:1px solid rgba(232,201,126,.2);border-radius:var(--rs)">
+              <div style="padding:12px 14px;background:var(--accent-bg);border:1px solid rgba(167,139,250,.2);border-radius:var(--rs)">
                 <p style="font-size:11px;color:var(--text2);line-height:1.6">
                   Un cop connectat, cada post del calendari tindrà un botó <strong>📱 Publicar</strong> per publicar directament a Instagram.
                 </p>
@@ -666,15 +666,17 @@ select option{background:var(--surface2)}
 // CONFIG
 // =====================================================
 const firebaseConfig = {
-  apiKey: "AIzaSyB1HefWkEqitPqHNE9G_slYDFzf9Z7jf9I",
-  authDomain: "social-chef-55f11.firebaseapp.com",
-  projectId: "social-chef-55f11",
-  storageBucket: "social-chef-55f11.firebasestorage.app",
-  messagingSenderId: "511034535800",
-  appId: "1:511034535800:web:21fa1c72fd232eb597a28d"
+  apiKey: "AIzaSyD26tQBJWBmlrWRGXGv92-U5hYZeby-XYE",
+  authDomain: "social-design-55f11.firebaseapp.com",
+  projectId: "social-design-55f11",
+  storageBucket: "social-design-55f11.firebasestorage.app",
+  messagingSenderId: "927320771613",
+  appId: "1:927320771613:web:604345fdde63cc33578af4"
 };
 
 const SCRAPER_URL = 'https://jordiqterrassa.com/scraper.php';
+const PUBLISHER_URL = 'https://jordiqterrassa.com/publisher.php';
+const CRON_SECRET = 'social_design_2025_secret'; // Canvia-ho i posa el mateix al publisher.php
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
 let db, auth, currentUser, currentRestId;
@@ -706,7 +708,7 @@ function buildImagePrompt(prompt, isStory) {
     : 'square 1:1 composition, centered subject';
   return [
     prompt,
-    'professional food photography',
+    'professional creative design photography, NO food, NO restaurant',
     'appetizing and delicious looking',
     'restaurant quality plating',
     'shot with a high-end DSLR camera',
@@ -862,7 +864,7 @@ function renderLibPickGrid() {
   if (!grid) return;
 
   if (!libImages.length) {
-    grid.innerHTML = '<div class="bo-empty" style="grid-column:1/-1"><p style="font-size:13px">No hi ha imatges a la librería.<br><br>Ves a <strong>Librería → Instagram</strong> per carregar imatges del perfil,<br>o a <strong>Librería → Generades IA</strong> per crear-ne de noves.</p></div>';
+    grid.innerHTML = '<div class="bo-empty" style="grid-column:1/-1"><p style="font-size:13px">No hi ha imatges a la librería.<br><br>Ves a <strong>Arxiu visual → Instagram</strong> per carregar imatges del perfil,<br>o a <strong>Arxiu visual → Generades IA</strong> per crear-ne de noves.</p></div>';
     return;
   }
 
@@ -1010,7 +1012,7 @@ function renderIgGrid(images) {
           onload="this.previousElementSibling.style.display='none'"
           onerror="this.previousElementSibling.innerHTML='<span style=\"font-size:20px\">⚠️</span>';this.style.display='none'">
       </div>
-      <div class="bo-meta"><div class="bo-src">📷 Instagram</div><div class="bo-caption">${img.caption?.slice(0,60)||''}</div></div>
+      <div class="bo-meta"><div class="bo-src">📷 Xarxes socials</div><div class="bo-caption">${img.caption?.slice(0,60)||''}</div></div>
       <div class="bo-act"><button class="bo-use" onclick="event.stopPropagation();useLibImage(${idx})">Usar</button></div>
     </div>`;
   }).join('');
@@ -1146,7 +1148,7 @@ function useLibImage(imgIdx) {
   if (prev) {
     const du = getDisplayUrl(img);
     prev.innerHTML = `<img src="${du}" style="width:72px;height:72px;object-fit:cover;border-radius:var(--rs);flex-shrink:0">
-      <div style="min-width:0"><div style="font-size:13px;font-weight:500;margin-bottom:4px">${img.source==='instagram'?'📷 Instagram':img.source==='web'?'🌐 Web':'🎨 IA'}</div>
+      <div style="min-width:0"><div style="font-size:13px;font-weight:500;margin-bottom:4px">${img.source==='instagram'?'📷 Xarxes socials':img.source==='web'?'🌐 Web':'🎨 IA'}</div>
       <div style="font-size:11px;color:var(--text3);word-break:break-word">${(img.caption||img.prompt||'').slice(0,100)}</div></div>`;
   }
   renderUseLibProposals();
@@ -1157,7 +1159,7 @@ function renderUseLibProposals() {
   const list = document.getElementById('useLibPropList');
   if (!list) return;
   if (!proposals.length) {
-    list.innerHTML = '<p style="font-size:13px;color:var(--text3);padding:16px 0">Primer genera propostes des de la secció "Generar contenido".</p>';
+    list.innerHTML = '<p style="font-size:13px;color:var(--text3);padding:16px 0">Primer genera propostes des de la secció "Generar contingut".</p>';
     return;
   }
   list.innerHTML = proposals.map(p => `
@@ -1244,13 +1246,14 @@ async function genProposals() {
   let si = 0;
   const iv = setInterval(() => { document.getElementById('lstep').textContent = steps[++si % steps.length]; }, 1800);
 
-  const sysMsg = 'Ets un expert en marketing de restaurants per Instagram. Respon SEMPRE amb JSON vàlid i res més.';
-  let userMsg = 'Genera 6 propostes de contingut per Instagram (3 post + 3 story):\n';
-  userMsg += 'Restaurant: ' + restName + '\nCuina: ' + cuisine + '\nDescripció: ' + desc + '\n';
+  const sysMsg = 'Ets un expert en comunicació digital per estudis de disseny gràfic i agències creatives. Respon SEMPRE amb JSON vàlid i res més.';
+  let userMsg = 'Genera 6 propostes de contingut per Instagram (3 post + 3 story) per a un estudi o agència de disseny:\n';
+  userMsg += 'Estudi/Client: ' + restName + '\nEspecialitat: ' + cuisine + '\nDescripció: ' + desc + '\n';
   userMsg += 'Idioma: ' + lang + '\nHashtags: ' + tags + '\nCTA: ' + cta + '\n';
-  userMsg += 'Temàtica: ' + theme + '\nTo: ' + tone + '\n';
-  userMsg += '*** CONTEXT IMPORTANT (usa\'l als textos): ' + ctx + ' ***\n';
-  userMsg += 'JSON sense markdown:\n{"proposals":[{"id":"p1","type":"post","emoji":"🍽️","title":"Títol","caption":"Text 2-3 frases sense hashtags","hashtags":"#tag1 #tag2 #tag3","imagePrompt":"English: detailed food photo description for AI generation"}]}';
+  userMsg += 'Tipus de peça: ' + theme + '\nEstil comunicatiu: ' + tone + '\n';
+  userMsg += '*** BRIEFING (usa aquest context als textos, NO facis referència a menjar ni hosteleria): ' + ctx + ' ***\n';
+  userMsg += 'Contextos típics: identitat de marca, branding, tipografia, color, packaging, disseny web, UX, motion, il·lustració.\n';
+  userMsg += 'JSON sense markdown:\n{"proposals":[{"id":"p1","type":"post","emoji":"🎨","title":"Títol","caption":"Text 2-3 frases sense hashtags, sobre disseny gràfic","hashtags":"#tag1 #tag2 #tag3","imagePrompt":"English: detailed visual design / branding / creative work photo description for AI generation (NO food, NO restaurant)"}]}';
 
   try {
     document.getElementById('lstep').textContent = 'Generant textos amb GPT-4o-mini...';
@@ -1280,7 +1283,7 @@ async function genProposals() {
 function fallback(name, ctx) {
   const c = ctx || 'plat especial';
   return [
-    {id:'p1',type:'post',emoji:'🍽️',title:c+' especial',caption:`Descobreix el nostre ${c} a ${name}. Ingredients frescos i sabor únic. ${document.getElementById('cfgCTA')?.value||'Reserva!'}`,hashtags:'#gastronomia #restaurante',imagePrompt:`Professional food photography of ${c}, natural light, rustic table`},
+    {id:'p1',type:'post',emoji:'🍽️',title:c+' especial',caption:`Descobreix el nostre ${c} a ${name}. Ingredients frescos i sabor únic. ${document.getElementById('cfgCTA')?.value||'Reserva!'}`,hashtags:'#disseny #branding',imagePrompt:`Professional food photography of ${c}, natural light, rustic table`},
     {id:'p2',type:'story',emoji:'👨‍🍳',title:'Preparació',caption:`Així preparem el nostre ${c} a ${name}. Tot fet amb cura i amor.`,hashtags:'#chef #cocina',imagePrompt:`Chef preparing ${c} in professional kitchen`},
     {id:'p3',type:'post',emoji:'📸',title:'El plat estrella',caption:`El ${c} que tothom demana a ${name}. Vine a provar-lo!`,hashtags:'#foodie #restaurante',imagePrompt:`Beautiful ${c} on elegant plate overhead shot`},
     {id:'p4',type:'story',emoji:'✨',title:'Detalls',caption:`Els petits detalls marquen la diferència. El nostre ${c} t\'espera.`,hashtags:'#gourmet',imagePrompt:`Close up detail ${c} food photography`},
@@ -1360,9 +1363,11 @@ async function confirmSched() {
   const date = document.getElementById('mpDate').value, time = document.getElementById('mpTime').value;
   if (!date) { toast('Selecciona una fecha'); return; }
   editP.caption = document.getElementById('mpCap').value;
-  scheduled.push({ ...editP, date, time });
+  const newPost = { ...editP, date, time };
+  scheduled.push(newPost);
   updBadge(); closeOv('ovPrev');
   await saveScheduled();
+  await savePendingPost(newPost); // Afegir al planificador automàtic
   toast('✓ Programada per al ' + fmtDate(date) + ' a les ' + time);
   renderCal();
 }
@@ -1421,7 +1426,7 @@ function renderCal() {
 }
 function renderSList() {
   const c=document.getElementById('schedItems');
-  if (!scheduled.length){c.innerHTML=`<div class="empty"><span class="ei">📅</span><p>Sin publicaciones aún.</p></div>`;return;}
+  if (!scheduled.length){c.innerHTML=`<div class="empty"><span class="ei">📅</span><p>Sense publicacions encara.</p></div>`;return;}
   const sorted=[...scheduled].sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
   c.innerHTML=sorted.map((s,i)=>`
     <div class="sitem ${s.type==='story'?'story':''}">
@@ -1465,7 +1470,7 @@ function updBadge(){
 // FIREBASE
 // =====================================================
 async function initApp() {
-  setInitMsg('Conectando con Firebase...');
+  setInitMsg('Connectant amb Firebase...');
   try {
     firebase.initializeApp(firebaseConfig);
     auth = firebase.auth();
@@ -1512,9 +1517,9 @@ async function loadUserData() {
 
 async function createDefaultRestaurant() {
   const data = {
-    name:'La Taberna del Mar',cuisine:'Mediterránea',desc:'Restaurant familiar al port.',
-    web:'',ig:'@latabernadelmar',lang:'Español',freq:'Diaria',
-    tags:'#gastronomia #restaurante',cta:'¡Reserva!',scheduled:[],
+    name:'Estudi de Disseny',cuisine:'Disseny gràfic',desc:'Estudi creatiu especialitzat en identitat de marca.',
+    web:'',ig:'@estudidisseny',lang:'Español',freq:'Diaria',
+    tags:'#disseny #branding',cta:'¡Reserva!',scheduled:[],
     createdAt:firebase.firestore.FieldValue.serverTimestamp()
   };
   const ref = await db.collection('users').doc(currentUser.uid).collection('restaurants').add(data);
@@ -1574,7 +1579,7 @@ async function changeRest() {
 async function addRest() {
   const n = prompt('Nombre del nuevo restaurante:'); if (!n) return;
   const data = {
-    name:n,cuisine:'Tipo de cocina',desc:'Descripción.',web:'',ig:'@'+n.toLowerCase().replace(/\s+/g,''),
+    name:n,cuisine:'Especialitat / sector',desc:'Descripción.',web:'',ig:'@'+n.toLowerCase().replace(/\s+/g,''),
     lang:'Español',freq:'Diaria',tags:'#restaurante',cta:'¡Reserva!',
     scheduled:[],createdAt:firebase.firestore.FieldValue.serverTimestamp()
   };
@@ -1612,6 +1617,38 @@ async function saveCfg() {
   const webEl = document.getElementById('webUrl'); if (webEl) webEl.value = data.web||'';
   setSyncState('ok','Guardado ✓');
   toast('✓ Perfil guardat a Firebase');
+}
+
+// ── Desar publicació al servidor per a publicació automàtica ─────────────────
+async function savePendingPost(post) {
+  // Necessita que la imatge sigui una URL pública (no base64/blob)
+  const imageUrl = post.imageData || '';
+  const isPublicUrl = imageUrl.startsWith('http') && !imageUrl.startsWith('data:');
+  if (!isPublicUrl) return; // Saltar si la imatge no és pública
+
+  const igToken  = localStorage.getItem('sc_ig_token') || '';
+  const igUserId = localStorage.getItem('sc_ig_user_id') || '';
+  if (!igToken || !igUserId) return; // Necessita compte Instagram connectat
+
+  try {
+    const res = await fetch(PUBLISHER_URL + '?action=save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        secret: CRON_SECRET,
+        post: {
+          ...post,
+          igToken,
+          igUserId,
+          savedAt: new Date().toISOString()
+        }
+      })
+    });
+    const data = await res.json();
+    if (data.success) toast('✓ Publicació afegida al planificador automàtic');
+  } catch(e) {
+    console.warn('savePendingPost error:', e.message);
+  }
 }
 
 async function saveScheduled() {
@@ -1660,6 +1697,18 @@ function showSec(n,btn) {
   }
 }
 
+async function checkPublisherStatus() {
+  const el = document.getElementById('publisherStatus');
+  if (el) el.textContent = 'Consultant...';
+  try {
+    const res = await fetch(PUBLISHER_URL + '?test=1&secret=' + CRON_SECRET);
+    const data = await res.json();
+    if (el) el.innerHTML = '✓ Publicador actiu · ' + data.pending + ' pendents · Última: ' + (data.log?.[0]?.ts || 'mai');
+  } catch(e) {
+    if (el) el.textContent = '✗ Error: ' + e.message;
+  }
+}
+
 function fmtDate(d){if(!d)return'';const[y,m,dd]=d.split('-');return`${dd} ${MONTHS[parseInt(m)-1].slice(0,3)} ${y}`;}
 function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500);}
 
@@ -1670,7 +1719,7 @@ async function deleteCurrentRest() {
   const rest = restaurants.find(r => r.id === currentRestId);
   if (!rest) return;
   if (restaurants.length <= 1) { toast("❌ No pots eliminar l'únic restaurant"); return; }
-  if (!confirm('¿Eliminar el restaurante "' + rest.name + '"? Esta acción no se puede deshacer.')) return;
+  if (!confirm('¿Eliminar el client "' + rest.name + '"? Esta acción no se puede deshacer.')) return;
   try {
     setSyncState('spin', 'Eliminant...');
     await db.collection('users').doc(currentUser.uid).collection('restaurants').doc(currentRestId).delete();
