@@ -667,24 +667,39 @@ async function genImageForProp(propId) {
 // Obrir librería per seleccionar imatge per una proposta
 function pickImageForProp(propId) {
   pickingForProp = propId;
-  renderLibPickGrid();
+  renderLibPickGrid(); // Renderizar el grid con las imágenes actuales
   document.getElementById('ovLibPick').classList.add('open');
 }
 
 function renderLibPickGrid() {
   const grid = document.getElementById('libPickGrid');
-  if (!libImages.length) {
+  
+  // Filtrar solo imágenes del restaurante actual
+  const restImages = libImages.filter(i => i.restId === currentRestId);
+  
+  if (!restImages.length) {
     grid.innerHTML = '<div class="bo-empty" style="grid-column:1/-1"><p>No hi ha imatges a la librería.<br>Carrega imatges des de Instagram o la web del restaurant.</p></div>';
     return;
   }
-  grid.innerHTML = libImages.map((img, i) => `
-    <div class="bo-card" onclick="applyLibImage(${i})">
-      <img src="${img.url}" alt="" loading="lazy" onerror="this.style.opacity='.2'">
+  
+  grid.innerHTML = restImages.map((img, i) => {
+    const globalIdx = libImages.indexOf(img);
+    return `
+    <div class="bo-card" onclick="applyLibImage(${globalIdx})">
+      <div style="position:relative;aspect-ratio:1;background:var(--surface2);overflow:hidden">
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:0">
+          <div class="ispin"></div>
+        </div>
+        <img src="${img.url}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;position:relative;z-index:1"
+          onload="this.previousElementSibling.style.display='none'"
+          onerror="this.previousElementSibling.innerHTML='<span style=\\"font-size:20px\\">⚠️</span>';this.style.display='none'">
+      </div>
       <div class="bo-meta">
-        <div class="bo-src">${img.source === 'instagram' ? '📷 Instagram' : img.source === 'web' ? '🌐 Web' : '🤖 Nanobanana'}</div>
+        <div class="bo-src">${img.source === 'instagram' ? '📷 Instagram' : img.source === 'web' ? '🌐 Web' : '🤖 IA'}</div>
         <div class="bo-caption">${img.caption || img.prompt || ''}</div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 
 function applyLibImage(imgIdx) {
@@ -787,7 +802,7 @@ function renderIgGrid(images) {
           onerror="this.previousElementSibling.innerHTML='<span style=\"font-size:20px\">⚠️</span>';this.style.display='none'">
       </div>
       <div class="bo-meta"><div class="bo-src">📷 Instagram</div><div class="bo-caption">${img.caption?.slice(0,60)||''}</div></div>
-      <div class="bo-act"><button class="bo-use" onclick="event.stopPropagation();pickOrUseLibImg(${idx})">Usar</button></div>
+      <div class="bo-act"><button class="bo-use" onclick="event.stopPropagation();useLibImage(${idx})">Usar</button></div>
     </div>`;
   }).join('');
 }
@@ -807,7 +822,7 @@ function renderWebGrid(images) {
           onerror="this.previousElementSibling.innerHTML='<span style=\"font-size:20px\">⚠️</span>';this.style.display='none'">
       </div>
       <div class="bo-meta"><div class="bo-src">🌐 Web</div></div>
-      <div class="bo-act"><button class="bo-use" onclick="event.stopPropagation();pickOrUseLibImg(${idx})">Usar</button></div>
+      <div class="bo-act"><button class="bo-use" onclick="event.stopPropagation();useLibImage(${idx})">Usar</button></div>
     </div>`;
   }).join('');
 }
@@ -826,7 +841,7 @@ function renderGenGrid() {
       <img src="${img.url}" alt="" loading="lazy" onerror="this.style.opacity='.2'">
       <div class="bo-meta"><div class="bo-src">🎨 IA Generada</div><div class="bo-caption">${img.prompt||''}</div></div>
       <div class="bo-act">
-        <button class="bo-use" onclick="event.stopPropagation();pickOrUseLibImg(${idx})">Usar</button>
+        <button class="bo-use" onclick="event.stopPropagation();useLibImage(${idx})">Usar</button>
         <button onclick="event.stopPropagation();downloadImg('${img.url}')">↓</button>
         <button style="color:var(--red)" onclick="event.stopPropagation();deleteGenImage(${img.idbId||'null'},${idx})" title="Eliminar">🗑</button>
       </div>
@@ -889,6 +904,9 @@ function processFiles(files, source) {
 
 // Afegir imatge a la librería (deduplicant per URL)
 function addToLibrary(img) {
+  // Asegurar que tiene restId
+  if (!img.restId) img.restId = currentRestId;
+  
   if (!libImages.find(i => i.url === img.url)) {
     libImages.push(img);
   }
@@ -904,6 +922,22 @@ function pickOrUseLibImg(imgIdx) {
   // Si no estem en mode pick, copiar la URL
   const img = libImages[imgIdx];
   if (img) { navigator.clipboard.writeText(img.url).then(() => toast('✓ URL copiada')); }
+}
+
+function useLibImage(imgIdx) {
+  const img = libImages[imgIdx];
+  if (!img) return;
+  
+  // Si estamos en modo "picking" (seleccionando para una proposta)
+  if (pickingForProp) {
+    applyLibImage(imgIdx);
+    return;
+  }
+  
+  // Si no, copiamos la URL al portapapeles
+  navigator.clipboard.writeText(img.url).then(() => {
+    toast('✓ URL copiada al portapapeles');
+  });
 }
 
 // Generar imatge des de la librería
