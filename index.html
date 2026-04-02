@@ -1375,7 +1375,11 @@ function renderSList() {
 }
 async function remSched(i){scheduled.splice(i,1);updBadge();await saveScheduled();renderCal();toast('Eliminada');}
 function chMonth(d){calMon+=d;if(calMon>11){calMon=0;calYr++;}if(calMon<0){calMon=11;calYr--;}renderCal();}
-function updBadge(){document.getElementById('calBadge').textContent=scheduled.length;}
+function updBadge(){
+  document.getElementById('calBadge').textContent=scheduled.length;
+  const mb=document.getElementById('calBadgeMob');
+  if(mb) mb.textContent=scheduled.length;
+}
 
 // =====================================================
 // FIREBASE
@@ -1406,6 +1410,11 @@ function setSyncState(state,txt){
   const dot=document.getElementById('syncDot');
   dot.className='sync-dot '+(state==='ok'?'ok':state==='spin'?'spin':'');
   document.getElementById('syncTxt').textContent=txt;
+  // Mobile
+  const dotM=document.getElementById('syncDotMob');
+  const txtM=document.getElementById('syncTxtMob');
+  if(dotM) dotM.className='sync-dot '+(state==='ok'?'ok':state==='spin'?'spin':'');
+  if(txtM) txtM.textContent=txt;
 }
 
 async function loadUserData() {
@@ -1459,9 +1468,11 @@ async function loadRestaurant(id) {
 }
 
 function renderRestSelector() {
-  const sel = document.getElementById('restSel');
-  sel.innerHTML = restaurants.map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
-  if (currentRestId) sel.value = currentRestId;
+  const html = restaurants.map(r=>`<option value="${r.id}">${r.name}</option>`).join('');
+  ['restSel','restSelMobile','restSelDrawer'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){ el.innerHTML=html; if(currentRestId) el.value=currentRestId; }
+  });
 }
 
 async function changeRest() {
@@ -1723,30 +1734,7 @@ function changeRestDrawer() {
   changeRest();
 }
 
-// Patch syncState to also update mobile indicators
-const _origSetSyncState = setSyncState;
-function setSyncState(state, txt) {
-  _origSetSyncState(state, txt);
-  const dotM = document.getElementById('syncDotMob');
-  const txtM = document.getElementById('syncTxtMob');
-  if (dotM) dotM.className = 'sync-dot ' + (state==='ok'?'ok':state==='spin'?'spin':'');
-  if (txtM) txtM.textContent = txt;
-}
-
-// Patch updBadge to also update mobile badge
-const _origUpdBadge = updBadge;
-function updBadge() {
-  _origUpdBadge();
-  const mb = document.getElementById('calBadgeMob');
-  if (mb) mb.textContent = scheduled.length;
-}
-
-// Patch renderRestSelector to also sync mobile selectors
-const _origRenderRestSelector = renderRestSelector;
-function renderRestSelector() {
-  _origRenderRestSelector();
-  syncAllSelectors();
-}
+// Mobile sync is handled inline in the original functions below
 
 window.onload = initApp;
 </script>
