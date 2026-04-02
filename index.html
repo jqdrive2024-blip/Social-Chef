@@ -186,7 +186,81 @@ select option{background:var(--surface2)}
 .empty .ei{font-size:32px;display:block;margin-bottom:12px;opacity:.4}
 .empty p{font-size:13px}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
-@media(max-width:900px){.app{grid-template-columns:1fr}.sidebar{display:none}.cal-area,.cfggrid,.fgrid{grid-template-columns:1fr}}
+/* ── MOBILE RESPONSIVE ─────────────────────────────────────── */
+@media(max-width:768px){
+  /* Layout */
+  .app{grid-template-columns:1fr;min-height:100vh}
+  .sidebar{display:none !important}
+  .main{padding-bottom:72px} /* espai per bottom nav */
+  .content{padding:16px}
+
+  /* Bottom navigation bar */
+  .mobile-nav{
+    display:flex;
+    position:fixed;bottom:0;left:0;right:0;
+    background:var(--surface);border-top:1px solid var(--border);
+    z-index:90;height:64px;
+    padding:0 4px env(safe-area-inset-bottom);
+  }
+  .mobile-nav button{
+    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:3px;background:none;border:none;color:var(--text3);cursor:pointer;
+    font-size:10px;font-family:'DM Sans',sans-serif;padding:6px 2px;
+    transition:color .15s;border-radius:var(--rs);
+  }
+  .mobile-nav button.active{color:var(--accent)}
+  .mobile-nav button svg{width:20px;height:20px;opacity:.7}
+  .mobile-nav button.active svg{opacity:1}
+
+  /* Mobile top bar */
+  .mobile-topbar{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:12px 16px 0;margin-bottom:4px;
+  }
+  .mobile-topbar h1{font-family:'DM Serif Display',serif;font-size:18px;color:var(--accent)}
+  .mobile-topbar select{
+    background:var(--surface2);border:1px solid var(--border2);color:var(--text);
+    padding:6px 10px;border-radius:var(--rs);font-size:12px;
+    font-family:'DM Sans',sans-serif;outline:none;max-width:140px;
+  }
+
+  /* Drawer (sidebar en mobile) */
+  .mobile-drawer{
+    position:fixed;inset:0;z-index:200;
+    background:rgba(0,0,0,.7);opacity:0;pointer-events:none;transition:opacity .25s;
+  }
+  .mobile-drawer.open{opacity:1;pointer-events:all}
+  .mobile-drawer-inner{
+    position:absolute;left:0;top:0;bottom:0;width:280px;
+    background:var(--surface);transform:translateX(-100%);transition:transform .25s;
+    display:flex;flex-direction:column;overflow-y:auto;
+  }
+  .mobile-drawer.open .mobile-drawer-inner{transform:translateX(0)}
+
+  /* Grid adjustments */
+  .pgrid{grid-template-columns:1fr}
+  .bo-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+  .cal-area{grid-template-columns:1fr}
+  .cfggrid{grid-template-columns:1fr}
+  .fgrid{grid-template-columns:1fr}
+  .cact{gap:4px}
+  .cact button{font-size:10px;padding:6px 4px}
+
+  /* Modals full width */
+  .modal{width:95vw !important;padding:20px;margin:0 auto}
+
+  /* Forms */
+  .gform{padding:16px}
+  .bo-gen-area{padding:14px}
+}
+
+/* Desktop: hide mobile elements */
+@media(min-width:769px){
+  .mobile-nav{display:none}
+  .mobile-topbar{display:none}
+  .mobile-drawer{display:none}
+  .cal-area,.cfggrid,.fgrid{grid-template-columns:unset}
+}
 </style>
 </head>
 <body>
@@ -198,6 +272,66 @@ select option{background:var(--surface2)}
 </div>
 
 <div class="app" id="mainApp" style="display:none">
+
+  <!-- ── MOBILE TOP BAR ── -->
+  <div class="mobile-topbar">
+    <h1>Social Chef</h1>
+    <div style="display:flex;align-items:center;gap:8px">
+      <select id="restSelMobile" onchange="changeRestMobile()" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:6px 10px;border-radius:var(--rs);font-size:12px;font-family:'DM Sans',sans-serif;outline:none;max-width:140px"></select>
+      <button onclick="openDrawer()" style="background:none;border:1px solid var(--border2);color:var(--text2);width:34px;height:34px;border-radius:var(--rs);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center">☰</button>
+    </div>
+  </div>
+
+  <!-- ── MOBILE DRAWER ── -->
+  <div class="mobile-drawer" id="mobileDrawer" onclick="closeDrawerIf(event)">
+    <div class="mobile-drawer-inner">
+      <div class="logo" style="padding:20px 20px 16px">
+        <h1 style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--accent)">Social Chef</h1>
+        <p style="font-size:11px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:1px">Gestión de contenido</p>
+      </div>
+      <div style="padding:0 12px 12px">
+        <label style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px">Restaurante</label>
+        <select id="restSelDrawer" onchange="changeRestDrawer()" style="width:100%;background:var(--surface3);border:1px solid var(--border2);color:var(--text);padding:8px 10px;border-radius:var(--rs);font-size:13px;font-family:'DM Sans',sans-serif;outline:none"></select>
+        <button class="add-btn" onclick="addRest();closeDrawer()" style="margin-top:8px">+ Añadir restaurante</button>
+      </div>
+      <nav style="padding:8px 12px;flex:1">
+        <button class="ni active" id="dniGen" onclick="showSec('generate',this);closeDrawer()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Generar contenido
+        </button>
+        <button class="ni" id="dniCal" onclick="showSec('calendar',this);closeDrawer()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendario
+          <span class="cbadge" id="calBadgeMob">0</span>
+        </button>
+        <button class="ni" id="dniLib" onclick="showSec('library',this);closeDrawer()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Librería
+        </button>
+        <button class="ni" id="dniCfg" onclick="showSec('config',this);closeDrawer()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M5.34 18.66l-1.41 1.41M21 12h-2M5 12H3M19.07 19.07l-1.41-1.41M5.34 5.34L3.93 3.93M12 21v-2M12 5V3"/></svg>Configuración
+        </button>
+      </nav>
+      <div style="padding:12px 16px;border-top:1px solid var(--border);font-size:11px;display:flex;align-items:center;gap:6px">
+        <div class="sync-dot" id="syncDotMob"></div>
+        <span id="syncTxtMob" style="color:var(--text3)">Desconectado</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BOTTOM NAV ── -->
+  <nav class="mobile-nav" id="mobileBottomNav">
+    <button id="mbn-generate" class="active" onclick="showSec('generate',this);syncMobileNav('generate')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Generar
+    </button>
+    <button id="mbn-calendar" onclick="showSec('calendar',this);syncMobileNav('calendar')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendario
+    </button>
+    <button id="mbn-library" onclick="showSec('library',this);syncMobileNav('library')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Librería
+    </button>
+    <button id="mbn-config" onclick="showSec('config',this);syncMobileNav('config')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M5.34 18.66l-1.41 1.41M21 12h-2M5 12H3M19.07 19.07l-1.41-1.41M5.34 5.34L3.93 3.93M12 21v-2M12 5V3"/></svg>Config
+    </button>
+  </nav>
+
   <aside class="sidebar">
     <div class="logo"><h1>Social Chef</h1><p>Gestión de contenido</p></div>
     <div class="rsel-box">
@@ -479,6 +613,17 @@ select option{background:var(--surface2)}
   </div>
 </div>
 
+<!-- Modal usar imatge de librería en proposta -->
+<div class="ov" id="ovUseLib" onclick="closeOvIf(event,'ovUseLib')">
+  <div class="modal" style="width:500px;max-width:95vw">
+    <h3>Usar imatge a una proposta</h3>
+    <p class="msub">Tria a quina proposta vols aplicar aquesta imatge</p>
+    <div id="useLibPrev" style="display:flex;gap:12px;align-items:center;padding:12px;background:var(--surface2);border-radius:var(--rs);margin-bottom:20px"></div>
+    <div id="useLibPropList" style="max-height:320px;overflow-y:auto"></div>
+    <div class="mact"><button class="bs" onclick="closeOv('ovUseLib')">Cancelar</button></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -684,13 +829,14 @@ function renderLibPickGrid() {
   
   grid.innerHTML = restImages.map((img, i) => {
     const globalIdx = libImages.indexOf(img);
+    const displayUrl = getDisplayUrl(img);
     return `
-    <div class="bo-card" onclick="applyLibImage(${globalIdx})">
+    <div class="bo-card" onclick="applyLibImage(${globalIdx})" style="cursor:pointer">
       <div style="position:relative;aspect-ratio:1;background:var(--surface2);overflow:hidden">
         <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:0">
           <div class="ispin"></div>
         </div>
-        <img src="${img.url}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;position:relative;z-index:1"
+        <img src="${displayUrl}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;position:relative;z-index:1"
           onload="this.previousElementSibling.style.display='none'"
           onerror="this.previousElementSibling.innerHTML='<span style=\\"font-size:20px\\">⚠️</span>';this.style.display='none'">
       </div>
@@ -924,20 +1070,50 @@ function pickOrUseLibImg(imgIdx) {
   if (img) { navigator.clipboard.writeText(img.url).then(() => toast('✓ URL copiada')); }
 }
 
+let pendingLibIdx = null;
+
 function useLibImage(imgIdx) {
   const img = libImages[imgIdx];
   if (!img) return;
-  
-  // Si estamos en modo "picking" (seleccionando para una proposta)
-  if (pickingForProp) {
-    applyLibImage(imgIdx);
+  if (pickingForProp) { applyLibImage(imgIdx); return; }
+  // Mostrar overlay per triar proposta
+  pendingLibIdx = imgIdx;
+  const ov = document.getElementById('ovUseLib');
+  const prev = document.getElementById('useLibPrev');
+  if (prev) {
+    const du = getDisplayUrl(img);
+    prev.innerHTML = `<img src="${du}" style="width:72px;height:72px;object-fit:cover;border-radius:var(--rs);flex-shrink:0">
+      <div style="min-width:0"><div style="font-size:13px;font-weight:500;margin-bottom:4px">${img.source==='instagram'?'📷 Instagram':img.source==='web'?'🌐 Web':'🎨 IA'}</div>
+      <div style="font-size:11px;color:var(--text3);word-break:break-word">${(img.caption||img.prompt||'').slice(0,100)}</div></div>`;
+  }
+  renderUseLibProposals();
+  if (ov) ov.classList.add('open');
+}
+
+function renderUseLibProposals() {
+  const list = document.getElementById('useLibPropList');
+  if (!list) return;
+  if (!proposals.length) {
+    list.innerHTML = '<p style="font-size:13px;color:var(--text3);padding:16px 0">Primer genera propostes des de la secció "Generar contenido".</p>';
     return;
   }
-  
-  // Si no, copiamos la URL al portapapeles
-  navigator.clipboard.writeText(img.url).then(() => {
-    toast('✓ URL copiada al portapapeles');
-  });
+  list.innerHTML = proposals.map(p => `
+    <div onclick="applyPendingToProposal('${p.id}')" style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--surface2);border-radius:var(--rs);cursor:pointer;margin-bottom:6px;transition:border .15s;border:1px solid var(--border)" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+      ${p.imageData ? `<img src="${p.imageData}" style="width:44px;height:44px;object-fit:cover;border-radius:6px;flex-shrink:0">` : `<div style="width:44px;height:44px;background:var(--surface3);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px">${p.emoji}</div>`}
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:500">${p.title}</div>
+        <span class="tbadge ${p.type}" style="font-size:10px;padding:1px 6px">${p.type}</span>
+      </div>
+      <span style="font-size:18px;color:var(--accent)">→</span>
+    </div>`).join('');
+}
+
+function applyPendingToProposal(propId) {
+  if (pendingLibIdx === null) return;
+  pickingForProp = propId;
+  applyLibImage(pendingLibIdx);
+  pendingLibIdx = null;
+  closeOv('ovUseLib');
 }
 
 // Generar imatge des de la librería
@@ -1493,6 +1669,83 @@ function updateIgFromInput() {
   const ig = document.getElementById('igUsername')?.value?.trim().replace('@','') || '';
   const link = document.getElementById('igDirectLink');
   if (link && ig) link.href = 'https://www.instagram.com/' + ig + '/';
+}
+
+// =====================================================
+// MOBILE NAV
+// =====================================================
+function openDrawer() {
+  document.getElementById('mobileDrawer')?.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeDrawer() {
+  document.getElementById('mobileDrawer')?.classList.remove('open');
+  document.body.style.overflow = '';
+}
+function closeDrawerIf(e) {
+  if (e.target === document.getElementById('mobileDrawer')) closeDrawer();
+}
+
+function syncMobileNav(section) {
+  // Sync bottom nav active state
+  document.querySelectorAll('.mobile-nav button').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('mbn-' + section);
+  if (btn) btn.classList.add('active');
+  // Sync drawer nav
+  document.querySelectorAll('#mobileDrawer .ni').forEach(b => b.classList.remove('active'));
+  const dbtn = document.getElementById('dni' + section.charAt(0).toUpperCase() + section.slice(0,3));
+  // simplified: just remove all active from drawer
+}
+
+function syncAllSelectors() {
+  // Keep mobile selectors in sync with main selector
+  const restSel = document.getElementById('restSel');
+  const mobile = document.getElementById('restSelMobile');
+  const drawer = document.getElementById('restSelDrawer');
+  if (!restSel) return;
+  [mobile, drawer].forEach(sel => {
+    if (!sel) return;
+    sel.innerHTML = restSel.innerHTML;
+    sel.value = restSel.value;
+  });
+}
+
+function changeRestMobile() {
+  const sel = document.getElementById('restSelMobile');
+  document.getElementById('restSel').value = sel.value;
+  document.getElementById('restSelDrawer').value = sel.value;
+  changeRest();
+}
+function changeRestDrawer() {
+  const sel = document.getElementById('restSelDrawer');
+  document.getElementById('restSel').value = sel.value;
+  document.getElementById('restSelMobile').value = sel.value;
+  changeRest();
+}
+
+// Patch syncState to also update mobile indicators
+const _origSetSyncState = setSyncState;
+function setSyncState(state, txt) {
+  _origSetSyncState(state, txt);
+  const dotM = document.getElementById('syncDotMob');
+  const txtM = document.getElementById('syncTxtMob');
+  if (dotM) dotM.className = 'sync-dot ' + (state==='ok'?'ok':state==='spin'?'spin':'');
+  if (txtM) txtM.textContent = txt;
+}
+
+// Patch updBadge to also update mobile badge
+const _origUpdBadge = updBadge;
+function updBadge() {
+  _origUpdBadge();
+  const mb = document.getElementById('calBadgeMob');
+  if (mb) mb.textContent = scheduled.length;
+}
+
+// Patch renderRestSelector to also sync mobile selectors
+const _origRenderRestSelector = renderRestSelector;
+function renderRestSelector() {
+  _origRenderRestSelector();
+  syncAllSelectors();
 }
 
 window.onload = initApp;
