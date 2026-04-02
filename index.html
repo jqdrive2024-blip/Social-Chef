@@ -812,26 +812,31 @@ async function genImageForProp(propId) {
 // Obrir librería per seleccionar imatge per una proposta
 function pickImageForProp(propId) {
   pickingForProp = propId;
-  renderLibPickGrid(); // Renderizar el grid con las imágenes actuales
+  try { renderLibPickGrid(); } catch(e) { console.error('renderLibPickGrid error:', e); }
   document.getElementById('ovLibPick').classList.add('open');
 }
 
 function renderLibPickGrid() {
   const grid = document.getElementById('libPickGrid');
-  
-  // Filtrar solo imágenes del restaurante actual
-  const restImages = libImages.filter(i => i.restId === currentRestId);
-  
-  if (!restImages.length) {
-    grid.innerHTML = '<div class="bo-empty" style="grid-column:1/-1"><p>No hi ha imatges a la librería.<br>Carrega imatges des de Instagram o la web del restaurant.</p></div>';
+  if (!grid) return;
+
+  if (!libImages.length) {
+    grid.innerHTML = '<div class="bo-empty" style="grid-column:1/-1"><p style="font-size:13px">No hi ha imatges a la librería.<br><br>Ves a <strong>Librería → Instagram</strong> per carregar imatges del perfil,<br>o a <strong>Librería → Generades IA</strong> per crear-ne de noves.</p></div>';
     return;
   }
-  
-  grid.innerHTML = restImages.map((img, i) => {
+
+  // Instagram first, then web, then generated
+  const sorted = [...libImages].sort((a,b) => {
+    const order = {instagram:0, web:1, generated:2};
+    return (order[a.source]??3) - (order[b.source]??3);
+  });
+
+  grid.innerHTML = sorted.map((img) => {
     const globalIdx = libImages.indexOf(img);
     const displayUrl = getDisplayUrl(img);
+    const srcLabel = img.source==='instagram' ? '📷 IG' : img.source==='web' ? '🌐 Web' : '🤖 IA';
     return `
-    <div class="bo-card" onclick="applyLibImage(${globalIdx})" style="cursor:pointer">
+    <div class="bo-card" onclick="applyLibImage(${globalIdx})" style="cursor:pointer" title="Aplicar a la proposta">
       <div style="position:relative;aspect-ratio:1;background:var(--surface2);overflow:hidden">
         <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:0">
           <div class="ispin"></div>
@@ -839,10 +844,10 @@ function renderLibPickGrid() {
         <img src="${displayUrl}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;position:relative;z-index:1"
           onload="this.previousElementSibling.style.display='none'"
           onerror="this.previousElementSibling.innerHTML='<span style=\\"font-size:20px\\">⚠️</span>';this.style.display='none'">
+        <div style="position:absolute;top:6px;left:6px;background:rgba(0,0,0,.65);color:#fff;font-size:10px;padding:2px 7px;border-radius:20px;z-index:2">${srcLabel}</div>
       </div>
       <div class="bo-meta">
-        <div class="bo-src">${img.source === 'instagram' ? '📷 Instagram' : img.source === 'web' ? '🌐 Web' : '🤖 IA'}</div>
-        <div class="bo-caption">${img.caption || img.prompt || ''}</div>
+        <div class="bo-caption" style="font-size:11px;color:var(--text3)">${(img.caption||img.prompt||'').slice(0,60)}</div>
       </div>
     </div>`;
   }).join('');
@@ -851,16 +856,24 @@ function renderLibPickGrid() {
 function applyLibImage(imgIdx) {
   if (!pickingForProp) return;
   const img = libImages[imgIdx];
+  if (!img) { pickingForProp = null; return; }
+  const displayUrl = getDisplayUrl(img);
   const pIdx = proposals.findIndex(x => x.id === pickingForProp);
   if (pIdx > -1) {
-    proposals[pIdx].imageData = img.url;
-    injectImg(pickingForProp, img.url);
+    proposals[pIdx].imageData = displayUrl;
+    proposals[pIdx].imageSource = img.source;
+    injectImg(pickingForProp, displayUrl);
     const btn = document.getElementById('imgbtn-' + pickingForProp);
     if (btn) btn.remove();
     const srcTag = document.getElementById('srctag-' + pickingForProp);
-    if (srcTag) { srcTag.textContent = img.source === 'instagram' ? '📷 IG' : img.source === 'web' ? '🌐 Web' : '🤖 IA'; srcTag.style.display = 'block'; }
+    if (srcTag) {
+      srcTag.textContent = img.source==='instagram' ? '📷 IG' : img.source==='web' ? '🌐 Web' : '🤖 IA';
+      srcTag.style.display = 'block';
+    }
   }
+  pickingForProp = null;
   closeOv('ovLibPick');
+  closeOv('ovUseLib');
   toast('✓ Imatge aplicada a la proposta');
 }
 
@@ -1075,7 +1088,7 @@ let pendingLibIdx = null;
 function useLibImage(imgIdx) {
   const img = libImages[imgIdx];
   if (!img) return;
-  if (pickingForProp) { applyLibImage(imgIdx); return; }
+  pickingForProp = null;  // reset so we don't accidentally apply to stale prop
   // Mostrar overlay per triar proposta
   pendingLibIdx = imgIdx;
   const ov = document.getElementById('ovUseLib');
