@@ -604,6 +604,61 @@ select option{background:var(--surface2)}
           </div>
         </div>
 
+        <!-- Generació d'imatges amb IA -->
+        <div class="cfgcard" style="grid-column:1/-1">
+          <h3>🎨 Generació d'imatges amb IA</h3>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div class="fg">
+                <label>Temàtica visual per a les imatges</label>
+                <select id="cfgImgTheme" onchange="saveImgTheme()">
+                  <option value="food">🍽️ Fotografia gastronòmica (por defecto)</option>
+                  <option value="ambient">🏮 Ambient i decoració del restaurant</option>
+                  <option value="team">👨‍🍳 Equip i cuina en acció</option>
+                  <option value="product">🥂 Producte i detalls (vins, ingredients)</option>
+                  <option value="lifestyle">✨ Lifestyle i experiència gastronòmica</option>
+                  <option value="custom">✏️ Personalitzada (escriu avall)</option>
+                </select>
+              </div>
+              <div class="fg">
+                <label>Model de generació d'imatges (Puter)</label>
+                <select id="cfgImgModel" onchange="saveImgModel()">
+                  <option value="black-forest-labs/flux.1-schnell">⚡ FLUX.1 Schnell (gratuït, ràpid)</option>
+                  <option value="black-forest-labs/flux.1-dev">🎨 FLUX.1 Dev (millor qualitat)</option>
+                  <option value="stability-ai/stable-diffusion-xl">🖼️ Stable Diffusion XL</option>
+                  <option value="dalle-3">🤖 DALL-E 3 (requereix API Key)</option>
+                </select>
+                <span style="font-size:11px;color:var(--text3);margin-top:3px">Els models que requereixen crèdits només funcionen si tens sessió iniciada a Puter.</span>
+              </div>
+              <div class="fg" id="cfgImgCustomArea" style="display:none">
+                <label>Descripció del tipus d'imatge que vols</label>
+                <textarea rows="2" id="cfgImgCustom" placeholder="Ex: fotografia de producte gastronòmic minimalista, fons fosc, llum càlida de candela..." onchange="saveImgTheme()"></textarea>
+              </div>
+              <div style="padding:10px 12px;background:var(--surface2);border-radius:var(--rs);border:1px solid var(--border)">
+                <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Ordre de generació:</div>
+                <div style="font-size:12px;color:var(--text2);line-height:1.8">
+                  1️⃣ <strong style="color:var(--accent)">Gemini</strong> (si tens API Key) — millor qualitat<br>
+                  2️⃣ <strong style="color:var(--text2)">Puter FLUX</strong> — gratuït amb compte Puter
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="padding:16px;background:var(--surface2);border-radius:var(--r);border:1px solid var(--border)">
+                <div style="font-size:13px;font-weight:500;margin-bottom:8px">Compte Puter</div>
+                <div style="font-size:12px;color:var(--text3);margin-bottom:10px;line-height:1.6">Inicia sessió per usar els teus crèdits FLUX i evitar límits.</div>
+                <div id="puterStatus" style="font-size:12px;color:var(--text3);margin-bottom:10px">○ Estat desconegut</div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap">
+                  <button id="puterLoginBtn" onclick="puterLogin()" class="bp" style="font-size:12px;padding:8px 14px">Iniciar sessió a Puter</button>
+                  <button id="puterLogoutBtn" onclick="puterLogout()" class="bs" style="font-size:12px;padding:8px 14px;display:none">Desconnectar</button>
+                </div>
+              </div>
+              <div style="padding:10px 12px;background:rgba(167,139,250,.05);border:1px solid rgba(167,139,250,.15);border-radius:var(--rs)">
+                <p style="font-size:11px;color:var(--text3);line-height:1.7">💡 Sense Gemini Key, Puter usa <strong style="color:var(--text2)">FLUX.1-schnell</strong> gratuïtament. Iniciant sessió a Puter els crèdits no s'esgoten tan ràpid.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Instagram Publicació automàtica -->
         <div class="cfgcard" style="grid-column:1/-1">
           <h3>📱 Publicació automàtica a Instagram</h3>
@@ -742,20 +797,91 @@ function getGeminiKey() {
   return localStorage.getItem('sc_gemini_key') || document.getElementById('cfgGeminiKey')?.value?.trim() || '';
 }
 
+// ── Temàtiques visuals per a les imatges ─────────────────────────────────────
+const IMG_THEMES = {
+  food:      'professional food photography, appetizing dish, restaurant quality plating, natural side lighting, shallow depth of field, rich vibrant colors',
+  ambient:   'restaurant interior photography, warm ambient lighting, elegant table setting, cozy dining atmosphere, architectural details',
+  team:      'professional kitchen team photography, chef in action, culinary craft, kitchen environment, dynamic food preparation',
+  product:   'product photography, wine bottle detail, fresh ingredients close-up, minimal background, studio lighting, high-end editorial',
+  lifestyle: 'lifestyle gastronomy photography, people enjoying food, social dining experience, warm mood, candid moments',
+  custom:    '',
+};
+function getImgTheme() {
+  const sel = localStorage.getItem('sc_img_theme') || 'food';
+  if (sel === 'custom') return localStorage.getItem('sc_img_custom') || IMG_THEMES.food;
+  return IMG_THEMES[sel] || IMG_THEMES.food;
+}
+function saveImgTheme() {
+  const sel = document.getElementById('cfgImgTheme')?.value || 'food';
+  localStorage.setItem('sc_img_theme', sel);
+  const customArea = document.getElementById('cfgImgCustomArea');
+  if (customArea) customArea.style.display = sel === 'custom' ? 'flex' : 'none';
+  if (sel === 'custom') localStorage.setItem('sc_img_custom', document.getElementById('cfgImgCustom')?.value?.trim()||'');
+}
+function loadImgThemeUI() {
+  const sel = localStorage.getItem('sc_img_theme') || 'food';
+  const el = document.getElementById('cfgImgTheme');
+  if (el) el.value = sel;
+  const customArea = document.getElementById('cfgImgCustomArea');
+  if (customArea) customArea.style.display = sel === 'custom' ? 'flex' : 'none';
+  const customTxt = document.getElementById('cfgImgCustom');
+  if (customTxt) customTxt.value = localStorage.getItem('sc_img_custom') || '';
+}
+
+// ── Model de generació d'imatges ─────────────────────────────────────────────
+function saveImgModel() {
+  const model = document.getElementById('cfgImgModel')?.value || 'black-forest-labs/flux.1-schnell';
+  localStorage.setItem('sc_img_model', model);
+}
+function loadImgModelUI() {
+  const model = localStorage.getItem('sc_img_model') || 'black-forest-labs/flux.1-schnell';
+  const el = document.getElementById('cfgImgModel');
+  if (el) el.value = model;
+}
+function getImgModel() {
+  return localStorage.getItem('sc_img_model') || 'black-forest-labs/flux.1-schnell';
+}
+
+// ── Puter login ──────────────────────────────────────────────────────────────
+async function puterLogin() {
+  try {
+    await puter.auth.signIn();
+    updatePuterStatus();
+    toast('✓ Connectat a Puter!');
+  } catch(e) { toast('Error Puter: ' + e.message); }
+}
+async function puterLogout() {
+  try { await puter.auth.signOut(); updatePuterStatus(); toast('Desconnectat de Puter'); } catch(e) {}
+}
+async function updatePuterStatus() {
+  try {
+    const ok = await puter.auth.isSignedIn();
+    const el = document.getElementById('puterStatus');
+    const lb = document.getElementById('puterLoginBtn');
+    const lo = document.getElementById('puterLogoutBtn');
+    if (ok) {
+      const u = await puter.auth.getUser();
+      if (el) el.innerHTML = '<span style="color:var(--green)">● ' + (u?.username||'usuari') + '</span>';
+      if (lb) lb.style.display = 'none';
+      if (lo) lo.style.display = 'inline-flex';
+    } else {
+      if (el) el.textContent = '○ No connectat';
+      if (lb) lb.style.display = 'inline-flex';
+      if (lo) lo.style.display = 'none';
+    }
+  } catch(e) {}
+}
+
 // Prompt engineering para Gemini Imagen 3 — mucho más detallado
 function buildImagePrompt(prompt, isStory) {
   const orient = isStory
     ? 'vertical portrait 9:16 composition, tall format'
     : 'square 1:1 composition, centered subject';
+  const theme = getImgTheme();
   return [
     prompt,
-    'professional food photography',
-    'appetizing and delicious looking',
-    'restaurant quality plating',
+    theme,
     'shot with a high-end DSLR camera',
-    'shallow depth of field',
-    'warm natural side lighting',
-    'rich vibrant colors',
     'photorealistic, ultra detailed, 8k resolution',
     orient,
     'clean background, editorial style'
@@ -850,12 +976,24 @@ async function generateImageNb(prompt, isStory) {
     }
   }
 
-  // ── Puter FLUX (gratuït, sense key) ─────────────────────────────────────
-  const imgEl = await puter.ai.txt2img(fullPrompt, {
-    model: 'black-forest-labs/flux.1-schnell',
-    size
-  });
-  return imgEl.src;
+  // ── Puter (model seleccionat per l'usuari) ────────────────────────────────
+  const selectedModel = getImgModel();
+  if (selectedModel === 'dalle-3' && geminiKey) {
+    // DALL-E 3 via Gemini key no és suportat, fallback a FLUX
+    toast('⚠️ DALL-E 3 requereix crèdits Puter. Usant FLUX...');
+  }
+  try {
+    const modelToUse = selectedModel === 'dalle-3' ? 'black-forest-labs/flux.1-schnell' : selectedModel;
+    const imgEl = await puter.ai.txt2img(fullPrompt, { model: modelToUse, size });
+    return imgEl.src;
+  } catch(e) {
+    if (/credit|quota|limit/i.test(e.message||'') && selectedModel !== 'black-forest-labs/flux.1-schnell') {
+      toast('⚠️ ' + selectedModel + ' sense crèdits. Provant FLUX Schnell gratuït...');
+      const imgEl = await puter.ai.txt2img(fullPrompt, { model: 'black-forest-labs/flux.1-schnell', size });
+      return imgEl.src;
+    }
+    throw new Error('Puter sense crèdits. Inicia sessió a Puter (Configuració) o afegeix una Gemini API Key.');
+  }
 }
 
 function injectImg(cardId, url) {
@@ -1550,6 +1688,9 @@ async function initApp() {
     const savedIgToken = localStorage.getItem('sc_ig_token');
     if (savedIgToken && document.getElementById('cfgIgToken')) document.getElementById('cfgIgToken').value = savedIgToken;
     updateIgConnectUI();
+    loadImgThemeUI();
+    loadImgModelUI();
+    updatePuterStatus();
   } catch(err) {
     setInitMsg('Error: ' + err.message);
     console.error(err);
