@@ -945,6 +945,7 @@ async function generateImageNb(prompt, isStory) {
   const size = isStory ? '1024x1792' : '1024x1024';
   const nbKey = getNbKey();
   const geminiKey = getGeminiKey();
+  const selectedModel = getImgModel();
 
   // ── Nanobanana (key pròpia) ──────────────────────────────────────────────
   if (nbKey) {
@@ -961,38 +962,36 @@ async function generateImageNb(prompt, isStory) {
       return url;
     } catch(e) {
       console.warn('Nanobanana:', e.message);
-      toast('⚠ Nanobanana: ' + e.message.slice(0,50));
+      toast('⚠ Nanobanana: ' + e.message.slice(0,50) + ' · Provant Gemini...');
     }
   }
 
-  // ── Gemini (si hi ha key) ────────────────────────────────────────────────
-  if (geminiKey) {
-    try {
-      const url = await generateWithGemini(prompt, isStory);
-      return url;
-    } catch(e) {
-      console.warn('Gemini error:', e.message);
-      toast('⚠️ Gemini: ' + e.message.slice(0,50) + ' · Usant Puter...');
+  // ── Gemini Imagen (només si model=dalle-3 i hi ha key, o si no hi ha Puter) ──
+  if (selectedModel === 'dalle-3' && geminiKey) {
+    try { return await generateWithGemini(prompt, isStory); }
+    catch(e) {
+      console.warn('Gemini falló:', e.message);
+      toast('⚠️ Gemini: ' + e.message.slice(0,60) + ' · Provant FLUX...');
     }
   }
 
   // ── Puter (model seleccionat per l'usuari) ────────────────────────────────
-  const selectedModel = getImgModel();
-  if (selectedModel === 'dalle-3' && geminiKey) {
-    // DALL-E 3 via Gemini key no és suportat, fallback a FLUX
-    toast('⚠️ DALL-E 3 requereix crèdits Puter. Usant FLUX...');
-  }
+  const modelToUse = selectedModel === 'dalle-3' ? 'black-forest-labs/flux.1-schnell' : selectedModel;
   try {
-    const modelToUse = selectedModel === 'dalle-3' ? 'black-forest-labs/flux.1-schnell' : selectedModel;
     const imgEl = await puter.ai.txt2img(fullPrompt, { model: modelToUse, size });
-    return imgEl.src;
+    if (imgEl?.src) return imgEl.src;
+    throw new Error('Sense src');
   } catch(e) {
-    if (/credit|quota|limit/i.test(e.message||'') && selectedModel !== 'black-forest-labs/flux.1-schnell') {
-      toast('⚠️ ' + selectedModel + ' sense crèdits. Provant FLUX Schnell gratuït...');
-      const imgEl = await puter.ai.txt2img(fullPrompt, { model: 'black-forest-labs/flux.1-schnell', size });
-      return imgEl.src;
+    if (/credit|quota|limit/i.test(e.message||'') && modelToUse !== 'black-forest-labs/flux.1-schnell') {
+      toast('⚠️ ' + modelToUse + ' sense crèdits. Provant FLUX Schnell gratuït...');
+      try {
+        const imgEl = await puter.ai.txt2img(fullPrompt, { model: 'black-forest-labs/flux.1-schnell', size });
+        if (imgEl?.src) return imgEl.src;
+      } catch(e2) {
+        throw new Error('Puter sense crèdits. Inicia sessió a Puter (Configuració) o afegeix una Gemini API Key.');
+      }
     }
-    throw new Error('Puter sense crèdits. Inicia sessió a Puter (Configuració) o afegeix una Gemini API Key.');
+    throw new Error('Error generant: ' + (e.message || 'Error desconegut'));
   }
 }
 
@@ -1387,9 +1386,14 @@ async function genLibraryImage() {
   const ratio = document.getElementById('genImgRatio').value;
   const isStory = ratio === '9:16';
   const btn = document.getElementById('genLibBtn');
-  const geminiKey = getGeminiKey();
   btn.disabled = true;
-  btn.textContent = geminiKey ? '⏳ Generant amb Gemini...' : '⏳ Generant amb Puter...';
+  const nbKey = getNbKey();
+  const geminiKey = getGeminiKey();
+  const selectedModel = getImgModel();
+  let btnLabel = '⏳ Generant amb Puter FLUX...';
+  if (nbKey) btnLabel = '⏳ Generant amb Nanobanana...';
+  else if (selectedModel === 'dalle-3' && geminiKey) btnLabel = '⏳ Generant amb Gemini...';
+  btn.textContent = btnLabel;
   try {
     const url = await generateImageNb(prompt, isStory);
     const imgData = { url, source: 'generated', prompt, type: isStory ? 'story' : 'post', restId: currentRestId };
