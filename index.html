@@ -160,6 +160,16 @@ select option{background:var(--surface2)}
 .bo-filters select,.bo-filters input{padding:7px 12px;font-size:13px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:var(--rs);font-family:'DM Sans',sans-serif;outline:none}
 .bo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
 .bo-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:all .15s}
+/* Image zoom button */
+.zoom-btn{position:absolute;bottom:8px;right:8px;z-index:10;background:rgba(0,0,0,.65);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:background .15s;backdrop-filter:blur(4px)}
+.zoom-btn:hover{background:rgba(232,201,126,.8)}
+/* Image zoom overlay */
+.img-zoom-ov{position:fixed;inset:0;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;z-index:500;opacity:0;pointer-events:none;transition:opacity .2s}
+.img-zoom-ov.open{opacity:1;pointer-events:all}
+.img-zoom-inner{position:relative;max-width:90vw;max-height:90vh;display:flex;align-items:center;justify-content:center}
+.img-zoom-inner img{max-width:90vw;max-height:90vh;object-fit:contain;border-radius:var(--r);box-shadow:0 24px 80px rgba(0,0,0,.8)}
+.img-zoom-close{position:fixed;top:20px;right:24px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;width:38px;height:38px;border-radius:50%;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.img-zoom-close:hover{background:rgba(255,255,255,.2)}
 .bo-card:hover{border-color:var(--accent);transform:translateY(-2px)}
 .bo-card.selected{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent)}
 .bo-card img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
@@ -188,15 +198,19 @@ select option{background:var(--surface2)}
 ::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px}
 /* ── MOBILE RESPONSIVE ─────────────────────────────────────── */
 @media(max-width:768px){
+  /* Layout */
   .app{grid-template-columns:1fr;min-height:100vh}
   .sidebar{display:none !important}
-  .main{padding-bottom:72px}
+  .main{padding-bottom:72px} /* espai per bottom nav */
   .content{padding:16px}
 
+  /* Bottom navigation bar */
   .mobile-nav{
-    display:flex;position:fixed;bottom:0;left:0;right:0;
+    display:flex;
+    position:fixed;bottom:0;left:0;right:0;
     background:var(--surface);border-top:1px solid var(--border);
-    z-index:90;height:64px;padding:0 4px env(safe-area-inset-bottom);
+    z-index:90;height:64px;
+    padding:0 4px env(safe-area-inset-bottom);
   }
   .mobile-nav button{
     flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -208,12 +222,19 @@ select option{background:var(--surface2)}
   .mobile-nav button svg{width:20px;height:20px;opacity:.7}
   .mobile-nav button.active svg{opacity:1}
 
+  /* Mobile top bar */
   .mobile-topbar{
     display:flex;align-items:center;justify-content:space-between;
     padding:12px 16px 0;margin-bottom:4px;
   }
   .mobile-topbar h1{font-family:'DM Serif Display',serif;font-size:18px;color:var(--accent)}
+  .mobile-topbar select{
+    background:var(--surface2);border:1px solid var(--border2);color:var(--text);
+    padding:6px 10px;border-radius:var(--rs);font-size:12px;
+    font-family:'DM Sans',sans-serif;outline:none;max-width:140px;
+  }
 
+  /* Drawer (sidebar en mobile) */
   .mobile-drawer{
     position:fixed;inset:0;z-index:200;
     background:rgba(0,0,0,.7);opacity:0;pointer-events:none;transition:opacity .25s;
@@ -226,6 +247,7 @@ select option{background:var(--surface2)}
   }
   .mobile-drawer.open .mobile-drawer-inner{transform:translateX(0)}
 
+  /* Grid adjustments */
   .pgrid{grid-template-columns:1fr}
   .bo-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
   .cal-area{grid-template-columns:1fr}
@@ -233,10 +255,16 @@ select option{background:var(--surface2)}
   .fgrid{grid-template-columns:1fr}
   .cact{gap:4px}
   .cact button{font-size:10px;padding:6px 4px}
+
+  /* Modals full width */
   .modal{width:95vw !important;padding:20px;margin:0 auto}
+
+  /* Forms */
   .gform{padding:16px}
   .bo-gen-area{padding:14px}
 }
+
+/* Desktop: hide mobile elements */
 @media(min-width:769px){
   .mobile-nav{display:none}
   .mobile-topbar{display:none}
@@ -308,65 +336,6 @@ select option{background:var(--surface2)}
     </button>
     <button id="mbn-library" onclick="showSec('library',this);syncMobileNav('library')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Librería
-    </button>
-    <button id="mbn-config" onclick="showSec('config',this);syncMobileNav('config')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M5.34 18.66l-1.41 1.41M21 12h-2M5 12H3M19.07 19.07l-1.41-1.41M5.34 5.34L3.93 3.93M12 21v-2M12 5V3"/></svg>Config
-    </button>
-  </nav>
-
-  <!-- ── MOBILE TOP BAR ── -->
-  <div class="mobile-topbar">
-    <h1>Social Chef</h1>
-    <div style="display:flex;align-items:center;gap:8px">
-      <select id="restSelMobile" onchange="changeRestMobile()" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:6px 10px;border-radius:var(--rs);font-size:12px;font-family:'DM Sans',sans-serif;outline:none;max-width:140px"></select>
-      <button onclick="openDrawer()" style="background:none;border:1px solid var(--border2);color:var(--text2);width:34px;height:34px;border-radius:var(--rs);cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center">☰</button>
-    </div>
-  </div>
-
-  <!-- ── MOBILE DRAWER ── -->
-  <div class="mobile-drawer" id="mobileDrawer" onclick="closeDrawerIf(event)">
-    <div class="mobile-drawer-inner">
-      <div class="logo" style="padding:20px 20px 16px">
-        <h1 style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--accent)">Social Chef</h1>
-        <p style="font-size:11px;color:var(--text3);margin-top:2px;text-transform:uppercase;letter-spacing:1px">Gestión de contenido</p>
-      </div>
-      <div style="padding:0 12px 12px">
-        <label style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:6px">Restaurante</label>
-        <select id="restSelDrawer" onchange="changeRestDrawer()" style="width:100%;background:var(--surface3);border:1px solid var(--border2);color:var(--text);padding:8px 10px;border-radius:var(--rs);font-size:13px;font-family:'DM Sans',sans-serif;outline:none"></select>
-        <button class="add-btn" onclick="addRest();closeDrawer()" style="margin-top:8px">+ Añadir restaurante</button>
-      </div>
-      <nav style="padding:8px 12px;flex:1">
-        <button class="ni active" id="dniGen" onclick="showSec('generate',this);closeDrawer()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Generar contenido
-        </button>
-        <button class="ni" id="dniCal" onclick="showSec('calendar',this);closeDrawer()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendario
-          <span class="cbadge" id="calBadgeMob">0</span>
-        </button>
-        <button class="ni" id="dniLib" onclick="showSec('library',this);closeDrawer()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Imágenes
-        </button>
-        <button class="ni" id="dniCfg" onclick="showSec('config',this);closeDrawer()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M5.34 18.66l-1.41 1.41M21 12h-2M5 12H3M19.07 19.07l-1.41-1.41M5.34 5.34L3.93 3.93M12 21v-2M12 5V3"/></svg>Configuración
-        </button>
-      </nav>
-      <div style="padding:12px 16px;border-top:1px solid var(--border);font-size:11px;display:flex;align-items:center;gap:6px">
-        <div class="sync-dot" id="syncDotMob"></div>
-        <span id="syncTxtMob" style="color:var(--text3)">Desconectado</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── BOTTOM NAV ── -->
-  <nav class="mobile-nav" id="mobileBottomNav">
-    <button id="mbn-generate" class="active" onclick="showSec('generate',this);syncMobileNav('generate')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>Generar
-    </button>
-    <button id="mbn-calendar" onclick="showSec('calendar',this);syncMobileNav('calendar')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Calendario
-    </button>
-    <button id="mbn-library" onclick="showSec('library',this);syncMobileNav('library')">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Imágenes
     </button>
     <button id="mbn-config" onclick="showSec('config',this);syncMobileNav('config')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M5.34 18.66l-1.41 1.41M21 12h-2M5 12H3M19.07 19.07l-1.41-1.41M5.34 5.34L3.93 3.93M12 21v-2M12 5V3"/></svg>Config
@@ -595,7 +564,7 @@ select option{background:var(--surface2)}
             <div class="fg">
               <label>Google Gemini API Key</label>
               <input type="password" id="cfgGeminiKey" placeholder="AIza..." autocomplete="off">
-              <span style="font-size:11px;color:var(--text3);margin-top:3px">Para Imagen 3 · Consíguela gratis en <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent)">aistudio.google.com</a></span>
+              <span style="font-size:11px;color:var(--text3);margin-top:3px">Para generar imágenes · Consíguela gratis en <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent)">aistudio.google.com</a></span>
             </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
               <button class="bp" style="width:fit-content" onclick="saveCfg()">Guardar</button>
@@ -607,54 +576,79 @@ select option{background:var(--surface2)}
         <!-- Generació d'imatges amb IA -->
         <div class="cfgcard" style="grid-column:1/-1">
           <h3>🎨 Generació d'imatges amb IA</h3>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px">
-            <div style="display:flex;flex-direction:column;gap:14px">
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:20px">
+            <!-- Model selector -->
+            <div style="display:flex;flex-direction:column;gap:12px">
               <div class="fg">
-                <label>Temàtica visual per a les imatges</label>
-                <select id="cfgImgTheme" onchange="saveImgTheme()">
-                  <option value="food">🍽️ Fotografia gastronòmica (por defecto)</option>
-                  <option value="ambient">🏮 Ambient i decoració del restaurant</option>
-                  <option value="team">👨‍🍳 Equip i cuina en acció</option>
-                  <option value="product">🥂 Producte i detalls (vins, ingredients)</option>
-                  <option value="lifestyle">✨ Lifestyle i experiència gastronòmica</option>
-                  <option value="custom">✏️ Personalitzada (escriu avall)</option>
+                <label>Model de generació</label>
+                <select id="cfgImgModel" onchange="saveImgModel()">
+                  <option value="gemini">✨ Gemini Flash (recomanat)</option>
+                  <option value="cloudflare">☁️ Cloudflare SDXL (alta qualitat)</option>
+                  <option value="puter">⚡ Puter FLUX (gratuït)</option>
                 </select>
               </div>
+              <div style="padding:10px 12px;background:var(--surface2);border-radius:var(--rs);border:1px solid var(--border);font-size:11px;color:var(--text3);line-height:1.8" id="modelInfo"></div>
+            </div>
+            <!-- Temàtica -->
+            <div style="display:flex;flex-direction:column;gap:12px">
               <div class="fg">
-                <label>Model de generació d'imatges (Puter)</label>
-                <select id="cfgImgModel" onchange="saveImgModel()">
-                  <option value="black-forest-labs/flux.1-schnell">⚡ FLUX.1 Schnell (gratuït, ràpid)</option>
-                  <option value="black-forest-labs/flux.1-dev">🎨 FLUX.1 Dev (millor qualitat)</option>
-                  <option value="stability-ai/stable-diffusion-xl">🖼️ Stable Diffusion XL</option>
-                  <option value="dalle-3">🤖 DALL-E 3 (requereix API Key)</option>
+                <label>Temàtica visual</label>
+                <select id="cfgImgTheme" onchange="saveImgTheme()">
+                  <option value="food">🍽️ Fotografia de menjar</option>
+                  <option value="ambient">🏮 Ambient i decoració</option>
+                  <option value="chef">👨‍🍳 Chef i cuina</option>
+                  <option value="drinks">🍷 Begudes i còctels</option>
+                  <option value="exterior">🏡 Exterior i terrassa</option>
+                  <option value="custom">✏️ Personalitzada</option>
                 </select>
-                <span style="font-size:11px;color:var(--text3);margin-top:3px">Els models que requereixen crèdits només funcionen si tens sessió iniciada a Puter.</span>
               </div>
               <div class="fg" id="cfgImgCustomArea" style="display:none">
-                <label>Descripció del tipus d'imatge que vols</label>
-                <textarea rows="2" id="cfgImgCustom" placeholder="Ex: fotografia de producte gastronòmic minimalista, fons fosc, llum càlida de candela..." onchange="saveImgTheme()"></textarea>
+                <textarea rows="2" id="cfgImgCustom" placeholder="Ex: fotografia de producte gastronòmic, llum càlida, fons fosc elegant..." onchange="saveImgTheme()"></textarea>
               </div>
-              <div style="padding:10px 12px;background:var(--surface2);border-radius:var(--rs);border:1px solid var(--border)">
-                <div style="font-size:11px;color:var(--text3);margin-bottom:6px">Ordre de generació:</div>
-                <div style="font-size:12px;color:var(--text2);line-height:1.8">
-                  1️⃣ <strong style="color:var(--accent)">Gemini</strong> (si tens API Key) — millor qualitat<br>
-                  2️⃣ <strong style="color:var(--text2)">Puter FLUX</strong> — gratuït amb compte Puter
+            </div>
+            <!-- Puter status -->
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="padding:14px;background:var(--surface2);border-radius:var(--r);border:1px solid var(--border)">
+                <div style="font-size:12px;font-weight:500;margin-bottom:6px">Compte Puter (FLUX)</div>
+                <div id="puterStatus" style="font-size:11px;color:var(--text3);margin-bottom:8px">○ Estat desconegut</div>
+                <div style="display:flex;gap:6px">
+                  <button id="puterLoginBtn" onclick="puterLogin()" class="bp" style="font-size:11px;padding:6px 12px">Iniciar sessió</button>
+                  <button id="puterLogoutBtn" onclick="puterLogout()" class="bs" style="font-size:11px;padding:6px 12px;display:none">Desconnectar</button>
                 </div>
               </div>
             </div>
-            <div style="display:flex;flex-direction:column;gap:10px">
-              <div style="padding:16px;background:var(--surface2);border-radius:var(--r);border:1px solid var(--border)">
-                <div style="font-size:13px;font-weight:500;margin-bottom:8px">Compte Puter</div>
-                <div style="font-size:12px;color:var(--text3);margin-bottom:10px;line-height:1.6">Inicia sessió per usar els teus crèdits FLUX i evitar límits.</div>
-                <div id="puterStatus" style="font-size:12px;color:var(--text3);margin-bottom:10px">○ Estat desconegut</div>
-                <div style="display:flex;gap:8px;flex-wrap:wrap">
-                  <button id="puterLoginBtn" onclick="puterLogin()" class="bp" style="font-size:12px;padding:8px 14px">Iniciar sessió a Puter</button>
-                  <button id="puterLogoutBtn" onclick="puterLogout()" class="bs" style="font-size:12px;padding:8px 14px;display:none">Desconnectar</button>
-                </div>
+          </div>
+
+          <!-- Cloudflare config -->
+          <div id="cfCloudflareConfig" style="display:none;padding:16px;background:var(--surface2);border-radius:var(--r);border:1px solid var(--border2);margin-top:4px">
+            <div style="font-size:13px;font-weight:500;margin-bottom:14px">☁️ Cloudflare Workers AI <span style="font-size:11px;font-weight:400;color:var(--text3)">— Model: stable-diffusion-xl-base-1.0</span></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+              <div class="fg">
+                <label>Account ID</label>
+                <input type="text" id="cfAccountId" placeholder="a1b2c3d4e5f6..." autocomplete="off">
+                <span style="font-size:11px;color:var(--text3);margin-top:3px">Cloudflare Dashboard → dreta del sidebar</span>
               </div>
-              <div style="padding:10px 12px;background:rgba(167,139,250,.05);border:1px solid rgba(167,139,250,.15);border-radius:var(--rs)">
-                <p style="font-size:11px;color:var(--text3);line-height:1.7">💡 Sense Gemini Key, Puter usa <strong style="color:var(--text2)">FLUX.1-schnell</strong> gratuïtament. Iniciant sessió a Puter els crèdits no s'esgoten tan ràpid.</p>
+              <div class="fg">
+                <label>API Token</label>
+                <input type="password" id="cfApiToken" placeholder="xxxx..." autocomplete="off">
+                <span style="font-size:11px;color:var(--text3);margin-top:3px">
+                  <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank" style="color:var(--accent)">Crear token →</a> plantilla "Workers AI"
+                </span>
               </div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <button class="bp" onclick="saveCloudflareCfg()" style="font-size:12px;padding:8px 16px">Guardar Cloudflare</button>
+              <button class="bs" onclick="testCloudflare()" id="cfTestBtn" style="font-size:12px;padding:8px 16px">🔍 Provar connexió</button>
+              <span id="cfTestStatus" style="font-size:12px;color:var(--text3)"></span>
+            </div>
+            <div style="margin-top:12px;padding:10px 12px;background:rgba(232,201,126,.05);border:1px solid rgba(232,201,126,.15);border-radius:var(--rs)">
+              <p style="font-size:11px;color:var(--text3);line-height:1.7">
+                💡 <strong style="color:var(--text2)">Com obtenir les credencials:</strong><br>
+                1. Crea compte gratis a <a href="https://cloudflare.com" target="_blank" style="color:var(--accent)">cloudflare.com</a><br>
+                2. <strong>Account ID:</strong> Dashboard → sidebar dret<br>
+                3. <strong>API Token:</strong> <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank" style="color:var(--accent)">Profile → API Tokens</a> → "Create Token" → plantilla "Workers AI"<br>
+                4. Gratis: 10.000 passos/dia · SDXL genera imatges molt millors que FLUX
+              </p>
             </div>
           </div>
         </div>
@@ -771,8 +765,6 @@ const firebaseConfig = {
 };
 
 const SCRAPER_URL = 'https://jordiqterrassa.com/scraper.php';
-const PUBLISHER_URL = 'https://jordiqterrassa.com/publisher.php';
-const CRON_SECRET = 'social_design_2025_secret';
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
 let db, auth, currentUser, currentRestId;
@@ -791,206 +783,201 @@ let igUserId = localStorage.getItem('sc_ig_user_id') || '';
 let igAccountName = localStorage.getItem('sc_ig_account_name') || '';
 
 // =====================================================
-// GENERACIÓ D'IMATGES — Gemini Imagen 3 + Puter fallback
+// GENERACIÓ D'IMATGES
 // =====================================================
 function getGeminiKey() {
   return localStorage.getItem('sc_gemini_key') || document.getElementById('cfgGeminiKey')?.value?.trim() || '';
 }
+function getImgModel() { return localStorage.getItem('sc_img_model') || 'gemini'; }
+function saveImgModel() {
+  const sel = document.getElementById('cfgImgModel')?.value || 'gemini';
+  localStorage.setItem('sc_img_model', sel);
+  updateModelUI(sel);
+}
+const MODEL_INFO = {
+  gemini:     '✨ Gemini Flash · API Key gratuïta de Google · Imatges en base64',
+  cloudflare: '☁️ Alta qualitat (SDXL) · 10.000 passes/dia gratis · Requereix compte Cloudflare',
+  puter:      '⚡ Puter FLUX · Completament gratuït · Requereix compte Puter',
+};
+function updateModelUI(model) {
+  const info = document.getElementById('modelInfo');
+  if (info) info.textContent = MODEL_INFO[model] || '';
+  const cfPanel = document.getElementById('cfCloudflareConfig');
+  if (cfPanel) cfPanel.style.display = model === 'cloudflare' ? 'block' : 'none';
+}
+function loadImgModelUI() {
+  const model = getImgModel();
+  const el = document.getElementById('cfgImgModel');
+  if (el) el.value = model;
+  updateModelUI(model);
+  const accId = localStorage.getItem('sc_cf_account_id') || '';
+  const tok   = localStorage.getItem('sc_cf_api_token')  || '';
+  if (document.getElementById('cfAccountId')) document.getElementById('cfAccountId').value = accId;
+  if (document.getElementById('cfApiToken'))  document.getElementById('cfApiToken').value  = tok;
+}
 
-// ── Temàtiques visuals per a les imatges ─────────────────────────────────────
+// Temàtica visual
 const IMG_THEMES = {
-  food:      'professional food photography, appetizing dish, restaurant quality plating, natural side lighting, shallow depth of field, rich vibrant colors',
-  ambient:   'restaurant interior photography, warm ambient lighting, elegant table setting, cozy dining atmosphere, architectural details',
-  team:      'professional kitchen team photography, chef in action, culinary craft, kitchen environment, dynamic food preparation',
-  product:   'product photography, wine bottle detail, fresh ingredients close-up, minimal background, studio lighting, high-end editorial',
-  lifestyle: 'lifestyle gastronomy photography, people enjoying food, social dining experience, warm mood, candid moments',
-  custom:    '',
+  food:     'professional food photography, appetizing restaurant dish, warm natural side lighting, shallow depth of field, rich vibrant colors',
+  ambient:  'cozy restaurant interior, warm ambient lighting, elegant table setting, bokeh background',
+  chef:     'professional chef in modern kitchen, cooking action shot, restaurant kitchen environment',
+  drinks:   'cocktail and drink photography, bar ambiance, elegant glassware, moody lighting',
+  exterior: 'restaurant exterior, inviting terrace, al fresco dining, golden hour lighting',
 };
 function getImgTheme() {
-  const sel = localStorage.getItem('sc_img_theme') || 'food';
-  if (sel === 'custom') return localStorage.getItem('sc_img_custom') || IMG_THEMES.food;
-  return IMG_THEMES[sel] || IMG_THEMES.food;
+  const t = localStorage.getItem('sc_img_theme') || 'food';
+  if (t === 'custom') return localStorage.getItem('sc_img_custom') || '';
+  return IMG_THEMES[t] || IMG_THEMES.food;
 }
 function saveImgTheme() {
   const sel = document.getElementById('cfgImgTheme')?.value || 'food';
   localStorage.setItem('sc_img_theme', sel);
   const customArea = document.getElementById('cfgImgCustomArea');
-  if (customArea) customArea.style.display = sel === 'custom' ? 'flex' : 'none';
+  if (customArea) customArea.style.display = sel === 'custom' ? 'block' : 'none';
   if (sel === 'custom') localStorage.setItem('sc_img_custom', document.getElementById('cfgImgCustom')?.value?.trim()||'');
 }
 function loadImgThemeUI() {
-  const sel = localStorage.getItem('sc_img_theme') || 'food';
+  const t = localStorage.getItem('sc_img_theme') || 'food';
   const el = document.getElementById('cfgImgTheme');
-  if (el) el.value = sel;
+  if (el) el.value = t;
   const customArea = document.getElementById('cfgImgCustomArea');
-  if (customArea) customArea.style.display = sel === 'custom' ? 'flex' : 'none';
-  const customTxt = document.getElementById('cfgImgCustom');
-  if (customTxt) customTxt.value = localStorage.getItem('sc_img_custom') || '';
+  if (customArea) customArea.style.display = t === 'custom' ? 'block' : 'none';
+  if (t === 'custom') {
+    const c = document.getElementById('cfgImgCustom');
+    if (c) c.value = localStorage.getItem('sc_img_custom') || '';
+  }
 }
 
-// ── Model de generació d'imatges ─────────────────────────────────────────────
-function saveImgModel() {
-  const model = document.getElementById('cfgImgModel')?.value || 'black-forest-labs/flux.1-schnell';
-  localStorage.setItem('sc_img_model', model);
-}
-function loadImgModelUI() {
-  const model = localStorage.getItem('sc_img_model') || 'black-forest-labs/flux.1-schnell';
-  const el = document.getElementById('cfgImgModel');
-  if (el) el.value = model;
-}
-function getImgModel() {
-  return localStorage.getItem('sc_img_model') || 'black-forest-labs/flux.1-schnell';
-}
-
-// ── Puter login ──────────────────────────────────────────────────────────────
-async function puterLogin() {
-  try {
-    await puter.auth.signIn();
-    updatePuterStatus();
-    toast('✓ Connectat a Puter!');
-  } catch(e) { toast('Error Puter: ' + e.message); }
-}
-async function puterLogout() {
-  try { await puter.auth.signOut(); updatePuterStatus(); toast('Desconnectat de Puter'); } catch(e) {}
-}
-async function updatePuterStatus() {
-  try {
-    const ok = await puter.auth.isSignedIn();
-    const el = document.getElementById('puterStatus');
-    const lb = document.getElementById('puterLoginBtn');
-    const lo = document.getElementById('puterLogoutBtn');
-    if (ok) {
-      const u = await puter.auth.getUser();
-      if (el) el.innerHTML = '<span style="color:var(--green)">● ' + (u?.username||'usuari') + '</span>';
-      if (lb) lb.style.display = 'none';
-      if (lo) lo.style.display = 'inline-flex';
-    } else {
-      if (el) el.textContent = '○ No connectat';
-      if (lb) lb.style.display = 'inline-flex';
-      if (lo) lo.style.display = 'none';
-    }
-  } catch(e) {}
-}
-
-// Prompt engineering para Gemini Imagen 3 — mucho más detallado
+// Prompt engineering
 function buildImagePrompt(prompt, isStory) {
-  const orient = isStory
-    ? 'vertical portrait 9:16 composition, tall format'
-    : 'square 1:1 composition, centered subject';
   const theme = getImgTheme();
-  return [
-    prompt,
-    theme,
-    'shot with a high-end DSLR camera',
-    'photorealistic, ultra detailed, 8k resolution',
-    orient,
-    'clean background, editorial style'
-  ].join(', ');
+  const orient = isStory ? 'vertical portrait 9:16 composition, tall format' : 'square 1:1 composition, centered subject';
+  return `${theme}, ${prompt}, photorealistic, ultra detailed, 8k resolution, ${orient}, clean editorial style`;
 }
 
-// Modelos Gemini con imagen, en orden de preferencia (gratuïts)
-const GEMINI_IMG_MODELS = [
-  'gemini-2.0-flash-exp-image-generation',  // ✅ SÍ genera imágenes
-];
-
-async function callGeminiImgModel(model, fullPrompt, apiKey) {
+// ── Gemini Flash Image Generation ────────────────────────────
+async function generateWithGemini(prompt, isStory) {
+  const apiKey = getGeminiKey();
+  if (!apiKey) throw new Error('No hi ha Gemini API Key. Afegeix-la a Configuració.');
+  const fullPrompt = buildImagePrompt(prompt, isStory);
   const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${apiKey}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: fullPrompt }] }],
-        generationConfig: { responseModalities: ['IMAGE', 'TEXT'] }
+        generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
       })
     }
   );
   if (!res.ok) {
     const errText = await res.text();
-    throw new Error(`${model} HTTP ${res.status}: ${errText.slice(0, 100)}`);
+    let msg = '';
+    try { msg = JSON.parse(errText)?.error?.message || errText.slice(0, 150); } catch(x) { msg = errText.slice(0, 150); }
+    throw new Error('Gemini HTTP ' + res.status + ': ' + msg);
   }
   const data = await res.json();
   const part = data?.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
-  if (!part?.inlineData?.data) throw new Error(`${model}: sense imatge a la resposta`);
-  return 'data:' + (part.inlineData.mimeType || 'image/jpeg') + ';base64,' + part.inlineData.data;
+  if (!part?.inlineData?.data) throw new Error('Gemini: sense imatge a la resposta');
+  return { url: 'data:' + (part.inlineData.mimeType || 'image/png') + ';base64,' + part.inlineData.data, label: '✨ Gemini Flash' };
 }
 
-async function generateWithGemini(prompt, isStory) {
-  const apiKey = getGeminiKey();
-  if (!apiKey) throw new Error('No Gemini key');
+// ── Cloudflare Workers AI — SDXL ─────────────────────────────
+function getCfCreds() {
+  return {
+    accountId: localStorage.getItem('sc_cf_account_id') || '',
+    apiToken:  localStorage.getItem('sc_cf_api_token')  || '',
+  };
+}
+async function generateWithCloudflare(prompt, isStory) {
+  const { accountId, apiToken } = getCfCreds();
+  if (!accountId || !apiToken) throw new Error('Configura Account ID i API Token de Cloudflare a Configuració');
   const fullPrompt = buildImagePrompt(prompt, isStory);
-
-  // Provar cada model fins trobar-ne un que funcioni
-  let lastErr = null;
-  for (const model of GEMINI_IMG_MODELS) {
-    try {
-      console.log('Provant Gemini model:', model);
-      const url = await callGeminiImgModel(model, fullPrompt, apiKey);
-      console.log('✅ Gemini OK amb:', model);
-      return url;
-    } catch(e) {
-      console.warn(`❌ ${model}:`, e.message);
-      lastErr = e;
-      // Si és un error d'autenticació (401/403) no té sentit provar més
-      if (e.message.includes('401') || e.message.includes('403')) break;
-    }
+  const width  = isStory ? 768  : 1024;
+  const height = isStory ? 1344 : 1024;
+  const proxyUrl = 'https://jordiqterrassa.com/cloudflare-proxy.php';
+  const res = await fetch(proxyUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ account_id: accountId, api_token: apiToken, prompt: fullPrompt, num_steps: 20, width, height })
+  });
+  const data = await res.json();
+  if (!res.ok || data.error) throw new Error(data.error || `Cloudflare HTTP ${res.status}`);
+  return { url: data.image, label: '☁️ Cloudflare SDXL' };
+}
+function saveCloudflareCfg() {
+  const accId = document.getElementById('cfAccountId')?.value?.trim() || '';
+  const tok   = document.getElementById('cfApiToken')?.value?.trim()  || '';
+  localStorage.setItem('sc_cf_account_id', accId);
+  localStorage.setItem('sc_cf_api_token',  tok);
+  toast('✓ Cloudflare desat');
+}
+async function testCloudflare() {
+  const btn = document.getElementById('cfTestBtn');
+  const status = document.getElementById('cfTestStatus');
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Provant...'; }
+  if (status) status.textContent = '';
+  try {
+    const uiAccId = document.getElementById('cfAccountId')?.value?.trim();
+    const uiTok   = document.getElementById('cfApiToken')?.value?.trim();
+    if (uiAccId) localStorage.setItem('sc_cf_account_id', uiAccId);
+    if (uiTok)   localStorage.setItem('sc_cf_api_token',  uiTok);
+    await generateWithCloudflare('a simple bowl of soup on a white background', false);
+    if (status) status.innerHTML = '<span style="color:var(--green)">✓ Cloudflare SDXL funciona correctament!</span>';
+    toast('✓ Cloudflare Workers AI connectat!');
+  } catch(e) {
+    if (status) status.innerHTML = '<span style="color:var(--red)">✗ ' + e.message.slice(0, 80) + '</span>';
+    toast('❌ ' + e.message.slice(0, 80));
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🔍 Provar connexió'; }
   }
-  throw new Error('Tots els models Gemini han fallat: ' + (lastErr?.message || '?'));
 }
 
-async function generateImageNb(prompt, isStory) {
+// ── Puter FLUX ───────────────────────────────────────────────
+async function generateWithPuter(prompt, isStory) {
   const fullPrompt = buildImagePrompt(prompt, isStory);
   const size = isStory ? '1024x1792' : '1024x1024';
-  const nbKey = getNbKey();
-  const geminiKey = getGeminiKey();
-  const selectedModel = getImgModel();
-
-  // ── Nanobanana (key pròpia) ──────────────────────────────────────────────
-  if (nbKey) {
-    try {
-      const res = await fetch('https://api.nanobanana.ai/v1/images/generations', {
-        method: 'POST',
-        headers: {'Content-Type':'application/json','Authorization':'Bearer '+nbKey},
-        body: JSON.stringify({prompt: fullPrompt, model:'flux-schnell', size, n:1})
-      });
-      if (!res.ok) { const e=await res.json().catch(()=>({})); throw new Error(e.error?.message||'HTTP '+res.status); }
-      const data = await res.json();
-      const url = data.data?.[0]?.url || data.url;
-      if (!url) throw new Error('Sense URL');
-      return url;
-    } catch(e) {
-      console.warn('Nanobanana:', e.message);
-      toast('⚠ Nanobanana: ' + e.message.slice(0,50) + ' · Provant Gemini...');
-    }
-  }
-
-  // ── Gemini Imagen (només si model=dalle-3 i hi ha key, o si no hi ha Puter) ──
-  if (selectedModel === 'dalle-3' && geminiKey) {
-    try { return await generateWithGemini(prompt, isStory); }
-    catch(e) {
-      console.warn('Gemini falló:', e.message);
-      toast('⚠️ Gemini: ' + e.message.slice(0,60) + ' · Provant FLUX...');
-    }
-  }
-
-  // ── Puter (model seleccionat per l'usuari) ────────────────────────────────
-  const modelToUse = selectedModel === 'dalle-3' ? 'black-forest-labs/flux.1-schnell' : selectedModel;
   try {
-    const imgEl = await puter.ai.txt2img(fullPrompt, { model: modelToUse, size });
-    if (imgEl?.src) return imgEl.src;
+    const imgEl = await puter.ai.txt2img(fullPrompt, { model: 'black-forest-labs/flux.1-schnell', size });
+    if (imgEl?.src) return { url: imgEl.src, label: '⚡ Puter FLUX' };
     throw new Error('Sense src');
   } catch(e) {
-    if (/credit|quota|limit/i.test(e.message||'') && modelToUse !== 'black-forest-labs/flux.1-schnell') {
-      toast('⚠️ ' + modelToUse + ' sense crèdits. Provant FLUX Schnell gratuït...');
-      try {
-        const imgEl = await puter.ai.txt2img(fullPrompt, { model: 'black-forest-labs/flux.1-schnell', size });
-        if (imgEl?.src) return imgEl.src;
-      } catch(e2) {
-        throw new Error('Puter sense crèdits. Inicia sessió a Puter (Configuració) o afegeix una Gemini API Key.');
-      }
-    }
-    throw new Error('Error generant: ' + (e.message || 'Error desconegut'));
+    if (/credit|quota|limit/i.test(e.message||''))
+      throw new Error('Puter sense crèdits. Inicia sessió a Puter o canvia a Cloudflare SDXL.');
+    throw new Error('Error Puter: ' + e.message);
   }
+}
+
+// ── Selector de model ─────────────────────────────────────────
+async function generateImageNb(prompt, isStory) {
+  const model = getImgModel();
+  if (model === 'cloudflare') {
+    try { return await generateWithCloudflare(prompt, isStory); }
+    catch(e) {
+      console.warn('Cloudflare falló:', e.message);
+      toast('⚠️ Cloudflare: ' + e.message.slice(0,60) + ' · Provant Gemini...');
+      const geminiKey = getGeminiKey();
+      if (geminiKey) {
+        try { return await generateWithGemini(prompt, isStory); } catch(e2) { console.warn(e2.message); }
+      }
+      return await generateWithPuter(prompt, isStory);
+    }
+  }
+  if (model === 'gemini') {
+    const geminiKey = getGeminiKey();
+    if (geminiKey) {
+      try { return await generateWithGemini(prompt, isStory); }
+      catch(e) {
+        console.warn('Gemini falló:', e.message);
+        toast('⚠️ Gemini: ' + e.message.slice(0,60) + ' · Provant Puter...');
+      }
+    } else {
+      toast('⚠️ No hi ha Gemini API Key. Afegeix-la a Configuració o canvia de model.');
+    }
+    return await generateWithPuter(prompt, isStory);
+  }
+  return await generateWithPuter(prompt, isStory);
 }
 
 function injectImg(cardId, url) {
@@ -1027,18 +1014,18 @@ async function genImageForProp(propId) {
   if (btn) { btn.disabled = true; btn.textContent = '⏳'; }
   try {
     const ctx = document.getElementById('ctx')?.value?.trim() || '';
-    const url = await generateImageNb(p.imagePrompt || p.title + (ctx ? ' ' + ctx : ''), p.type === 'story');
-    proposals[proposals.indexOf(p)].imageData = url;
-    // Afegir a la librería i persistir
-    const imgData = { url, source: 'generated', prompt: p.imagePrompt || p.title, type: p.type, restId: currentRestId };
+    const result1 = await generateImageNb(p.imagePrompt || p.title + (ctx ? ' ' + ctx : ''), p.type === 'story');
+    const url1 = result1?.url || result1;
+    const label1 = result1?.label || '🤖 IA';
+    proposals[proposals.indexOf(p)].imageData = url1;
+    const imgData = { url: url1, source: 'generated', prompt: p.imagePrompt || p.title, type: p.type, restId: currentRestId, modelLabel: label1 };
     addToLibrary(imgData);
     idbSaveImage(imgData);
-    injectImg(propId, url);
-    // Eliminar botó generar
+    injectImg(propId, url1);
     const newBtn = document.getElementById('imgbtn-' + propId);
     if (newBtn) newBtn.remove();
     const srcTag = document.getElementById('srctag-' + propId);
-    if (srcTag) { srcTag.textContent = '🤖 Nanobanana'; srcTag.style.display = 'block'; }
+    if (srcTag) { srcTag.textContent = label1; srcTag.style.display = 'block'; }
   } catch(e) {
     console.error('Gen img error:', e);
     const b = document.getElementById('cprev-' + propId);
@@ -1207,6 +1194,7 @@ function renderIgGrid(images) {
         <img src="${src}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;position:relative;z-index:1"
           onload="this.previousElementSibling.style.display='none'"
           onerror="this.previousElementSibling.innerHTML='<span style=\"font-size:20px\">⚠️</span>';this.style.display='none'">
+        <button class="zoom-btn" onclick="openImgZoom('${src}',event)" title="Veure més gran">🔍</button>
       </div>
       <div class="bo-meta"><div class="bo-src">📷 Instagram</div><div class="bo-caption">${img.caption?.slice(0,60)||''}</div></div>
       <div class="bo-act"><button class="bo-use" onclick="event.stopPropagation();useLibImage(${idx})">Usar</button></div>
@@ -1227,6 +1215,7 @@ function renderWebGrid(images) {
         <img src="${img.url}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;position:relative;z-index:1"
           onload="this.previousElementSibling.style.display='none'"
           onerror="this.previousElementSibling.innerHTML='<span style=\"font-size:20px\">⚠️</span>';this.style.display='none'">
+        <button class="zoom-btn" onclick="openImgZoom('${img.url}',event)" title="Veure més gran">🔍</button>
       </div>
       <div class="bo-meta"><div class="bo-src">🌐 Web</div></div>
       <div class="bo-act"><button class="bo-use" onclick="event.stopPropagation();useLibImage(${idx})">Usar</button></div>
@@ -1245,8 +1234,11 @@ function renderGenGrid() {
     const idx = libImages.indexOf(img);
     return `
     <div class="bo-card" id="gencard-${img.idbId||idx}">
-      <img src="${img.url}" alt="" loading="lazy" onerror="this.style.opacity='.2'">
-      <div class="bo-meta"><div class="bo-src">🎨 IA Generada</div><div class="bo-caption">${img.prompt||''}</div></div>
+      <div style="position:relative;overflow:hidden">
+        <img src="${img.url}" alt="" loading="lazy" onerror="this.style.opacity='.2'" style="width:100%;aspect-ratio:1;object-fit:cover;display:block">
+        <button class="zoom-btn" onclick="openImgZoom('${img.url}',event)" title="Veure més gran">🔍</button>
+      </div>
+      <div class="bo-meta"><div class="bo-src">${img.modelLabel||'🤖 IA Generada'}</div><div class="bo-caption">${img.prompt||''}</div></div>
       <div class="bo-act">
         <button class="bo-use" onclick="event.stopPropagation();useLibImage(${idx})">Usar</button>
         <button onclick="event.stopPropagation();downloadImg('${img.url}')">↓</button>
@@ -1384,17 +1376,14 @@ async function genLibraryImage() {
   const ratio = document.getElementById('genImgRatio').value;
   const isStory = ratio === '9:16';
   const btn = document.getElementById('genLibBtn');
-  btn.disabled = true;
-  const nbKey = getNbKey();
   const geminiKey = getGeminiKey();
-  const selectedModel = getImgModel();
-  let btnLabel = '⏳ Generant amb Puter FLUX...';
-  if (nbKey) btnLabel = '⏳ Generant amb Nanobanana...';
-  else if (selectedModel === 'dalle-3' && geminiKey) btnLabel = '⏳ Generant amb Gemini...';
-  btn.textContent = btnLabel;
+  btn.disabled = true;
+  btn.textContent = geminiKey ? '⏳ Generant amb Gemini...' : '⏳ Generant amb Puter...';
   try {
-    const url = await generateImageNb(prompt, isStory);
-    const imgData = { url, source: 'generated', prompt, type: isStory ? 'story' : 'post', restId: currentRestId };
+    const result2 = await generateImageNb(prompt, isStory);
+    const url = result2?.url || result2;
+    const modelLabel = result2?.label || '🤖 IA';
+    const imgData = { url, source: 'generated', prompt, type: isStory ? 'story' : 'post', restId: currentRestId, modelLabel };
     addToLibrary(imgData);
     // Guardar en IndexedDB para persistencia
     await idbSaveImage(imgData);
@@ -1555,6 +1544,20 @@ function openPrev(id) {
     <div class="igca"><div class="igcatxt">${p.caption}</div><div class="ightags">${p.hashtags}</div></div>`;
   document.getElementById('ovPrev').classList.add('open');
 }
+function openImgZoom(url, e) {
+  if (e) e.stopPropagation();
+  const ov = document.getElementById('imgZoomOv');
+  const img = document.getElementById('imgZoomImg');
+  if (!ov || !img) return;
+  img.src = url;
+  ov.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeImgZoom(e) {
+  if (e && e.target !== document.getElementById('imgZoomOv') && !e.target.classList.contains('img-zoom-close')) return;
+  document.getElementById('imgZoomOv')?.classList.remove('open');
+  document.body.style.overflow = '';
+}
 function closeOv(id) { document.getElementById(id).classList.remove('open'); }
 function closeOvIf(e, id) { if (e.target.id === id) closeOv(id); }
 
@@ -1563,11 +1566,9 @@ async function confirmSched() {
   const date = document.getElementById('mpDate').value, time = document.getElementById('mpTime').value;
   if (!date) { toast('Selecciona una fecha'); return; }
   editP.caption = document.getElementById('mpCap').value;
-  const newPost = { ...editP, date, time };
-  scheduled.push(newPost);
+  scheduled.push({ ...editP, date, time });
   updBadge(); closeOv('ovPrev');
   await saveScheduled();
-  await savePendingPost(newPost);
   toast('✓ Programada per al ' + fmtDate(date) + ' a les ' + time);
   renderCal();
 }
@@ -1662,7 +1663,6 @@ async function remSched(i){
 function chMonth(d){calMon+=d;if(calMon>11){calMon=0;calYr++;}if(calMon<0){calMon=11;calYr--;}renderCal();}
 function updBadge(){
   document.getElementById('calBadge').textContent=scheduled.length;
-  const mob=document.getElementById('calBadgeMob'); if(mob) mob.textContent=scheduled.length;
   const mb=document.getElementById('calBadgeMob');
   if(mb) mb.textContent=scheduled.length;
 }
@@ -1686,13 +1686,12 @@ async function initApp() {
     renderCal();
     const geminiKey = localStorage.getItem('sc_gemini_key');
     if (geminiKey && document.getElementById('cfgGeminiKey')) document.getElementById('cfgGeminiKey').value = geminiKey;
+    loadImgModelUI();
+    loadImgThemeUI();
     // Restaurar token d'Instagram
     const savedIgToken = localStorage.getItem('sc_ig_token');
     if (savedIgToken && document.getElementById('cfgIgToken')) document.getElementById('cfgIgToken').value = savedIgToken;
     updateIgConnectUI();
-    loadImgThemeUI();
-    loadImgModelUI();
-    updatePuterStatus();
   } catch(err) {
     setInitMsg('Error: ' + err.message);
     console.error(err);
@@ -1855,7 +1854,6 @@ async function saveScheduled() {
 // NAV + HELPERS
 // =====================================================
 function showSec(n,btn) {
-  syncMobileNav(n);
   document.querySelectorAll('.content').forEach(s=>s.style.display='none');
   document.querySelectorAll('.ni').forEach(b=>b.classList.remove('active'));
   const s=document.getElementById('sec-'+n); s.style.display='flex'; s.style.flexDirection='column';
@@ -1868,74 +1866,6 @@ function showSec(n,btn) {
     if (ig && document.getElementById('igUsername')) document.getElementById('igUsername').value = ig;
     if (web && document.getElementById('webUrl')) document.getElementById('webUrl').value = web;
   }
-}
-
-
-async function savePendingPost(post) {
-  const igToken  = localStorage.getItem('sc_ig_token') || '';
-  const igUserId = localStorage.getItem('sc_ig_user_id') || '';
-  if (!igToken || !igUserId) return;
-
-  let imageUrl = post.imageData || '';
-  if (imageUrl.startsWith('data:')) {
-    try {
-      const upRes = await fetch(PUBLISHER_URL, {
-        method: 'POST', headers: {'Content-Type':'application/json'},
-        body: JSON.stringify({secret: CRON_SECRET, action: 'upload_image', imageData: imageUrl})
-      });
-      const upData = await upRes.json();
-      if (upData.success && upData.url) imageUrl = upData.url;
-      else { toast('⚠️ Imatge no pujada al servidor: ' + (upData.error||'error')); imageUrl = ''; }
-    } catch(e) { toast('⚠️ Error contactant publisher: ' + e.message); return; }
-  }
-
-  if (!imageUrl.startsWith('http')) {
-    toast('⚠️ La imatge ha de ser una URL pública per a publicació automàtica');
-    return;
-  }
-
-  try {
-    const res = await fetch(PUBLISHER_URL, {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({secret: CRON_SECRET, post: {...post, imageData: imageUrl, igToken, igUserId, savedAt: new Date().toISOString()}})
-    });
-    const data = await res.json();
-    if (data.success) toast('✓ Afegit al planificador automàtic ⏰');
-    else toast('❌ Error planificador: ' + (data.error||'desconegut'));
-  } catch(e) { toast('❌ Error publisher: ' + e.message); }
-}
-
-async function clearPendingPosts() {
-  if (!confirm('Eliminar totes les publicacions pendents del servidor?')) return;
-  try {
-    const res = await fetch(PUBLISHER_URL + '?action=clear&secret=' + CRON_SECRET);
-    const data = await res.json();
-    toast(data.success ? '✓ Pendents eliminats' : '✗ ' + data.error);
-    checkPublisherStatus();
-  } catch(e) { toast('✗ Error: ' + e.message); }
-}
-
-async function checkPublisherStatus() {
-  const el = document.getElementById('publisherStatus');
-  if (el) el.innerHTML = '<span style="color:var(--text3)">Consultant...</span>';
-  try {
-    const res = await fetch(PUBLISHER_URL + '?test=1&secret=' + CRON_SECRET);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
-    const lastLog = data.log?.[0];
-    const lastStatus = lastLog ? (lastLog.result?.success ? '✓' : '✗ ' + (lastLog.result?.error||'').slice(0,50)) : 'sense registres';
-    if (el) el.innerHTML = 
-      '<span style="color:var(--green)">✓ Publisher actiu</span>' +
-      '<br>Pendents: ' + data.pending + ' · Última execució: ' + data.now +
-      (lastLog ? '<br>Darrer log: ' + lastLog.ts + ' — ' + lastStatus : '');
-  } catch(e) {
-    if (el) el.innerHTML = '<span style="color:var(--red)">✗ No s\'ha pogut contactar el publisher: ' + e.message + '</span>';
-  }
-}
-
-
-function getNbKey() {
-  return localStorage.getItem('sc_nb_key') || document.getElementById('cfgNbKey')?.value?.trim() || '';
 }
 
 function fmtDate(d){if(!d)return'';const[y,m,dd]=d.split('-');return`${dd} ${MONTHS[parseInt(m)-1].slice(0,3)} ${y}`;}
@@ -2310,5 +2240,13 @@ function changeRestDrawer() {
 
 window.onload = initApp;
 </script>
+<!-- Image Zoom Lightbox -->
+<div class="img-zoom-ov" id="imgZoomOv" onclick="closeImgZoom(event)">
+  <div class="img-zoom-inner">
+    <img id="imgZoomImg" src="" alt="">
+  </div>
+  <button class="img-zoom-close" onclick="closeImgZoom()">✕</button>
+</div>
+
 </body>
 </html>
