@@ -160,10 +160,8 @@ select option{background:var(--surface2)}
 .bo-filters select,.bo-filters input{padding:7px 12px;font-size:13px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:var(--rs);font-family:'DM Sans',sans-serif;outline:none}
 .bo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
 .bo-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;cursor:pointer;transition:all .15s}
-/* Image zoom button */
 .zoom-btn{position:absolute;bottom:8px;right:8px;z-index:10;background:rgba(0,0,0,.65);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:background .15s;backdrop-filter:blur(4px)}
 .zoom-btn:hover{background:rgba(232,201,126,.8)}
-/* Image zoom overlay */
 .img-zoom-ov{position:fixed;inset:0;background:rgba(0,0,0,.92);display:flex;align-items:center;justify-content:center;z-index:500;opacity:0;pointer-events:none;transition:opacity .2s}
 .img-zoom-ov.open{opacity:1;pointer-events:all}
 .img-zoom-inner{position:relative;max-width:90vw;max-height:90vh;display:flex;align-items:center;justify-content:center}
@@ -564,7 +562,7 @@ select option{background:var(--surface2)}
             <div class="fg">
               <label>Google Gemini API Key</label>
               <input type="password" id="cfgGeminiKey" placeholder="AIza..." autocomplete="off">
-              <span style="font-size:11px;color:var(--text3);margin-top:3px">Para generar imágenes · Consíguela gratis en <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent)">aistudio.google.com</a></span>
+              <span style="font-size:11px;color:var(--text3);margin-top:3px">Para Imagen 3 · Consíguela gratis en <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent)">aistudio.google.com</a></span>
             </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
               <button class="bp" style="width:fit-content" onclick="saveCfg()">Guardar</button>
@@ -577,19 +575,17 @@ select option{background:var(--surface2)}
         <div class="cfgcard" style="grid-column:1/-1">
           <h3>🎨 Generació d'imatges amb IA</h3>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;margin-bottom:20px">
-            <!-- Model selector -->
             <div style="display:flex;flex-direction:column;gap:12px">
               <div class="fg">
                 <label>Model de generació</label>
                 <select id="cfgImgModel" onchange="saveImgModel()">
-                  <option value="gemini">✨ Gemini Flash (recomanat)</option>
+                  <option value="gemini">✨ Gemini Imagen (recomanat)</option>
                   <option value="cloudflare">☁️ Cloudflare SDXL (alta qualitat)</option>
                   <option value="puter">⚡ Puter FLUX (gratuït)</option>
                 </select>
               </div>
               <div style="padding:10px 12px;background:var(--surface2);border-radius:var(--rs);border:1px solid var(--border);font-size:11px;color:var(--text3);line-height:1.8" id="modelInfo"></div>
             </div>
-            <!-- Temàtica -->
             <div style="display:flex;flex-direction:column;gap:12px">
               <div class="fg">
                 <label>Temàtica visual</label>
@@ -606,7 +602,6 @@ select option{background:var(--surface2)}
                 <textarea rows="2" id="cfgImgCustom" placeholder="Ex: fotografia de producte gastronòmic, llum càlida, fons fosc elegant..." onchange="saveImgTheme()"></textarea>
               </div>
             </div>
-            <!-- Puter status -->
             <div style="display:flex;flex-direction:column;gap:10px">
               <div style="padding:14px;background:var(--surface2);border-radius:var(--r);border:1px solid var(--border)">
                 <div style="font-size:12px;font-weight:500;margin-bottom:6px">Compte Puter (FLUX)</div>
@@ -616,6 +611,65 @@ select option{background:var(--surface2)}
                   <button id="puterLogoutBtn" onclick="puterLogout()" class="bs" style="font-size:11px;padding:6px 12px;display:none">Desconnectar</button>
                 </div>
               </div>
+            </div>
+          </div>
+
+          <!-- Gemini config -->
+          <div id="cfGeminiConfig" style="display:none;padding:16px;background:var(--surface2);border-radius:var(--r);border:1px solid var(--border2);margin-top:4px">
+            <div style="font-size:13px;font-weight:500;margin-bottom:14px;display:flex;align-items:center;gap:8px">
+              ✨ Google Gemini Imagen
+              <span style="font-size:11px;font-weight:400;color:var(--text3)">— Models compatibles amb la teva API Key</span>
+            </div>
+            <div class="fg" style="margin-bottom:16px">
+              <label>Model d'imatge específic</label>
+              <select id="cfgGeminiModel" onchange="saveGeminiModel()" style="width:100%;background:var(--surface3);border:1px solid var(--border2);color:var(--text);padding:10px 14px;border-radius:var(--rs);font-size:14px;font-family:'DM Sans',sans-serif;outline:none;cursor:pointer">
+                <optgroup label="Nano Banana (Recomanats per imatges)">
+                  <option value="models/gemini-2.5-flash-image">🍌 Nano Banana (2.5 Flash Image)</option>
+                  <option value="models/gemini-3-pro-image-preview">🍌 Pro Nano Banana (3 Pro Image)</option>
+                  <option value="models/gemini-3.1-flash-image-preview">🍌 Nano Banana 2 (3.1 Flash Image)</option>
+                </optgroup>
+                <optgroup label="Imagen 4 (Models Vertex)">
+                  <option value="models/imagen-4.0-generate-001">🎨 Imagen 4</option>
+                  <option value="models/imagen-4.0-ultra-generate-001">🎨 Imagen 4 Ultra</option>
+                  <option value="models/imagen-4.0-fast-generate-001">⚡ Imagen 4 Fast</option>
+                </optgroup>
+                <optgroup label="Flash (Multimodal)">
+                  <option value="models/gemini-2.5-flash">⚡ Gemini 2.5 Flash</option>
+                  <option value="models/gemini-2.0-flash">⚡ Gemini 2.0 Flash</option>
+                  <option value="models/gemini-2.0-flash-001">⚡ Gemini 2.0 Flash 001</option>
+                  <option value="models/gemini-2.0-flash-lite">💨 Gemini 2.0 Flash-Lite</option>
+                  <option value="models/gemini-2.5-flash-lite">💨 Gemini 2.5 Flash-Lite</option>
+                </optgroup>
+                <optgroup label="Pro (Alta qualitat)">
+                  <option value="models/gemini-2.5-pro">🧠 Gemini 2.5 Pro</option>
+                  <option value="models/gemini-3-pro-preview">🧠 Gemini 3 Pro Preview</option>
+                  <option value="models/gemini-3.1-pro-preview">🧠 Gemini 3.1 Pro Preview</option>
+                </optgroup>
+                <optgroup label="Altres models">
+                  <option value="models/gemini-flash-latest">🔄 Gemini Flash Latest</option>
+                  <option value="models/gemini-pro-latest">🔄 Gemini Pro Latest</option>
+                  <option value="models/gemma-3-27b-it">📦 Gemma 3 27B</option>
+                  <option value="models/gemma-4-31b-it">📦 Gemma 4 31B</option>
+                </optgroup>
+              </select>
+              <span style="font-size:11px;color:var(--text3);margin-top:4px;display:block">Selecciona el model compatible amb la teva API Key de Google AI Studio</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+              <div class="fg">
+                <label>API Key de Gemini</label>
+                <input type="password" id="cfGeminiKeyImg" placeholder="AIzaSy..." autocomplete="off">
+                <span style="font-size:11px;color:var(--text3);margin-top:3px">Gratuïta a <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent)">aistudio.google.com →</a></span>
+              </div>
+              <div class="fg">
+                <label>Cloudflare Worker URL</label>
+                <input type="url" id="cfGeminiWorkerUrl" placeholder="https://gemini-proxy.EL-TEU-USUARI.workers.dev" autocomplete="off">
+                <span style="font-size:11px;color:var(--text3);margin-top:3px">URL del teu Worker (evita bloqueig EU) · <a href="https://dash.cloudflare.com/?to=/:account/workers" target="_blank" style="color:var(--accent)">Crear Worker →</a></span>
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+              <button class="bp" onclick="saveGeminiCfgImg()" style="font-size:12px;padding:8px 16px">Guardar Gemini Key</button>
+              <button class="bs" onclick="testGeminiConnection()" id="geminiTestBtn" style="font-size:12px;padding:8px 16px">🔍 Provar connexió</button>
+              <span id="geminiTestStatus" style="font-size:12px;color:var(--text3)"></span>
             </div>
           </div>
 
@@ -631,9 +685,7 @@ select option{background:var(--surface2)}
               <div class="fg">
                 <label>API Token</label>
                 <input type="password" id="cfApiToken" placeholder="xxxx..." autocomplete="off">
-                <span style="font-size:11px;color:var(--text3);margin-top:3px">
-                  <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank" style="color:var(--accent)">Crear token →</a> plantilla "Workers AI"
-                </span>
+                <span style="font-size:11px;color:var(--text3);margin-top:3px"><a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank" style="color:var(--accent)">Crear token →</a> plantilla "Workers AI"</span>
               </div>
             </div>
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
@@ -788,6 +840,9 @@ let igAccountName = localStorage.getItem('sc_ig_account_name') || '';
 function getGeminiKey() {
   return localStorage.getItem('sc_gemini_key') || document.getElementById('cfgGeminiKey')?.value?.trim() || '';
 }
+
+const GEMINI_PROXY_URL = 'https://jordiqterrassa.com/gemini-proxy.php';
+
 function getImgModel() { return localStorage.getItem('sc_img_model') || 'gemini'; }
 function saveImgModel() {
   const sel = document.getElementById('cfgImgModel')?.value || 'gemini';
@@ -795,15 +850,17 @@ function saveImgModel() {
   updateModelUI(sel);
 }
 const MODEL_INFO = {
-  gemini:     '✨ Gemini Flash · API Key gratuïta de Google · Imatges en base64',
+  gemini:     '✨ Models Nano Banana i Imagen 4 · Requereix API Key gratuïta de Google · Imatges en base64',
   cloudflare: '☁️ Alta qualitat (SDXL) · 10.000 passes/dia gratis · Requereix compte Cloudflare',
-  puter:      '⚡ Puter FLUX · Completament gratuït · Requereix compte Puter',
+  puter:      '⚡ Gratuït sense configuració · Qualitat bàsica (FLUX.1-schnell) · Requereix sessió Puter',
 };
 function updateModelUI(model) {
   const info = document.getElementById('modelInfo');
   if (info) info.textContent = MODEL_INFO[model] || '';
   const cfPanel = document.getElementById('cfCloudflareConfig');
   if (cfPanel) cfPanel.style.display = model === 'cloudflare' ? 'block' : 'none';
+  const geminiPanel = document.getElementById('cfGeminiConfig');
+  if (geminiPanel) geminiPanel.style.display = model === 'gemini' ? 'block' : 'none';
 }
 function loadImgModelUI() {
   const model = getImgModel();
@@ -814,6 +871,12 @@ function loadImgModelUI() {
   const tok   = localStorage.getItem('sc_cf_api_token')  || '';
   if (document.getElementById('cfAccountId')) document.getElementById('cfAccountId').value = accId;
   if (document.getElementById('cfApiToken'))  document.getElementById('cfApiToken').value  = tok;
+  const gemKey = localStorage.getItem('sc_gemini_key') || '';
+  const gemImgEl = document.getElementById('cfGeminiKeyImg');
+  if (gemImgEl && gemKey) gemImgEl.value = gemKey;
+  const workerEl = document.getElementById('cfGeminiWorkerUrl');
+  if (workerEl) workerEl.value = localStorage.getItem('sc_gemini_worker_url') || '';
+  loadGeminiModelUI();
 }
 
 // Temàtica visual
@@ -848,39 +911,66 @@ function loadImgThemeUI() {
   }
 }
 
-// Prompt engineering
-function buildImagePrompt(prompt, isStory) {
-  const theme = getImgTheme();
-  const orient = isStory ? 'vertical portrait 9:16 composition, tall format' : 'square 1:1 composition, centered subject';
-  return `${theme}, ${prompt}, photorealistic, ultra detailed, 8k resolution, ${orient}, clean editorial style`;
+// ── Gemini Model Selector ────────────────────────────────────
+function getGeminiModel() {
+  return localStorage.getItem('sc_gemini_model') || 'models/gemini-2.5-flash-image';
 }
-
-// ── Gemini Flash Image Generation ────────────────────────────
-async function generateWithGemini(prompt, isStory) {
-  const apiKey = getGeminiKey();
-  if (!apiKey) throw new Error('No hi ha Gemini API Key. Afegeix-la a Configuració.');
-  const fullPrompt = buildImagePrompt(prompt, isStory);
-  const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: fullPrompt }] }],
-        generationConfig: { responseModalities: ['TEXT', 'IMAGE'] }
-      })
-    }
-  );
-  if (!res.ok) {
-    const errText = await res.text();
-    let msg = '';
-    try { msg = JSON.parse(errText)?.error?.message || errText.slice(0, 150); } catch(x) { msg = errText.slice(0, 150); }
-    throw new Error('Gemini HTTP ' + res.status + ': ' + msg);
+function saveGeminiModel() {
+  const sel = document.getElementById('cfgGeminiModel')?.value || 'models/gemini-2.5-flash-image';
+  localStorage.setItem('sc_gemini_model', sel);
+  toast('✓ Model Gemini desat: ' + sel.split('/').pop());
+}
+function loadGeminiModelUI() {
+  const model = getGeminiModel();
+  const el = document.getElementById('cfgGeminiModel');
+  if (el) el.value = model;
+}
+function saveGeminiCfgImg() {
+  const key = document.getElementById('cfGeminiKeyImg')?.value?.trim() || '';
+  const workerUrl = document.getElementById('cfGeminiWorkerUrl')?.value?.trim() || '';
+  const model = document.getElementById('cfgGeminiModel')?.value?.trim() || '';
+  if (!key) { toast('⚠️ Entra una API Key vàlida'); return; }
+  localStorage.setItem('sc_gemini_key', key);
+  if (workerUrl) localStorage.setItem('sc_gemini_worker_url', workerUrl);
+  if (model) localStorage.setItem('sc_gemini_model', model);
+  const cfgEl = document.getElementById('cfgGeminiKey');
+  if (cfgEl) cfgEl.value = key;
+  toast('✓ Gemini desat' + (workerUrl ? ' (amb Worker URL)' : '') + (model ? ' · Model: ' + model.split('/').pop() : ''));
+}
+function getGeminiWorkerUrl() {
+  return localStorage.getItem('sc_gemini_worker_url') || '';
+}
+async function testGeminiConnection() {
+  const btn = document.getElementById('geminiTestBtn');
+  const status = document.getElementById('geminiTestStatus');
+  const keyInput = document.getElementById('cfGeminiKeyImg')?.value?.trim();
+  const workerInput = document.getElementById('cfGeminiWorkerUrl')?.value?.trim();
+  const modelInput = document.getElementById('cfgGeminiModel')?.value?.trim();
+  if (keyInput) {
+    localStorage.setItem('sc_gemini_key', keyInput);
+    const cfgEl = document.getElementById('cfgGeminiKey');
+    if (cfgEl) cfgEl.value = keyInput;
   }
-  const data = await res.json();
-  const part = data?.candidates?.[0]?.content?.parts?.find(p => p.inlineData);
-  if (!part?.inlineData?.data) throw new Error('Gemini: sense imatge a la resposta');
-  return { url: 'data:' + (part.inlineData.mimeType || 'image/png') + ';base64,' + part.inlineData.data, label: '✨ Gemini Flash' };
+  if (workerInput) localStorage.setItem('sc_gemini_worker_url', workerInput);
+  if (modelInput) localStorage.setItem('sc_gemini_model', modelInput);
+  const workerUrl = localStorage.getItem('sc_gemini_worker_url') || '';
+  const usingWorker = !!workerUrl;
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Provant...'; }
+  if (status) status.textContent = usingWorker ? 'Via Cloudflare Worker...' : 'Via proxy directe...';
+  try {
+    const result = await generateWithGemini('a small bowl of tomato soup on white background', false);
+    const workingModel = localStorage.getItem('sc_gemini_working_model') || '';
+    if (status) status.innerHTML = '<span style="color:var(--green)">✓ Funciona! ' + (usingWorker ? 'Worker · ' : '') + workingModel + '</span>';
+    toast('✓ Gemini connectat!');
+  } catch(e) {
+    let msg = e.message.slice(0, 120);
+    if (/403|billing|PERMISSION_DENIED/i.test(msg)) msg = 'Error de permisos/billing al projecte Google Cloud.';
+    else if (/401|API_KEY_INVALID/i.test(msg)) msg = 'API Key invàlida.';
+    if (status) status.innerHTML = '<span style="color:var(--red)">✗ ' + msg + '</span>';
+    toast('❌ Gemini: ' + e.message.slice(0, 60));
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '🔍 Provar connexió'; }
+  }
 }
 
 // ── Cloudflare Workers AI — SDXL ─────────────────────────────
@@ -903,7 +993,7 @@ async function generateWithCloudflare(prompt, isStory) {
     body: JSON.stringify({ account_id: accountId, api_token: apiToken, prompt: fullPrompt, num_steps: 20, width, height })
   });
   const data = await res.json();
-  if (!res.ok || data.error) throw new Error(data.error || `Cloudflare HTTP ${res.status}`);
+  if (!res.ok || data.error) throw new Error(data.error || 'Cloudflare HTTP ' + res.status);
   return { url: data.image, label: '☁️ Cloudflare SDXL' };
 }
 function saveCloudflareCfg() {
@@ -923,15 +1013,39 @@ async function testCloudflare() {
     const uiTok   = document.getElementById('cfApiToken')?.value?.trim();
     if (uiAccId) localStorage.setItem('sc_cf_account_id', uiAccId);
     if (uiTok)   localStorage.setItem('sc_cf_api_token',  uiTok);
-    await generateWithCloudflare('a simple bowl of soup on a white background', false);
-    if (status) status.innerHTML = '<span style="color:var(--green)">✓ Cloudflare SDXL funciona correctament!</span>';
+    await generateWithCloudflare('a simple bowl of soup on white background', false);
+    if (status) status.innerHTML = '<span style="color:var(--green)">✓ Cloudflare SDXL funciona!</span>';
     toast('✓ Cloudflare Workers AI connectat!');
   } catch(e) {
-    if (status) status.innerHTML = '<span style="color:var(--red)">✗ ' + e.message.slice(0, 80) + '</span>';
-    toast('❌ ' + e.message.slice(0, 80));
+    if (status) status.innerHTML = '<span style="color:var(--red)">✗ ' + e.message.slice(0,80) + '</span>';
+    toast('❌ ' + e.message.slice(0,80));
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = '🔍 Provar connexió'; }
   }
+}
+
+// ── Gemini Image Generation (via proxy) ──────────────────────
+async function generateWithGemini(prompt, isStory) {
+  const apiKey = getGeminiKey();
+  if (!apiKey) throw new Error("No hi ha Gemini API Key. Afegeix-la al panell de Generació d'imatges.");
+  const model = getGeminiModel();
+  const fullPrompt = buildImagePrompt(prompt, isStory);
+  const workerUrl = getGeminiWorkerUrl();
+  const proxyUrl = workerUrl || GEMINI_PROXY_URL;
+  const res = await fetch(proxyUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ api_key: apiKey, prompt: fullPrompt, model })
+  });
+  if (!res.ok) throw new Error('Error de xarxa amb el proxy Gemini (HTTP ' + res.status + ')');
+  const data = await res.json();
+  if (!data.success) throw new Error(data.error || 'Error desconegut del proxy Gemini');
+  console.log('✓ Gemini OK via ' + (workerUrl ? 'Worker' : 'proxy') + ', model:', data.model_used || model);
+  localStorage.setItem('sc_gemini_working_model', data.model_used || model);
+  return {
+    url: data.image,
+    label: '✨ Gemini (' + (data.model_used?.split('/').pop() || model.split('/').pop()) + ')'
+  };
 }
 
 // ── Puter FLUX ───────────────────────────────────────────────
@@ -949,7 +1063,6 @@ async function generateWithPuter(prompt, isStory) {
   }
 }
 
-// ── Selector de model ─────────────────────────────────────────
 async function generateImageNb(prompt, isStory) {
   const model = getImgModel();
   if (model === 'cloudflare') {
