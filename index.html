@@ -836,6 +836,14 @@ let igAccountName = localStorage.getItem('sc_ig_account_name') || '';
 
 // =====================================================
 // GENERACIÓ D'IMATGES
+// ✅ AÑADIR AQUÍ - Antes de getGeminiKey()
+function buildImagePrompt(prompt, isStory) {
+  const orient = isStory
+    ? 'vertical 9:16 portrait composition for Instagram Story'
+    : 'square 1:1 composition for Instagram Post';
+  return `${prompt}, professional food photography, editorial style, ${orient}, shallow depth of field, elegant natural lighting, ultra detailed 8k resolution, appetizing presentation`;
+}
+
 // =====================================================
 function getGeminiKey() {
   return localStorage.getItem('sc_gemini_key') || document.getElementById('cfgGeminiKey')?.value?.trim() || '';
