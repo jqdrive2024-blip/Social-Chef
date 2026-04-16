@@ -188,6 +188,19 @@ select option{background:var(--surface2)}
 .init-screen{position:fixed;inset:0;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;gap:16px}
 .init-screen h1{font-family:'DM Serif Display',serif;font-size:32px;color:var(--accent)}
 .init-screen p{color:var(--text3);font-size:14px}
+.login-box{background:var(--surface);border:1px solid var(--border2);border-radius:var(--rl);padding:40px 48px;text-align:center;display:none;flex-direction:column;align-items:center;gap:20px;max-width:380px;width:90%}
+.login-box.vis{display:flex}
+.login-box h2{font-family:'DM Serif Display',serif;font-size:22px;color:var(--text)}
+.login-box p{font-size:13px;color:var(--text3);line-height:1.6;max-width:260px}
+.btn-google{display:flex;align-items:center;gap:12px;background:#fff;color:#1f1f1f;border:none;padding:12px 24px;border-radius:var(--rs);font-size:15px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;transition:box-shadow .15s;width:100%;justify-content:center}
+.btn-google:hover{box-shadow:0 4px 20px rgba(0,0,0,.35)}
+.btn-google svg{width:20px;height:20px;flex-shrink:0}
+.user-bar{padding:12px 16px;border-top:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.user-av{width:30px;height:30px;border-radius:50%;border:2px solid var(--border2);overflow:hidden;flex-shrink:0;background:var(--accent-bg);display:flex;align-items:center;justify-content:center;font-size:13px}
+.user-av img{width:100%;height:100%;object-fit:cover}
+.user-name{flex:1;min-width:0;font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.btn-logout{background:none;border:1px solid var(--border2);color:var(--text3);padding:4px 8px;border-radius:var(--rs);font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap}
+.btn-logout:hover{border-color:var(--red);color:var(--red)}
 .init-spin{width:40px;height:40px;border:2px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
 .cbadge{background:var(--accent-bg);color:var(--accent);font-size:11px;padding:2px 7px;border-radius:20px;margin-left:6px}
 .empty{text-align:center;padding:40px 20px;color:var(--text3)}
@@ -274,9 +287,19 @@ select option{background:var(--surface2)}
 <body>
 
 <div class="init-screen" id="initScreen">
-  <div class="init-spin"></div>
+  <div class="init-spin" id="initSpinner"></div>
   <h1>Social Chef</h1>
   <p id="initMsg">Conectando con Firebase...</p>
+  <div class="login-box" id="loginBox">
+    <svg viewBox="0 0 48 48" style="width:48px;height:48px;opacity:.7"><path fill="#a78bfa" d="M24 4C12.95 4 4 12.95 4 24s8.95 20 20 20 20-8.95 20-20S35.05 4 24 4zm0 8c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6 2.69-6 6-6zm0 28c-5.01 0-9.41-2.56-12-6.44C12.02 30.36 20 28 24 28s11.98 2.36 12 5.56C33.41 37.44 29.01 40 24 40z"/></svg>
+    <h2>Benvingut a Social Chef</h2>
+    <p>Entra amb el teu compte de Google per accedir als teus restaurants des de qualsevol dispositiu.</p>
+    <button class="btn-google" onclick="loginWithGoogle()">
+      <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Continuar amb Google
+    </button>
+    <p style="font-size:11px;color:var(--text3);margin-top:-8px">Les teves dades es guarden al teu compte</p>
+  </div>
 </div>
 
 <div class="app" id="mainApp" style="display:none">
@@ -313,6 +336,9 @@ select option{background:var(--surface2)}
         <button class="ni" id="dniLib" onclick="showSec('library',this);closeDrawer()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Librería
         </button>
+        <button class="ni" id="dniFav" onclick="showSec('favorites',this);closeDrawer()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Favoritos
+        </button>
         <button class="ni" id="dniCfg" onclick="showSec('config',this);closeDrawer()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M5.34 18.66l-1.41 1.41M21 12h-2M5 12H3M19.07 19.07l-1.41-1.41M5.34 5.34L3.93 3.93M12 21v-2M12 5V3"/></svg>Configuración
         </button>
@@ -320,6 +346,11 @@ select option{background:var(--surface2)}
       <div style="padding:12px 16px;border-top:1px solid var(--border);font-size:11px;display:flex;align-items:center;gap:6px">
         <div class="sync-dot" id="syncDotMob"></div>
         <span id="syncTxtMob" style="color:var(--text3)">Desconectado</span>
+      </div>
+      <div style="padding:10px 16px 16px;display:flex;align-items:center;gap:10px">
+        <div class="user-av" id="userAvMob">&#128100;</div>
+        <span style="flex:1;min-width:0;font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="userNameMob">Usuari</span>
+        <button class="btn-logout" onclick="logoutUser();closeDrawer()">Sortir</button>
       </div>
     </div>
   </div>
@@ -334,6 +365,9 @@ select option{background:var(--surface2)}
     </button>
     <button id="mbn-library" onclick="showSec('library',this);syncMobileNav('library')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Librería
+    </button>
+    <button id="mbn-favorites" onclick="showSec('favorites',this);syncMobileNav('favorites')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Favoritos
     </button>
     <button id="mbn-config" onclick="showSec('config',this);syncMobileNav('config')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M5.34 18.66l-1.41 1.41M21 12h-2M5 12H3M19.07 19.07l-1.41-1.41M5.34 5.34L3.93 3.93M12 21v-2M12 5V3"/></svg>Config
@@ -358,6 +392,10 @@ select option{background:var(--surface2)}
       <button class="ni" onclick="showSec('library',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Librería
       </button>
+      <button class="ni" onclick="showSec('favorites',this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Favoritos
+        <span class="cbadge" id="favBadge">0</span>
+      </button>
       <button class="ni" onclick="showSec('config',this)">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93l-1.41 1.41M5.34 18.66l-1.41 1.41M21 12h-2M5 12H3M19.07 19.07l-1.41-1.41M5.34 5.34L3.93 3.93M12 21v-2M12 5V3"/></svg>Configuración
       </button>
@@ -365,6 +403,11 @@ select option{background:var(--surface2)}
     <div class="sync" id="syncBar">
       <div class="sync-dot" id="syncDot"></div>
       <span id="syncTxt" style="font-size:11px;color:var(--text3)">Desconectado</span>
+    </div>
+    <div class="user-bar" id="userBar" style="display:none">
+      <div class="user-av" id="userAv">&#128100;</div>
+      <span class="user-name" id="userName">Usuari</span>
+      <button class="btn-logout" onclick="logoutUser()">Sortir</button>
     </div>
   </aside>
 
@@ -469,9 +512,10 @@ select option{background:var(--surface2)}
 
       <!-- Tabs: Instagram / Web / Generades -->
       <div class="bo-tabs">
-        <button class="bo-tab active" onclick="switchLibTab('instagram',this)">📷 Instagram</button>
-        <button class="bo-tab" onclick="switchLibTab('web',this)">🌐 Web</button>
-        <button class="bo-tab" onclick="switchLibTab('generated',this)">🤖 Generades IA</button>
+        <button class="bo-tab active" onclick="switchLibTab('instagram',this)">&#128247; Instagram</button>
+        <button class="bo-tab" onclick="switchLibTab('web',this)">&#127760; Web</button>
+        <button class="bo-tab" onclick="switchLibTab('generated',this)">&#129302; Generades IA</button>
+        <button class="bo-tab" onclick="switchLibTab('upload',this)">&#128193; Carregar</button>
       </div>
 
       <!-- Instagram tab -->
@@ -514,7 +558,7 @@ select option{background:var(--surface2)}
       <!-- Generades tab -->
       <div id="lib-generated" style="display:none">
         <div class="bo-gen-area">
-          <h3 style="font-size:15px;font-weight:500;margin-bottom:12px">Generar nova imatge amb Nanobanana</h3>
+          <h3 style="font-size:15px;font-weight:500;margin-bottom:12px">Generar nova imatge amb IA</h3>
           <div style="display:flex;flex-direction:column;gap:10px">
             <textarea id="genImgPrompt" rows="2" placeholder="Descriu la imatge: plat de bravas crujients amb salsa especial de la casa, fotografia professional de menjar..."></textarea>
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
@@ -522,14 +566,66 @@ select option{background:var(--surface2)}
                 <option value="1:1">Post (1:1)</option>
                 <option value="9:16">Story (9:16)</option>
               </select>
-              <button class="bp" onclick="genLibraryImage()" id="genLibBtn">🎨 Generar imatge</button>
+              <button class="bp" onclick="genLibraryImage()" id="genLibBtn">&#127912; Generar imatge</button>
               <span style="font-size:11px;color:var(--text3)" id="nbCredit"></span>
             </div>
           </div>
         </div>
         <div id="genGrid" class="bo-grid">
-          <div class="bo-empty"><p>Les imatges generades apareixeran aquí</p></div>
+          <div class="bo-empty"><p>Les imatges generades apareixeran aqui</p></div>
         </div>
+      </div>
+      <!-- Carregar imatges tab -->
+      <div id="lib-upload" style="display:none">
+        <div class="bo-gen-area">
+          <h3 style="font-size:15px;font-weight:500;margin-bottom:8px">Carregar imatges a la biblioteca</h3>
+          <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Puja imatges des del teu dispositiu per afegir-les directament a la biblioteca del restaurant actiu.</p>
+          <div id="uploadDropZone" style="border:2px dashed var(--border2);border-radius:var(--r);padding:40px 20px;cursor:pointer;transition:all .2s;text-align:center"
+            ondragover="event.preventDefault();this.style.borderColor='var(--accent)';this.style.background='var(--accent-bg)'"
+            ondragleave="this.style.borderColor='var(--border2)';this.style.background='none'"
+            ondrop="handleUploadDrop(event)"
+            onclick="document.getElementById('uploadFileInput').click()">
+            <div style="font-size:36px;margin-bottom:12px">&#128193;</div>
+            <p style="font-size:14px;color:var(--text);font-weight:500;margin-bottom:4px">Arrossega imatges aqui</p>
+            <p style="font-size:12px;color:var(--text3)">o clica per seleccionar · JPG, PNG, WebP, GIF</p>
+          </div>
+          <input type="file" id="uploadFileInput" multiple accept="image/*" style="display:none" onchange="handleUploadInput(event)">
+          <div id="uploadProgress" style="display:none;margin-top:12px;padding:10px 14px;background:var(--surface2);border-radius:var(--rs);font-size:13px;color:var(--text2)">Processant imatges...</div>
+        </div>
+        <div id="uploadGrid" class="bo-grid">
+          <div class="bo-empty"><p>Les imatges carregades apareixeran aqui</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FAVORITS -->
+    <div id="sec-favorites" class="content" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+        <div>
+          <h2 style="font-family:'DM Serif Display',serif;font-size:20px;font-weight:500">&#11088; Favoritos</h2>
+          <p style="font-size:13px;color:var(--text3);margin-top:2px">Posts publicados y contenidos guardados manualmente. Sincronizados entre dispositivos.</p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="bs" onclick="openSaveFavModal()" style="font-size:13px">+ Guardar propuesta</button>
+          <select id="favFilterType" onchange="renderFavorites()" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:8px 12px;border-radius:var(--rs);font-size:13px;font-family:inherit;outline:none">
+            <option value="all">Todos</option>
+            <option value="post">Posts</option>
+            <option value="story">Stories</option>
+          </select>
+        </div>
+      </div>
+      <div id="favGrid" class="pgrid">
+        <div class="empty" style="grid-column:1/-1"><span class="ei">&#11088;</span><p>Aun no hay favoritos. Los posts publicados se añadiran automaticamente.</p></div>
+      </div>
+    </div>
+
+    <!-- Modal guardar proposta com a favorit -->
+    <div class="ov" id="ovSaveFav" onclick="closeOvIf(event,'ovSaveFav')">
+      <div class="modal" style="width:460px;max-width:95vw">
+        <h3>Guardar como favorito</h3>
+        <p class="msub">Elige que propuesta quieres guardar en favoritos</p>
+        <div id="saveFavPropList" style="max-height:360px;overflow-y:auto"></div>
+        <div class="mact"><button class="bs" onclick="closeOv('ovSaveFav')">Cancelar</button></div>
       </div>
     </div>
 
@@ -817,11 +913,13 @@ const firebaseConfig = {
 };
 
 const SCRAPER_URL = 'https://jordiqterrassa.com/scraper.php';
+const PUBLISHER_URL = 'https://jordiqterrassa.com/publisher.php';
+const CRON_SECRET = 'social_chef_2025_secret'; // Ha de coincidir amb el publisher.php de Social Chef
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
 let db, auth, currentUser, currentRestId;
 let restaurants = [];
-let proposals = [], scheduled = [], bulkItems = [];
+let proposals = [], scheduled = [], bulkItems = [], favorites = [];
 let selIds = new Set();
 let calMon = new Date().getMonth(), calYr = new Date().getFullYear(), editP = null;
 let libImages = []; // imatges de la librería (IG + web + generades)
@@ -1491,6 +1589,29 @@ function applyPendingToProposal(propId) {
 }
 
 // Generar imatge des de la librería
+// Puja una imatge base64 al servidor i retorna la URL publica
+async function uploadToServer(base64Data) {
+  const res = await fetch(PUBLISHER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ secret: CRON_SECRET, action: 'upload_image', imageData: base64Data })
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+  if (!data.success || !data.url) throw new Error(data.error || 'Error pujant al servidor');
+  return data.url;
+}
+
+async function saveLibImagesToFirestore() {
+  if (!currentUser || !currentRestId) return;
+  const toSave = libImages
+    .filter(function(i) { return (i.source === 'generated' || i.source === 'upload') && i.restId === currentRestId && i.url && i.url.startsWith('http'); })
+    .map(function(i) { return { url: i.url, source: i.source, caption: i.caption || '', prompt: i.prompt || '', type: i.type || 'post', modelLabel: i.modelLabel || '' }; });
+  try {
+    await db.collection('users').doc(currentUser.uid).collection('restaurants').doc(currentRestId).update({ libImages: toSave });
+  } catch(e) { console.warn('saveLibImagesToFirestore error:', e); }
+}
+
 async function genLibraryImage() {
   const prompt = document.getElementById('genImgPrompt').value.trim();
   if (!prompt) { toast("Descriu la imatge que vols generar"); return; }
@@ -1502,23 +1623,23 @@ async function genLibraryImage() {
   btn.textContent = geminiKey ? '⏳ Generant amb Gemini...' : '⏳ Generant amb Puter...';
   try {
     const result2 = await generateImageNb(prompt, isStory);
-    const url = result2?.url || result2;
-    const modelLabel = result2?.label || '🤖 IA';
-    const imgData = { url, source: 'generated', prompt, type: isStory ? 'story' : 'post', restId: currentRestId, modelLabel };
+    let url = result2 && result2.url ? result2.url : result2;
+    const modelLabel = result2 && result2.label ? result2.label : '🤖 IA';
+    if (url && url.startsWith('data:')) {
+      btn.textContent = '⏳ Pujant al servidor...';
+      try { url = await uploadToServer(url); } catch(e) { console.warn('Upload failed:', e); }
+    }
+    const imgData = { url: url, source: 'generated', prompt: prompt, type: isStory ? 'story' : 'post', restId: currentRestId, modelLabel: modelLabel };
     addToLibrary(imgData);
-    // Guardar en IndexedDB para persistencia
+    await saveLibImagesToFirestore();
     await idbSaveImage(imgData);
-    // Actualitzar idbId de l'últim item
-    const savedItems = await idbLoadImages(currentRestId);
-    const last = savedItems[savedItems.length - 1];
-    if (last) { const li = libImages.find(i => i.url === url); if (li) li.idbId = last.id; }
     renderGenGrid();
-    toast('✓ Imatge generada i guardada a la librería!');
+    toast('Imatge generada i sincronitzada a tots els dispositius!');
   } catch(e) {
-    toast('❌ Error: ' + (e.message || 'Error generant').slice(0,80));
+    toast('Error: ' + (e.message || 'Error generant').slice(0,80));
   } finally {
     btn.disabled = false;
-    btn.textContent = '🎨 Generar imatge';
+    btn.textContent = '&#127912; Generar imatge';
   }
 }
 
@@ -1529,7 +1650,9 @@ function switchLibTab(tab, btn) {
   document.getElementById('lib-instagram').style.display = tab === 'instagram' ? 'block' : 'none';
   document.getElementById('lib-web').style.display = tab === 'web' ? 'block' : 'none';
   document.getElementById('lib-generated').style.display = tab === 'generated' ? 'block' : 'none';
+  document.getElementById('lib-upload').style.display = tab === 'upload' ? 'block' : 'none';
   if (tab === 'generated') renderGenGrid();
+  if (tab === 'upload') renderUploadGrid();
 }
 
 // =====================================================
@@ -1747,39 +1870,67 @@ function renderCal() {
   cont.innerHTML=html; renderSList();
 }
 function renderSList() {
-  const c=document.getElementById('schedItems');
-  if (!scheduled.length){c.innerHTML=`<div class="empty"><span class="ei">📅</span><p>Sin publicaciones aún.</p></div>`;return;}
-  const sorted=[...scheduled].sort((a,b)=>(a.date+a.time).localeCompare(b.date+b.time));
-  c.innerHTML=sorted.map((s,i)=>`
-    <div class="sitem ${s.type==='story'?'story':''}">
-      <div style="display:flex;align-items:center;gap:10px">
-        ${s.imageData?`<img src="${s.imageData}" class="sthumb" alt="">`:`<span style="font-size:22px">${s.emoji}</span>`}
-        <div style="flex:1;min-width:0">
-          <div class="sd8">${fmtDate(s.date)} · ${s.time}</div>
-          <div class="stit">${s.title}</div>
-          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px">
-            <span class="styp">${s.type==='post'?'Post':'Story'}</span>
-            ${s.igStatus==='published'
-              ? '<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(126,201,142,.15);color:var(--green)">✓ Publicat</span>'
-              : igIsConnected()
-                ? `<button id="igpubBtn-${i}" onclick="igPublishPost(${i})" style="background:none;border:1px solid rgba(126,179,232,.35);color:var(--blue);cursor:pointer;border-radius:20px;font-size:10px;padding:2px 10px;font-family:inherit;transition:all .15s" onmouseover="this.style.borderColor='var(--blue)'" onmouseout="this.style.borderColor='rgba(126,179,232,.35)'">📱 Publicar</button>`
-                : '<span style="font-size:10px;color:var(--text3)">IG no connectat</span>'
-            }
-          </div>
-        </div>
-        <button onclick="remSched(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:4px">×</button>
-      </div>
-    </div>`).join('');
+  var c = document.getElementById('schedItems');
+  if (!scheduled.length) { c.innerHTML = '<div class="empty"><span class="ei">&#128197;</span><p>Sin publicaciones aun.</p></div>'; return; }
+  var now = new Date();
+  var sorted = [...scheduled].map(function(s, origIdx) { return Object.assign({}, s, { _origIdx: origIdx }); }).sort(function(a,b) { return (a.date+a.time).localeCompare(b.date+b.time); });
+  var html = '';
+  for (var si = 0; si < sorted.length; si++) {
+    var s = sorted[si];
+    var i = s._origIdx;
+    var schedDt = s.date && s.time ? new Date(s.date + 'T' + s.time) : null;
+    var isPast = schedDt && schedDt < now;
+    var thumb = s.imageData
+      ? '<img src="' + s.imageData + '" class="sthumb" alt="">'
+      : '<span style="font-size:22px">' + (s.emoji || '&#128247;') + '</span>';
+    var statusBtn = '';
+    if (s.igStatus === 'published') {
+      statusBtn = '<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(126,201,142,.15);color:var(--green)">&#10003; Publicat</span>';
+    } else if (isPast) {
+      statusBtn = '<button data-idx="' + i + '" onclick="markAsPublishedByCron(+this.dataset.idx)" style="background:none;border:1px solid rgba(126,201,142,.35);color:var(--green);cursor:pointer;border-radius:20px;font-size:10px;padding:2px 10px;font-family:inherit" title="El cron potser ja ho ha publicat. Clica per confirmar.">&#10003; Ja publicat</button>'
+        + (igIsConnected() ? '<button data-idx="' + i + '" onclick="igPublishPost(+this.dataset.idx)" style="background:none;border:1px solid rgba(126,179,232,.35);color:var(--blue);cursor:pointer;border-radius:20px;font-size:10px;padding:2px 10px;font-family:inherit">&#128241; Publicar</button>' : '');
+    } else if (igIsConnected()) {
+      statusBtn = '<button data-idx="' + i + '" onclick="igPublishPost(+this.dataset.idx)" style="background:none;border:1px solid rgba(126,179,232,.35);color:var(--blue);cursor:pointer;border-radius:20px;font-size:10px;padding:2px 10px;font-family:inherit">&#128241; Publicar</button>';
+    } else {
+      statusBtn = '<span style="font-size:10px;color:var(--text3)">IG no connectat</span>';
+    }
+    html += '<div class="sitem ' + (s.type==='story'?'story':'') + '" style="' + (isPast && s.igStatus !== 'published' ? 'opacity:.75;' : '') + '">'
+      + '<div style="display:flex;align-items:center;gap:10px">'
+      + thumb
+      + '<div style="flex:1;min-width:0">'
+      + '<div class="sd8">' + fmtDate(s.date) + ' &#183; ' + s.time + (isPast && s.igStatus !== 'published' ? ' <span style="color:var(--green);font-size:10px">&#183; hora passada</span>' : '') + '</div>'
+      + '<div class="stit">' + s.title + '</div>'
+      + '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:2px">'
+      + '<span class="styp">' + (s.type==='post'?'Post':'Story') + '</span>'
+      + statusBtn
+      + '</div></div>'
+      + '<div style="display:flex;gap:2px;flex-shrink:0">'
+      + '<button data-idx="' + i + '" onclick="remSched(+this.dataset.idx)" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:18px;padding:4px 6px;line-height:1">&#215;</button>'
+      + '</div>'
+      + '</div></div>';
+  }
+  c.innerHTML = html;
 }
 async function remSched(i){
-  const s = scheduled[i];
-  // Eliminar imatge de IDB si existeix
-  if (s?.schedImgId) await idbDeleteSchedImage(s.schedImgId);
+  var s = scheduled[i];
+  if (s && s.schedImgId) await idbDeleteSchedImage(s.schedImgId);
   scheduled.splice(i,1);
   updBadge();
   await saveScheduled();
   renderCal();
-  toast('Eliminada');
+  toast('Eliminada del calendari');
+}
+
+async function markAsPublishedByCron(i) {
+  var s = scheduled[i];
+  if (!s) return;
+  var publishedPost = Object.assign({}, s, { igStatus: 'published', publishedAt: new Date().toISOString(), source: 'published' });
+  await saveFavorite(publishedPost);
+  scheduled.splice(i, 1);
+  updBadge();
+  await saveScheduled();
+  renderCal();
+  toast('Mogut a Favorits. Calendari actualitzat.');
 }
 function chMonth(d){calMon+=d;if(calMon>11){calMon=0;calYr++;}if(calMon<0){calMon=11;calYr--;}renderCal();}
 function updBadge(){
@@ -1797,26 +1948,84 @@ async function initApp() {
     firebase.initializeApp(firebaseConfig);
     auth = firebase.auth();
     db = firebase.firestore();
-    const cred = await auth.signInAnonymously();
-    currentUser = cred.user;
-    setSyncState('spin','Cargando...');
-    await loadUserData();
-    setSyncState('ok','Sincronizado · ' + currentUser.uid.slice(0,8));
-    document.getElementById('initScreen').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'grid';
-    renderCal();
-    const geminiKey = localStorage.getItem('sc_gemini_key');
-    if (geminiKey && document.getElementById('cfgGeminiKey')) document.getElementById('cfgGeminiKey').value = geminiKey;
-    loadImgModelUI();
-    loadImgThemeUI();
-    // Restaurar token d'Instagram
-    const savedIgToken = localStorage.getItem('sc_ig_token');
-    if (savedIgToken && document.getElementById('cfgIgToken')) document.getElementById('cfgIgToken').value = savedIgToken;
-    updateIgConnectUI();
+    auth.onAuthStateChanged(async function(user) {
+      if (user) {
+        currentUser = user;
+        setInitMsg('Carregant les teves dades...');
+        document.getElementById('loginBox').classList.remove('vis');
+        document.getElementById('initSpinner').style.display = 'block';
+        setSyncState('spin','Carregant...');
+        await loadUserData();
+        const displayName = user.displayName || user.email || user.uid.slice(0,8);
+        setSyncState('ok', displayName);
+        updateUserUI(user);
+        document.getElementById('initScreen').style.display = 'none';
+        document.getElementById('mainApp').style.display = 'grid';
+        renderCal();
+        const geminiKey = localStorage.getItem('sc_gemini_key');
+        if (geminiKey && document.getElementById('cfgGeminiKey')) document.getElementById('cfgGeminiKey').value = geminiKey;
+        loadImgModelUI();
+        loadImgThemeUI();
+        const savedIgToken = localStorage.getItem('sc_ig_token');
+        if (savedIgToken && document.getElementById('cfgIgToken')) document.getElementById('cfgIgToken').value = savedIgToken;
+        updateIgConnectUI();
+      } else {
+        showLoginScreen();
+      }
+    });
   } catch(err) {
     setInitMsg('Error: ' + err.message);
     console.error(err);
   }
+}
+
+function showLoginScreen() {
+  document.getElementById('initSpinner').style.display = 'none';
+  document.getElementById('initMsg').textContent = 'Accedeix per continuar';
+  document.getElementById('loginBox').classList.add('vis');
+}
+
+async function loginWithGoogle() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+  try {
+    setInitMsg('Obrint finestra de Google...');
+    document.getElementById('loginBox').classList.remove('vis');
+    document.getElementById('initSpinner').style.display = 'block';
+    await auth.signInWithPopup(provider);
+  } catch(err) {
+    console.error('Login error:', err);
+    if (err.code === 'auth/popup-closed-by-user') {
+      setInitMsg('Finestra tancada. Torna-ho a intentar.');
+    } else {
+      setInitMsg('Error: ' + err.message);
+    }
+    document.getElementById('loginBox').classList.add('vis');
+    document.getElementById('initSpinner').style.display = 'none';
+  }
+}
+
+async function logoutUser() {
+  if (!confirm('Tancar la sessio de Google?')) return;
+  await auth.signOut();
+  document.getElementById('mainApp').style.display = 'none';
+  document.getElementById('initScreen').style.display = 'flex';
+  document.getElementById('userBar').style.display = 'none';
+  currentUser = null;
+  showLoginScreen();
+}
+
+function updateUserUI(user) {
+  const bar = document.getElementById('userBar');
+  const av = document.getElementById('userAv');
+  const name = document.getElementById('userName');
+  if (bar) bar.style.display = 'flex';
+  if (av) { av.innerHTML = user.photoURL ? '<img src="' + user.photoURL + '" alt="">' : (user.displayName || user.email || '?')[0].toUpperCase(); }
+  if (name) { name.textContent = user.displayName || user.email || 'Usuari'; name.title = user.email || ''; }
+  const avMob = document.getElementById('userAvMob');
+  const nameMob = document.getElementById('userNameMob');
+  if (avMob) { avMob.innerHTML = user.photoURL ? '<img src="' + user.photoURL + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%">' : (user.displayName||user.email||'?')[0].toUpperCase(); }
+  if (nameMob) { nameMob.textContent = user.displayName || user.email || 'Usuari'; }
 }
 function setInitMsg(msg){document.getElementById('initMsg').textContent=msg;}
 function setSyncState(state,txt){
@@ -1873,12 +2082,16 @@ async function loadRestaurant(id) {
   // Actualitzar info librería
   const li = document.getElementById('libRestInfo');
   if (li) li.textContent = 'Imatges de ' + (d.name||'el restaurant actiu');
-  scheduled = (d.scheduled||[]).map(s=>({...s}));
-  updBadge(); renderCal();
+  scheduled = (d.scheduled||[]).map(function(s){ return Object.assign({},s); });
+  favorites = (d.favorites||[]).map(function(f){ return Object.assign({},f); });
+  updBadge(); updFavBadge(); renderCal();
   // Restaurar imatges dels posts programats des d'IndexedDB
   restoreSchedImages();
-  // Carregar imatges generades guardades (IndexedDB)
-  libImages = libImages.filter(i => i.source !== 'generated');
+  // Carregar imatges de biblioteca sincronitzades (generades + carregades)
+  libImages = libImages.filter(function(i){ return i.source !== 'generated' && i.source !== 'upload'; });
+  if (d.libImages && d.libImages.length) {
+    d.libImages.forEach(function(img) { addToLibrary(Object.assign({}, img, { restId: id })); });
+  }
   loadPersistedImages(id);
 }
 
@@ -1894,10 +2107,26 @@ async function changeRest() {
   const id = document.getElementById('restSel').value;
   if (id===currentRestId) return;
   setSyncState('spin','Cargando...');
+  clearLibraryScreens();
+  proposals = [];
+  selIds.clear();
+  document.getElementById('propArea').style.display = 'none';
+  document.getElementById('propGrid').innerHTML = '';
   await loadRestaurant(id);
-  libImages = []; // Reset librería per nou restaurant
+  libImages = [];
   setSyncState('ok','Sincronizado');
   toast('Restaurante cambiado');
+}
+
+function clearLibraryScreens() {
+  var empty = function(id, msg) { var el = document.getElementById(id); if (el) el.innerHTML = '<div class="bo-empty"><p>' + msg + '</p></div>'; };
+  empty("igGrid", "Entra un usuari d'Instagram i clica Cargar imagenes");
+  empty('webGrid', 'Entra una URL i clica "Extreure imatges"');
+  empty('genGrid', 'Les imatges generades apareixeran aqui');
+  empty('uploadGrid', 'Les imatges carregades apareixeran aqui');
+  var igInp = document.getElementById('igUsername'); if (igInp) igInp.value = '';
+  var webInp = document.getElementById('webUrl'); if (webInp) webInp.value = '';
+  var genInp = document.getElementById('genImgPrompt'); if (genInp) genInp.value = '';
 }
 
 async function addRest() {
@@ -1947,27 +2176,28 @@ async function saveScheduled() {
   if (!currentUser||!currentRestId) return;
   setSyncState('spin','Guardando...');
   try {
-    // Guardar imatges a IDB (no a Firestore: límit 1MB doc)
-    const itemsToSave = await Promise.all(scheduled.map(async (s, i) => {
-      const item = {...s};
-      if (item.imageData && !item.imageData.startsWith('blob:')) {
-        // Guardar a IDB si no té ja un ID
-        if (!item.schedImgId) {
-          const idbId = await idbSaveSchedImage(item.imageData, currentRestId);
-          if (idbId) { item.schedImgId = idbId; scheduled[i].schedImgId = idbId; }
-        }
+    const itemsToSave = await Promise.all(scheduled.map(async function(s, i) {
+      const item = Object.assign({}, s);
+      if (item.imageData && item.imageData.startsWith('data:')) {
+        try {
+          const serverUrl = await uploadToServer(item.imageData);
+          item.imageData = serverUrl;
+          scheduled[i].imageData = serverUrl;
+        } catch(uploadErr) { console.warn('Could not upload image to server:', uploadErr); }
       }
-      // Treure imageData de Firestore
-      const {imageData, ...noImg} = item;
-      return noImg;
+      const itemToStore = Object.assign({}, item);
+      if (itemToStore.imageData && !itemToStore.imageData.startsWith('http')) {
+        delete itemToStore.imageData;
+      }
+      return itemToStore;
     }));
     await db.collection('users').doc(currentUser.uid).collection('restaurants').doc(currentRestId)
       .update({scheduled: itemsToSave});
-    setSyncState('ok','Guardado ✓');
+    setSyncState('ok','Guardat ✓');
   } catch(e) {
     console.error('saveScheduled error:', e);
     setSyncState('ok','Error guardant');
-    toast('❌ Error guardant: ' + e.message.slice(0,60));
+    toast('Error guardant: ' + e.message.slice(0,60));
   }
 }
 
@@ -1980,6 +2210,7 @@ function showSec(n,btn) {
   const s=document.getElementById('sec-'+n); s.style.display='flex'; s.style.flexDirection='column';
   if (btn) btn.classList.add('active');
   if (n==='calendar') renderCal();
+  if (n==='favorites') renderFavorites();
   if (n==='library') {
     // Pre-emplenar camps si vénen del config
     const ig = document.getElementById('cfgIG')?.value||'';
@@ -2294,11 +2525,17 @@ async function igPublishPost(schedIdx) {
     const data = await res.json();
     if (!data.success) throw new Error(data.error || 'Error publicant');
 
-    scheduled[schedIdx].igStatus = 'published';
-    scheduled[schedIdx].igPostId = data.post_id || '';
+    var publishedPost = Object.assign({}, scheduled[schedIdx], {
+      igStatus: 'published',
+      igPostId: data.post_id || '',
+      publishedAt: new Date().toISOString()
+    });
+    await saveFavorite(publishedPost);
+    scheduled.splice(schedIdx, 1);
+    updBadge();
     await saveScheduled();
-    renderSList();
-    toast('✓ Publicat a Instagram!');
+    renderCal();
+    toast('Publicat a Instagram! Mogut a Favorits.');
   } catch(e) {
     toast('❌ Error publicant: ' + e.message.slice(0,80));
     if (btn) { btn.disabled = false; btn.textContent = '📱 Publicar'; }
@@ -2358,6 +2595,218 @@ function changeRestDrawer() {
 }
 
 // Mobile sync is handled inline in the original functions below
+
+// =====================================================
+// PUBLICADOR AUTOMATIC (CRON) — savePendingPost
+// =====================================================
+async function savePendingPost(post) {
+  var igTok  = localStorage.getItem('sc_ig_token') || '';
+  var igUid  = localStorage.getItem('sc_ig_user_id') || '';
+  if (!igTok || !igUid) return;
+  var imageUrl = post.imageData || '';
+  if (imageUrl.startsWith('data:')) {
+    try {
+      var upRes = await fetch(PUBLISHER_URL, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ secret: CRON_SECRET, action: 'upload_image', imageData: imageUrl })
+      });
+      var upData = await upRes.json();
+      if (upData.success && upData.url) { imageUrl = upData.url; post.imageData = imageUrl; }
+      else { toast("No s'ha pogut pujar la imatge al servidor."); imageUrl = ''; }
+    } catch(e) { imageUrl = ''; }
+  }
+  if (!imageUrl || !imageUrl.startsWith('http')) {
+    toast('Post guardat al calendari pero sense imatge publica. El cron no el podra publicar.');
+    return;
+  }
+  try {
+    var res = await fetch(PUBLISHER_URL, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ secret: CRON_SECRET, post: {
+        title: post.title||'', type: post.type||'post', date: post.date||'', time: post.time||'',
+        caption: post.caption||'', hashtags: post.hashtags||'', imageData: imageUrl,
+        schedId: post.schedId||'', igToken: igTok, igUserId: igUid, savedAt: new Date().toISOString()
+      }})
+    });
+    var data = await res.json();
+    if (data.success) toast('Afegit al planificador automatic. Es publicara a les ' + (post.time||'?'));
+    else toast('Error al planificador: ' + (data.error||'desconegut'));
+  } catch(e) { toast('Error contactant publisher.php: ' + e.message); }
+}
+
+// =====================================================
+// UPLOAD TAB — Carregar imatges manualment
+// =====================================================
+function handleUploadDrop(e) {
+  e.preventDefault();
+  document.getElementById('uploadDropZone').style.borderColor = 'var(--border2)';
+  document.getElementById('uploadDropZone').style.background = 'none';
+  var files = Array.from(e.dataTransfer.files).filter(function(f) { return f.type.startsWith('image/'); });
+  processUploadFiles(files);
+}
+function handleUploadInput(e) {
+  var files = Array.from(e.target.files);
+  e.target.value = '';
+  processUploadFiles(files);
+}
+async function processUploadFiles(files) {
+  if (!files.length) return;
+  var prog = document.getElementById('uploadProgress');
+  prog.style.display = 'block';
+  prog.textContent = 'Processant ' + files.length + ' imatge(s)...';
+  var done = 0;
+  for (var fi = 0; fi < files.length; fi++) {
+    var file = files[fi];
+    prog.textContent = 'Pujant ' + (done + 1) + ' de ' + files.length + '...';
+    var base64 = await new Promise(function(resolve) {
+      var reader = new FileReader();
+      reader.onload = function(ev) { resolve(ev.target.result); };
+      reader.readAsDataURL(file);
+    });
+    var finalUrl = base64;
+    try { finalUrl = await uploadToServer(base64); } catch(e) { console.warn('Upload failed:', e); }
+    var caption = file.name.replace(/\.[^.]+$/, '');
+    var img = { url: finalUrl, source: 'upload', caption: caption, type: 'post', restId: currentRestId };
+    addToLibrary(img);
+    idbSaveImage(img);
+    done++;
+  }
+  await saveLibImagesToFirestore();
+  prog.style.display = 'none';
+  renderUploadGrid();
+  toast(done + ' imatge(s) afegides i sincronitzades!');
+}
+function renderUploadGrid() {
+  var uploaded = libImages.filter(function(i) { return i.source === 'upload' && i.restId === currentRestId; });
+  var grid = document.getElementById('uploadGrid');
+  if (!uploaded.length) { grid.innerHTML = '<div class="bo-empty"><p>Les imatges carregades apareixeran aqui</p></div>'; return; }
+  grid.innerHTML = uploaded.map(function(img) {
+    var idx = libImages.indexOf(img);
+    var cap = (img.caption||'').slice(0,60);
+    return '<div class="bo-card" onclick="pickOrUseLibImg(' + idx + ')">'
+      + '<div style="position:relative;aspect-ratio:1;background:var(--surface2);overflow:hidden">'
+      + '<img src="' + img.url + '" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.style.opacity=0.2">'
+      + '<button class="zoom-btn" data-url="' + img.url + '" onclick="openImgZoom(this.dataset.url,event)">&#128269;</button>'
+      + '</div>'
+      + '<div class="bo-meta"><div class="bo-src">&#128193; Carregada</div><div class="bo-caption">' + cap + '</div></div>'
+      + '<div class="bo-act"><button class="bo-use" onclick="event.stopPropagation();useLibImage(' + idx + ')">Usar</button>'
+      + '<button data-idx="' + idx + '" onclick="event.stopPropagation();deleteUploadImage(+this.dataset.idx)" style="color:var(--red)">&#128465;</button>'
+      + '</div></div>';
+  }).join('');
+}
+async function deleteUploadImage(libIdx) {
+  if (!confirm('Eliminar aquesta imatge de la biblioteca?')) return;
+  var img = libImages[libIdx];
+  if (img && img.idbId) await idbDeleteImage(img.idbId);
+  libImages.splice(libIdx, 1);
+  renderUploadGrid();
+  toast('Imatge eliminada');
+}
+
+// =====================================================
+// FAVORITS
+// =====================================================
+function updFavBadge() {
+  var b = document.getElementById('favBadge');
+  if (b) b.textContent = favorites.length;
+}
+async function saveFavorite(post) {
+  if (!currentUser || !currentRestId) return;
+  var existing = favorites.find(function(f) { return f.schedId && f.schedId === post.schedId; });
+  if (existing) return;
+  var fav = {
+    id: 'fav_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
+    title: post.title || '', type: post.type || 'post', caption: post.caption || '',
+    hashtags: post.hashtags || '', imageData: post.imageData || '', emoji: post.emoji || '',
+    igPostId: post.igPostId || '', publishedAt: post.publishedAt || '',
+    savedAt: new Date().toISOString(), source: post.igPostId ? 'published' : 'manual'
+  };
+  favorites.push(fav);
+  updFavBadge();
+  await saveFavoritesToFirestore();
+  renderFavorites();
+}
+async function saveFavoritesToFirestore() {
+  if (!currentUser || !currentRestId) return;
+  try { await db.collection('users').doc(currentUser.uid).collection('restaurants').doc(currentRestId).update({ favorites: favorites }); }
+  catch(e) { console.warn('saveFavoritesToFirestore error:', e); }
+}
+async function deleteFavorite(favId) {
+  if (!confirm('Eliminar aquest favorit?')) return;
+  favorites = favorites.filter(function(f) { return f.id !== favId; });
+  updFavBadge();
+  await saveFavoritesToFirestore();
+  renderFavorites();
+  toast('Favorit eliminat');
+}
+function renderFavorites() {
+  var grid = document.getElementById('favGrid');
+  if (!grid) return;
+  var filterType = document.getElementById('favFilterType') ? document.getElementById('favFilterType').value : 'all';
+  var filtered = favorites.filter(function(f) { return filterType === 'all' || f.type === filterType; });
+  if (!filtered.length) {
+    grid.innerHTML = '<div class="empty" style="grid-column:1/-1"><span class="ei">&#11088;</span><p>'
+      + (favorites.length ? 'Cap favorit amb aquest filtre.' : 'Aun no hay favoritos. Los posts publicados se anadiran automaticamente.')
+      + '</p></div>';
+    return;
+  }
+  grid.innerHTML = filtered.map(function(f) {
+    var srcLabel = f.source === 'published'
+      ? '<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(126,201,142,.15);color:var(--green)">&#10003; Publicat</span>'
+      : '<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(167,139,250,.15);color:var(--accent)">&#9733; Guardat</span>';
+    var imgHtml = f.imageData
+      ? '<img src="' + f.imageData + '" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0">'
+      : '<div style="display:flex;align-items:center;justify-content:center;height:100%;font-size:36px">' + (f.emoji||'&#128247;') + '</div>';
+    var dateStr = f.publishedAt ? new Date(f.publishedAt).toLocaleDateString('es-ES', {day:'2-digit',month:'short',year:'numeric'}) : '';
+    return '<div class="pcard">'
+      + '<div class="cprev ' + (f.type==='story'?'story':'') + '" style="position:relative;overflow:hidden">' + imgHtml
+      + (f.imageData ? '<button class="zoom-btn" data-url="' + f.imageData + '" onclick="openImgZoom(this.dataset.url,event)">&#128269;</button>' : '')
+      + '</div>'
+      + '<div class="cbody">'
+      + '<div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">'
+      + '<span class="tbadge ' + f.type + '">' + (f.type==='post'?'&#9633; Post':'&#9633; Story') + '</span>' + srcLabel
+      + '</div>'
+      + '<div style="font-size:14px;font-weight:500;margin-bottom:4px">' + (f.title||'Sin titulo') + '</div>'
+      + '<div class="ccap">' + (f.caption||'') + '</div>'
+      + (dateStr ? '<div style="font-size:11px;color:var(--text3);margin-top:6px">&#128197; ' + dateStr + '</div>' : '')
+      + '</div>'
+      + '<div class="cact">'
+      + '<button class="bsel" data-fid="' + f.id + '" onclick="reuseFromFavorite(this.dataset.fid)">Reutilizar</button>'
+      + '<button class="bs" data-fid="' + f.id + '" onclick="deleteFavorite(this.dataset.fid)" style="flex:0;padding:7px 10px;color:var(--red);border-color:rgba(232,126,126,.3)">&#128465;</button>'
+      + '</div></div>';
+  }).join('');
+}
+function reuseFromFavorite(favId) {
+  var f = favorites.find(function(x) { return x.id === favId; });
+  if (!f) return;
+  var newProp = { id: 'reuse_' + Date.now(), title: f.title, type: f.type, caption: f.caption, hashtags: f.hashtags, imageData: f.imageData, emoji: f.emoji||'&#11088;', imagePrompt: '' };
+  proposals.push(newProp);
+  showSec('generate', document.querySelector('.ni'));
+  renderProps();
+  toast('Proposta afegida des de favorits!');
+}
+function openSaveFavModal() {
+  var list = document.getElementById('saveFavPropList');
+  if (!list) return;
+  if (!proposals.length) {
+    list.innerHTML = '<p style="font-size:13px;color:var(--text3);padding:16px 0">Primer genera propostes des de la seccio Generar contingut.</p>';
+  } else {
+    list.innerHTML = proposals.map(function(p) {
+      return '<div data-pid="' + p.id + '" onclick="saveFavoriteFromProposal(this.dataset.pid)" style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--surface2);border-radius:var(--rs);cursor:pointer;margin-bottom:6px;border:1px solid var(--border);transition:border .15s" onmouseover="this.style.borderColor=&quot;var(--accent)&quot;" onmouseout="this.style.borderColor=&quot;var(--border)&quot;">'
+        + (p.imageData ? '<img src="' + p.imageData + '" style="width:44px;height:44px;object-fit:cover;border-radius:6px;flex-shrink:0">' : '<div style="width:44px;height:44px;background:var(--surface3);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:18px">' + (p.emoji||'&#128247;') + '</div>')
+        + '<div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:500">' + p.title + '</div><span class="tbadge ' + p.type + '" style="font-size:10px;padding:1px 6px">' + p.type + '</span></div>'
+        + '<span style="font-size:18px;color:var(--accent)">&#11088;</span></div>';
+    }).join('');
+  }
+  document.getElementById('ovSaveFav').classList.add('open');
+}
+async function saveFavoriteFromProposal(propId) {
+  var p = proposals.find(function(x) { return x.id === propId; });
+  if (!p) return;
+  await saveFavorite(Object.assign({}, p, { source: 'manual', savedAt: new Date().toISOString() }));
+  closeOv('ovSaveFav');
+  toast('Proposta guardada a favorits!');
+}
 
 window.onload = initApp;
 </script>
