@@ -566,7 +566,7 @@ select option{background:var(--surface2)}
                 <option value="1:1">Post (1:1)</option>
                 <option value="9:16">Story (9:16)</option>
               </select>
-              <button class="bp" onclick="genLibraryImage()" id="genLibBtn">&#127912; Generar imatge</button>
+              <button class="bp" onclick="genLibraryImage()" id="genLibBtn">🎨 Generar imatge</button>
               <span style="font-size:11px;color:var(--text3)" id="nbCredit"></span>
             </div>
           </div>
@@ -1639,7 +1639,7 @@ async function genLibraryImage() {
     toast('Error: ' + (e.message || 'Error generant').slice(0,80));
   } finally {
     btn.disabled = false;
-    btn.textContent = '&#127912; Generar imatge';
+    btn.textContent = '🎨 Generar imatge';
   }
 }
 
