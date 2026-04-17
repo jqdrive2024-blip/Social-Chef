@@ -2712,7 +2712,10 @@ function updFavBadge() {
 }
 async function saveFavorite(post) {
   if (!currentUser || !currentRestId) return;
-  var existing = favorites.find(function(f) { return f.schedId && f.schedId === post.schedId; });
+  var restId = currentRestId;
+  var existing = favorites.find(function(f) {
+    return f.schedId && post.schedId && f.schedId === post.schedId;
+  });
   if (existing) return;
   var fav = {
     id: 'fav_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
@@ -2723,13 +2726,16 @@ async function saveFavorite(post) {
   };
   favorites.push(fav);
   updFavBadge();
-  await saveFavoritesToFirestore();
+  await saveFavoritesToFirestore(restId, favorites.slice());
   renderFavorites();
+  toast('Guardat a Favorits!');
 }
-async function saveFavoritesToFirestore() {
-  if (!currentUser || !currentRestId) return;
-  try { await db.collection('users').doc(currentUser.uid).collection('restaurants').doc(currentRestId).update({ favorites: favorites }); }
-  catch(e) { console.warn('saveFavoritesToFirestore error:', e); }
+async function saveFavoritesToFirestore(restId, favSnapshot) {
+  var rid = restId || currentRestId;
+  var favs = favSnapshot || favorites;
+  if (!currentUser || !rid) return;
+  try { await db.collection('users').doc(currentUser.uid).collection('restaurants').doc(rid).update({ favorites: favs }); }
+  catch(e) { console.error('saveFavoritesToFirestore error:', e); toast('Error desant el favorit: ' + e.message.slice(0,60)); }
 }
 async function deleteFavorite(favId) {
   if (!confirm('Eliminar aquest favorit?')) return;
