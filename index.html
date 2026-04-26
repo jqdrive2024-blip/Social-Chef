@@ -181,6 +181,32 @@ select option{background:var(--surface2)}
 .bo-act .bo-use{background:var(--accent-bg);border-color:var(--accent);color:var(--accent)}
 .bo-empty{text-align:center;padding:60px 20px;color:var(--text3);grid-column:1/-1}
 .bo-gen-area{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:24px;margin-bottom:20px}
+/* Instagram Search */
+.ig-search-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px 24px;margin-bottom:20px}
+.ig-search-box h3{font-size:15px;font-weight:600;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.ig-search-box p{font-size:12px;color:var(--text3);margin-bottom:14px}
+.ig-search-row{display:flex;gap:10px;align-items:center}
+.ig-search-row input{flex:1;max-width:340px}
+.ig-search-row button{white-space:nowrap}
+.ig-results-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:16px}
+.ig-post-card{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;transition:border .15s}
+.ig-post-card:hover{border-color:var(--accent-border)}
+.ig-post-img{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:var(--surface3)}
+.ig-post-meta{padding:10px 12px}
+.ig-post-user{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ig-post-av{width:28px;height:28px;border-radius:50%;object-fit:cover;background:var(--surface3);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--text3);overflow:hidden}
+.ig-post-av img{width:100%;height:100%;object-fit:cover}
+.ig-post-username{font-size:12px;font-weight:500;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ig-post-likes{font-size:11px;color:var(--text3);display:flex;align-items:center;gap:4px;margin-bottom:8px}
+.ig-post-acts{display:flex;gap:6px}
+.ig-post-acts a,.ig-post-acts button{flex:1;padding:6px 8px;border-radius:var(--rs);font-size:11px;text-align:center;cursor:pointer;font-family:inherit;text-decoration:none;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:4px}
+.ig-post-acts a{background:var(--surface3);border:1px solid var(--border2);color:var(--text2)}
+.ig-post-acts a:hover{border-color:var(--accent-border);color:var(--accent)}
+.ig-post-acts button{background:var(--accent-bg);border:1px solid var(--accent-border);color:var(--accent)}
+.ig-post-acts button:hover{background:var(--accent);color:#fff}
+.ig-post-acts button:disabled{opacity:.5;cursor:not-allowed}
+.ig-search-empty{text-align:center;padding:32px;color:var(--text3);font-size:13px;grid-column:1/-1}
+.ig-search-spin{display:flex;align-items:center;justify-content:center;gap:10px;padding:24px;color:var(--text3);font-size:13px;grid-column:1/-1}
 /* Toast */
 .toast{position:fixed;bottom:24px;right:24px;background:var(--surface);border:1px solid var(--accent);color:var(--accent);padding:12px 20px;border-radius:var(--rs);font-size:13px;transform:translateY(100px);opacity:0;transition:all .3s;z-index:200;max-width:340px}
 .toast.show{transform:translateY(0);opacity:1}
@@ -416,9 +442,21 @@ select option{background:var(--surface2)}
     <!-- GENERAR -->
     <div id="sec-generate" class="content">
       <div class="kbar">
-        <span class="lbl">🤖 Textos: GPT-4o-mini · Imatges: Nanobanana (FLUX)</span>
+        <span class="lbl">&#129302; Textos: GPT-4o-mini · Imatges: Nanobanana (FLUX)</span>
         <span class="kst on" id="nbSt">Actiu</span>
       </div>
+
+      <!-- CERCA DE PUBLICACIONS D'INSTAGRAM -->
+      <div class="ig-search-box">
+        <h3>&#128269; Inspiració d'Instagram</h3>
+        <p>Cerca publicacions per temàtica per inspirar-te. Clica "Analitzar" per omplir automàticament el context.</p>
+        <div class="ig-search-row">
+          <input type="text" id="igSearchQuery" placeholder="Ex: bravas, paella, hamburguesa, sushi..." onkeydown="if(event.key==='Enter')searchIgPosts()">
+          <button class="bp" onclick="searchIgPosts()" id="igSearchBtn" style="padding:10px 18px">&#128269; Cercar</button>
+        </div>
+        <div id="igSearchResults" class="ig-results-grid" style="display:none"></div>
+      </div>
+
       <div class="gform">
         <h3>Nueva generación de contenido</h3>
         <div class="fgrid">
@@ -2595,6 +2633,143 @@ function changeRestDrawer() {
 }
 
 // Mobile sync is handled inline in the original functions below
+
+// =====================================================
+// CERCA PUBLICACIONS D'INSTAGRAM PER TEMÀTICA
+// =====================================================
+async function searchIgPosts() {
+  var query = (document.getElementById('igSearchQuery').value || '').trim();
+  if (!query) { toast('Entra una temàtica per cercar'); document.getElementById('igSearchQuery').focus(); return; }
+
+  var btn = document.getElementById('igSearchBtn');
+  var resultsDiv = document.getElementById('igSearchResults');
+  btn.disabled = true;
+  btn.textContent = '⏳ Cercant...';
+  resultsDiv.style.display = 'grid';
+  resultsDiv.innerHTML = '<div class="ig-search-spin"><div class="ispin"></div><span>Cercant publicacions de "' + query + '"...</span></div>';
+
+  try {
+    var res = await fetch(SCRAPER_URL + '?action=hashtag&query=' + encodeURIComponent(query));
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    var data = await res.json();
+
+    if (!data.success || !data.posts || !data.posts.length) {
+      resultsDiv.innerHTML = '<div class="ig-search-empty">&#128247; ' + (data.error || "No s'han trobat publicacions. Prova amb un terme diferent.") + '</div>';
+      return;
+    }
+
+    renderIgSearchResults(data.posts, query);
+    toast('&#10003; ' + data.posts.length + ' publicacions trobades per "' + query + '"');
+
+  } catch(e) {
+    resultsDiv.innerHTML = '<div class="ig-search-empty">&#10060; Error: ' + e.message + '</div>';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '&#128269; Cercar';
+  }
+}
+
+function renderIgSearchResults(posts, query) {
+  var resultsDiv = document.getElementById('igSearchResults');
+  if (!posts.length) {
+    resultsDiv.innerHTML = "<div class=\"ig-search-empty\">No s'han trobat resultats.</div>";
+    return;
+  }
+
+  resultsDiv.innerHTML = posts.map(function(post, idx) {
+    var likesStr = post.likes > 0
+      ? (post.likes >= 1000000 ? (post.likes/1000000).toFixed(1) + 'M' : post.likes >= 1000 ? Math.round(post.likes/1000) + 'K' : post.likes)
+      : '';
+    var avatarHtml = post.avatar
+      ? '<div class="ig-post-av"><img src="' + post.avatar + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></div>'
+      : '<div class="ig-post-av">&#128100;</div>';
+    var usernameHtml = post.username
+      ? '<span class="ig-post-username">@' + post.username + '</span>'
+      : '<span class="ig-post-username" style="color:var(--text3)">Instagram</span>';
+    var openBtn = post.postUrl
+      ? '<a href="' + post.postUrl + '" target="_blank" rel="noopener" title="Obrir a Instagram">&#127758; Obrir</a>'
+      : '<a href="https://www.instagram.com/explore/tags/' + encodeURIComponent(query.replace(/\s+/g,'')) + '/" target="_blank" rel="noopener" title="Cercar a Instagram">&#127758; Instagram</a>';
+
+    return '<div class="ig-post-card">'
+      + '<img class="ig-post-img" src="' + post.imageUrl + '" alt="" loading="lazy">'
+      + '<div class="ig-post-meta">'
+      + '<div class="ig-post-user">' + avatarHtml + usernameHtml + '</div>'
+      + (likesStr ? '<div class="ig-post-likes">&#10084;&#65039; ' + likesStr + ' likes</div>' : '')
+      + '<div class="ig-post-acts">'
+      + openBtn
+      + '<button data-idx="' + idx + '" onclick="analyzeIgPost(this,JSON.parse(decodeURIComponent(this.dataset.post)))" data-post="' + encodeURIComponent(JSON.stringify(post)) + '" title="Analitzar i aplicar al context">&#129302; Analitzar</button>'
+      + '</div>'
+      + '</div>'
+      + '</div>';
+  }).join('');
+}
+
+async function analyzeIgPost(btn, post) {
+  btn.disabled = true;
+  btn.textContent = '⏳';
+  try {
+    var imageUrl = post.imageUrl || '';
+    var caption  = post.caption || '';
+    var username = post.username || '';
+    var lang = document.getElementById('cfgLang') ? document.getElementById('cfgLang').value : 'ca';
+    var sysPrompt = 'Ets un expert en marketing de restauracio. Analitzes publicacions d Instagram i generes context breu i util per crear contingut similar. Respon sempre en el idioma sol licitat.';
+    var basePrompt = 'Analitza aquesta publicacio d Instagram';
+    if (username) basePrompt += ' de @' + username;
+    if (caption) basePrompt += '. Text del post: ' + caption.slice(0, 200);
+    basePrompt += '. Extreu 2-3 frases concises de context i inspiracio per generar contingut similar per a un restaurant. Descriu el plat principal, l estil visual i el tipus de missatge. Respon en ' + lang + '. Respon NOMES amb el text de context, sense introduccions.';
+    var messages = [];
+    // Intentar obtenir imatge via proxy
+    var imageBase64 = '';
+    if (imageUrl) {
+      try {
+        var proxyUrl = SCRAPER_URL + '?action=proxy&url=' + encodeURIComponent(imageUrl);
+        var imgRes = await fetch(proxyUrl);
+        if (imgRes.ok) {
+          var blob = await imgRes.blob();
+          imageBase64 = await new Promise(function(res2) {
+            var reader = new FileReader();
+            reader.onload = function(e) { res2(e.target.result); };
+            reader.readAsDataURL(blob);
+          });
+        }
+      } catch(e2) { console.warn('Proxy image failed:', e2); }
+    }
+    if (imageBase64 && imageBase64.startsWith('data:image')) {
+      var mediaType = imageBase64.split(';')[0].split(':')[1];
+      var imgData = imageBase64.split(',')[1];
+      messages.push({ role: 'user', content: [
+        { type: 'image', source: { type: 'base64', media_type: mediaType, data: imgData } },
+        { type: 'text', text: basePrompt }
+      ]});
+    } else {
+      messages.push({ role: 'user', content: basePrompt });
+    }
+    var apiRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 300, system: sysPrompt, messages: messages })
+    });
+    if (!apiRes.ok) throw new Error('API error ' + apiRes.status);
+    var apiData = await apiRes.json();
+    var analysisText = (apiData.content || []).filter(function(b){ return b.type === 'text'; }).map(function(b){ return b.text; }).join('').trim();
+    if (analysisText) {
+      var ctxEl = document.getElementById('ctx');
+      if (ctxEl) {
+        ctxEl.value = analysisText;
+        ctxEl.style.borderColor = 'var(--accent)';
+        setTimeout(function(){ ctxEl.style.borderColor = ''; }, 2000);
+      }
+      toast('Context aplicat! Ara genera les propostes.');
+    } else {
+      throw new Error('Resposta buida de la IA');
+    }
+  } catch(e) {
+    toast('Error analitzant: ' + (e.message || 'Error desconegut'));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '&#129302; Analitzar';
+  }
+}
 
 // =====================================================
 // PUBLICADOR AUTOMATIC (CRON) — savePendingPost
