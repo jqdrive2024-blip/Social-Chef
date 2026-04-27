@@ -2687,29 +2687,37 @@ function renderIgSearchResults(posts, query) {
     resultsDiv.innerHTML = "<div class=\"ig-search-empty\">No s'han trobat resultats.</div>";
     return;
   }
-
   resultsDiv.innerHTML = posts.map(function(post, idx) {
-    var likesStr = post.likes > 0
-      ? (post.likes >= 1000000 ? (post.likes/1000000).toFixed(1) + 'M' : post.likes >= 1000 ? Math.round(post.likes/1000) + 'K' : post.likes)
-      : '';
+    // Info line: likes si disponible, caption/title si no
+    var infoLine = '';
+    if (post.likes > 0) {
+      var lStr = post.likes >= 1000000 ? (post.likes/1000000).toFixed(1)+'M'
+               : post.likes >= 1000    ? Math.round(post.likes/1000)+'K'
+               : post.likes;
+      infoLine = '<div class="ig-post-likes">❤️ ' + lStr + ' likes</div>';
+    } else if (post.caption) {
+      var cap = post.caption.slice(0,65) + (post.caption.length>65?'...':'');
+      infoLine = '<div class="ig-post-likes" style="font-style:italic;color:var(--text3)">' + cap + '</div>';
+    }
     var avatarHtml = post.avatar
       ? '<div class="ig-post-av"><img src="' + post.avatar + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></div>'
-      : '<div class="ig-post-av">&#128100;</div>';
+      : '<div class="ig-post-av">👤</div>';
     var usernameHtml = post.username
       ? '<span class="ig-post-username">@' + post.username + '</span>'
       : '<span class="ig-post-username" style="color:var(--text3)">Instagram</span>';
     var openBtn = post.postUrl
-      ? '<a href="' + post.postUrl + '" target="_blank" rel="noopener" title="Obrir a Instagram">&#127758; Obrir</a>'
-      : '<a href="https://www.instagram.com/explore/tags/' + encodeURIComponent(query.replace(/\s+/g,'')) + '/" target="_blank" rel="noopener" title="Cercar a Instagram">&#127758; Instagram</a>';
-
+      ? '<a href="' + post.postUrl + '" target="_blank" rel="noopener">🌐 Obrir</a>'
+      : '<a href="https://www.instagram.com/explore/tags/' + encodeURIComponent(query.replace(/\s+/g,'')) + '/" target="_blank" rel="noopener">🌐 Instagram</a>';
+    // Imatge via proxy del servidor (evita CORS i hotlink blocking)
+    var proxiedImg = SCRAPER_URL + '?action=proxy&url=' + encodeURIComponent(post.imageUrl);
     return '<div class="ig-post-card">'
-      + '<img class="ig-post-img" src="' + post.imageUrl + '" alt="" loading="lazy">'
+      + '<img class="ig-post-img" src="' + proxiedImg + '" alt="" loading="lazy" onerror="this.src=this.dataset.orig" data-orig="' + post.imageUrl + '">'
       + '<div class="ig-post-meta">'
       + '<div class="ig-post-user">' + avatarHtml + usernameHtml + '</div>'
-      + (likesStr ? '<div class="ig-post-likes">&#10084;&#65039; ' + likesStr + ' likes</div>' : '')
+      + infoLine
       + '<div class="ig-post-acts">'
       + openBtn
-      + '<button data-idx="' + idx + '" onclick="analyzeIgPost(this,JSON.parse(decodeURIComponent(this.dataset.post)))" data-post="' + encodeURIComponent(JSON.stringify(post)) + '" title="Analitzar i aplicar al context">&#129302; Analitzar</button>'
+      + '<button data-idx="' + idx + '" onclick="analyzeIgPost(this,JSON.parse(decodeURIComponent(this.dataset.post)))" data-post="' + encodeURIComponent(JSON.stringify(post)) + '" title="Analitzar text i aplicar al context">🤖 Analitzar</button>'
       + '</div>'
       + '</div>'
       + '</div>';
@@ -2722,23 +2730,30 @@ async function analyzeIgPost(btn, post) {
   try {
     var caption  = post.caption  || '';
     var username = post.username || '';
-    var source   = post.source   || '';
     var lang = document.getElementById('cfgLang') ? document.getElementById('cfgLang').value : 'ca';
 
-    var sysPrompt = 'Ets un expert en marketing de restauració. Analitzes imatges i publicacions de menjar i generes context breu i útil per crear contingut similar a Instagram. Respon sempre en l\'idioma sol·licitat.';
-    var userPrompt = 'Analitza aquesta publicació de menjar/restaurant';
-    if (username) userPrompt += ' de @' + username;
-    if (caption)  userPrompt += '. Títol o descripció: ' + caption.slice(0, 300);
-    userPrompt += '. Extreu 2-3 frases concises de context i inspiració per generar contingut similar per a un restaurant. Descriu el plat principal, l\'estil visual i el tipus de missatge. Respon en ' + lang + '. Respon NOMÉS amb el text de context, sense introduccions.';
+    if (!caption.trim()) {
+      toast('Aquesta publicació no té text. Prova una altra amb descripció.');
+      return;
+    }
 
-    // Usar puter.ai.chat com la resta de l'app (no requereix API key pròpia)
+    // Sistema: NOMÉS analisi de text, res de visual
+    var sysPrompt = 'Ets un expert en marketing de restauració i xarxes socials. Analitzes el TEXT de publicacions d Instagram i extreues la idea, el missatge i el to comunicatiu per poder replicar-los en altres posts. NO menciones colors, llums, fotografies, imatges ni cap element visual. Respon sempre en l idioma indicat.';
+
+    var userPrompt = 'Analitza el TEXT d aquesta publicació d Instagram';
+    if (username) userPrompt += ' de @' + username;
+    userPrompt += ':\n\n"' + caption.slice(0, 500) + '"\n\n';
+    userPrompt += 'Extreu en 2-3 frases concises: quin producte o moment promou, quin missatge vol transmetre, i quin to usa (directe, emocional, humoristic, informatiu...). ';
+    userPrompt += 'El resultat s usara com a context per generar contingut similar per a un restaurant. ';
+    userPrompt += 'Respon en ' + lang + '. Respon NOMES amb el text de context, sense introduccions ni titols.';
+
     var puterMessages = [
       { role: 'system', content: sysPrompt },
       { role: 'user',   content: userPrompt }
     ];
 
     var resp = await puter.ai.chat(puterMessages, { model: 'gpt-4o-mini' });
-    var analysisText = (typeof resp === 'string' ? resp : resp?.message?.content || '').trim();
+    var analysisText = (typeof resp === 'string' ? resp : resp && resp.message && resp.message.content ? resp.message.content : '').trim();
 
     if (analysisText) {
       var ctxEl = document.getElementById('ctx');
@@ -2747,7 +2762,7 @@ async function analyzeIgPost(btn, post) {
         ctxEl.style.borderColor = 'var(--accent)';
         setTimeout(function(){ ctxEl.style.borderColor = ''; }, 2000);
       }
-      toast('✓ Context aplicat! Ara genera les propostes.');
+      toast('✓ Context aplicat des del text de la publicació!');
     } else {
       throw new Error('Resposta buida de la IA');
     }
@@ -2755,7 +2770,7 @@ async function analyzeIgPost(btn, post) {
     toast('Error analitzant: ' + (e.message || 'Error desconegut'));
   } finally {
     btn.disabled = false;
-    btn.innerHTML = '&#129302; Analitzar';
+    btn.innerHTML = '🤖 Analitzar';
   }
 }
 
