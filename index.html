@@ -1666,15 +1666,38 @@ function applyPendingToProposal(propId) {
 // Generar imatge des de la librería
 // Puja una imatge base64 al servidor i retorna la URL publica
 async function uploadToServer(base64Data) {
-  const res = await fetch(PUBLISHER_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ secret: CRON_SECRET, action: 'upload_image', imageData: base64Data })
-  });
-  if (!res.ok) throw new Error('HTTP ' + res.status);
-  const data = await res.json();
-  if (!data.success || !data.url) throw new Error(data.error || 'Error pujant al servidor');
-  return data.url;
+  if (!base64Data || !base64Data.startsWith('data:')) {
+    console.warn('uploadToServer: No és base64 vàlid');
+    return '';
+  }
+
+  try {
+    const res = await fetch(PUBLISHER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        secret: CRON_SECRET,
+        action: 'upload_image',
+        imageData: base64Data
+      })
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}`);
+    }
+
+    const data = await res.json();
+
+    if (data.success && data.url) {
+      console.log('✓ Imatge pujada correctament a:', data.url);
+      return data.url;                    // IMPORTANT: retorna la URL real
+    } else {
+      throw new Error(data.error || 'Error desconegut del servidor');
+    }
+  } catch (err) {
+    console.error('uploadToServer falló:', err);
+    throw err;
+  }
 }
 
 async function saveLibImagesToFirestore() {
@@ -3087,27 +3110,25 @@ async function saveFavorite(post) {
 
   let finalImageUrl = post.imageData || '';
 
-  // === CRÍTIC: Si és una imatge generada per IA (base64), la pugem al teu servidor ===
+  // Si és imatge generada per IA (base64), la pugem al teu servidor
   if (finalImageUrl && finalImageUrl.startsWith('data:')) {
-    toast('⏳ Pujant imatge generada al teu servidor...');
+    toast('⏳ Pujant imatge generada al servidor...');
     try {
-      finalImageUrl = await uploadToServer(finalImageUrl);   // la teva funció existent
-      console.log('✓ Imatge pujada correctament:', finalImageUrl);
-    } catch (uploadErr) {
-      console.error('Error pujant imatge al servidor:', uploadErr);
-      toast('⚠️ No s\'ha pogut pujar la imatge. Es guardarà sense imatge.');
-      finalImageUrl = '';   // evitem guardar base64 enorme
+      finalImageUrl = await uploadToServer(finalImageUrl);
+    } catch (e) {
+      console.error('Error pujant imatge:', e);
+      toast('⚠️ No s\'ha pogut pujar la imatge, però el text sí que es guardarà.');
+      finalImageUrl = '';   // guardem sense imatge per no trencar Firebase
     }
   }
 
-  // Creem l'objecte favorit NOMÉS amb URL (mai base64)
   const fav = {
     id: 'fav_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
     title: post.title || 'Sense títol',
     type: post.type || 'post',
     caption: post.caption || '',
     hashtags: post.hashtags || '',
-    imageData: finalImageUrl,        // ← SEMPRE URL o buida
+    imageData: finalImageUrl,           // ← Aquí guardem la URL del servidor
     emoji: post.emoji || '',
     source: post.igPostId ? 'published' : 'manual',
     savedAt: new Date().toISOString(),
@@ -3122,11 +3143,11 @@ async function saveFavorite(post) {
       .collection('restaurants').doc(currentRestId)
       .update({ favorites: favorites });
 
-    toast('✅ Guardat correctament a Favorits!');
+    toast('✅ Favorit guardat correctament!');
     renderFavorites();
   } catch (e) {
-    console.error('Error guardant favorit a Firebase:', e);
-    toast('❌ Error a Firebase: ' + (e.message || '').slice(0, 80));
+    console.error('Error Firebase:', e);
+    toast('❌ Error guardant a Firebase: ' + (e.message || '').slice(0, 60));
   }
 }
 async function saveFavoritesToFirestore(restId, favSnapshot) {
