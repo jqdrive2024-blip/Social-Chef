@@ -1983,9 +1983,9 @@ function renderSList() {
       : '<span style="font-size:22px">' + (s.emoji || '&#128247;') + '</span>';
     var statusBtn = '';
     if (s.igStatus === 'published') {
-      statusBtn = '<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(126,201,142,.15);color:var(--green)">&#10003; Publicat</span>';
+      statusBtn = '<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(126,201,142,.15);color:var(--green)">🔍; Publicat</span>';
     } else if (isPast) {
-      statusBtn = '<button data-idx="' + i + '" onclick="markAsPublishedByCron(+this.dataset.idx)" style="background:none;border:1px solid rgba(126,201,142,.35);color:var(--green);cursor:pointer;border-radius:20px;font-size:10px;padding:2px 10px;font-family:inherit" title="El cron potser ja ho ha publicat. Clica per confirmar.">&#10003; Ja publicat</button>'
+      statusBtn = '<button data-idx="' + i + '" onclick="markAsPublishedByCron(+this.dataset.idx)" style="background:none;border:1px solid rgba(126,201,142,.35);color:var(--green);cursor:pointer;border-radius:20px;font-size:10px;padding:2px 10px;font-family:inherit" title="El cron potser ja ho ha publicat. Clica per confirmar.">🔍; Ja publicat</button>'
         + (igIsConnected() ? '<button data-idx="' + i + '" onclick="igPublishPost(+this.dataset.idx)" style="background:none;border:1px solid rgba(126,179,232,.35);color:var(--blue);cursor:pointer;border-radius:20px;font-size:10px;padding:2px 10px;font-family:inherit">&#128241; Publicar</button>' : '');
     } else if (igIsConnected()) {
       statusBtn = '<button data-idx="' + i + '" onclick="igPublishPost(+this.dataset.idx)" style="background:none;border:1px solid rgba(126,179,232,.35);color:var(--blue);cursor:pointer;border-radius:20px;font-size:10px;padding:2px 10px;font-family:inherit">&#128241; Publicar</button>';
@@ -2721,7 +2721,7 @@ async function searchIgPosts() {
         var igPosts = await searchIgHashtag(query, tok, uid);
         if (igPosts && igPosts.length > 0) {
           renderIgSearchResults(igPosts, query);
-          toast('&#10003; ' + igPosts.length + " publicacions d'Instagram trobades per \"" + query + '"');
+          toast('🔍; ' + igPosts.length + " publicacions d'Instagram trobades per \"" + query + '"');
           fetchLikesInBackground(igPosts);
           return;
         }
@@ -2745,7 +2745,7 @@ async function searchIgPosts() {
     }
 
     renderIgSearchResults(data.posts, query);
-    toast('&#10003; ' + data.posts.length + ' publicacions trobades per "' + query + '"');
+    toast('🔍; ' + data.posts.length + ' publicacions trobades per "' + query + '"');
     fetchLikesInBackground(data.posts);
 
   } catch(e) {
@@ -3179,7 +3179,7 @@ function renderFavorites() {
   }
   grid.innerHTML = filtered.map(function(f) {
     var srcLabel = f.source === 'published'
-      ? '<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(126,201,142,.15);color:var(--green)">&#10003; Publicat</span>'
+      ? '<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(126,201,142,.15);color:var(--green)">🔍; Publicat</span>'
       : '<span style="font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(167,139,250,.15);color:var(--accent)">&#9733; Guardat</span>';
     var imgHtml = f.imageData
       ? '<img src="' + f.imageData + '" style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0">'
