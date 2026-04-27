@@ -696,7 +696,12 @@ select option{background:var(--surface2)}
             <div class="fg">
               <label>Google Gemini API Key</label>
               <input type="password" id="cfgGeminiKey" placeholder="AIza..." autocomplete="off">
-              <span style="font-size:11px;color:var(--text3);margin-top:3px">Para Imagen 3 · Consíguela gratis en <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent)">aistudio.google.com</a></span>
+              <span style="font-size:11px;color:var(--text3);margin-top:3px">Para Imagen 3 · Consiguela gratis en <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent)">aistudio.google.com</a></span>
+            </div>
+            <div class="fg">
+              <label>Serper.dev API Key <span style="font-weight:400;color:var(--green);font-size:11px">(recomanat)</span></label>
+              <input type="password" id="cfgSerperKey" placeholder="clau..." autocomplete="off">
+              <span style="font-size:11px;color:var(--text3);margin-top:3px">Per cercar inspiracio a Instagram · <a href="https://serper.dev" target="_blank" style="color:var(--accent)">serper.dev</a> · 2500 cerques gratuites/mes · Registre en 1 minut</span>
             </div>
             <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
               <button class="bp" style="width:fit-content" onclick="saveCfg()">Guardar</button>
@@ -2002,6 +2007,8 @@ async function initApp() {
         renderCal();
         const geminiKey = localStorage.getItem('sc_gemini_key');
         if (geminiKey && document.getElementById('cfgGeminiKey')) document.getElementById('cfgGeminiKey').value = geminiKey;
+        const serperKey = localStorage.getItem('sc_serper_key');
+        if (serperKey && document.getElementById('cfgSerperKey')) document.getElementById('cfgSerperKey').value = serperKey;
         loadImgModelUI();
         loadImgThemeUI();
         const savedIgToken = localStorage.getItem('sc_ig_token');
@@ -2186,6 +2193,8 @@ async function saveCfg() {
   if (!currentUser||!currentRestId) return;
   const geminiKey = document.getElementById('cfgGeminiKey')?.value?.trim();
   if (geminiKey) localStorage.setItem('sc_gemini_key', geminiKey);
+  const serperKey2 = document.getElementById('cfgSerperKey')?.value?.trim();
+  if (serperKey2 !== undefined) localStorage.setItem('sc_serper_key', serperKey2);
   const data = {
     name:document.getElementById('cfgName').value,
     cuisine:document.getElementById('cfgCuisine').value,
@@ -2649,7 +2658,10 @@ async function searchIgPosts() {
   resultsDiv.innerHTML = '<div class="ig-search-spin"><div class="ispin"></div><span>Cercant publicacions de "' + query + '"...</span></div>';
 
   try {
-    var res = await fetch(SCRAPER_URL + '?action=hashtag&query=' + encodeURIComponent(query));
+    var serperKey = localStorage.getItem('sc_serper_key') || '';
+    var searchUrl = SCRAPER_URL + '?action=hashtag&query=' + encodeURIComponent(query);
+    if (serperKey) searchUrl += '&serper_key=' + encodeURIComponent(serperKey);
+    var res = await fetch(searchUrl);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     var data = await res.json();
 
