@@ -2781,9 +2781,12 @@ async function fetchLikesInBackground(posts) {
     .slice(0, 12);
   if (!scs.length) return;
   try {
-    var res = await fetch(LIKES_URL + '?shortcodes=' + scs.join(','));
-    if (!res.ok) return;
+    var likesEndpoint = LIKES_URL + '?shortcodes=' + scs.join(',');
+    console.log('[likes] Petició:', likesEndpoint);
+    var res = await fetch(likesEndpoint);
+    if (!res.ok) { console.warn('[likes] HTTP error:', res.status); return; }
     var data = await res.json();
+    console.log('[likes] Resposta:', data);
     Object.entries(data).forEach(function(entry) {
       var sc = entry[0], likes = entry[1];
       if (!likes || likes <= 0) return;
