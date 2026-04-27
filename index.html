@@ -2688,7 +2688,7 @@ function renderIgSearchResults(posts, query) {
     return;
   }
   resultsDiv.innerHTML = posts.map(function(post, idx) {
-    // Info line: likes si disponible, caption/title si no
+    // Info: likes si disponible, sino caption/title
     var infoLine = '';
     if (post.likes > 0) {
       var lStr = post.likes >= 1000000 ? (post.likes/1000000).toFixed(1)+'M'
@@ -2705,13 +2705,19 @@ function renderIgSearchResults(posts, query) {
     var usernameHtml = post.username
       ? '<span class="ig-post-username">@' + post.username + '</span>'
       : '<span class="ig-post-username" style="color:var(--text3)">Instagram</span>';
-    var openBtn = post.postUrl
-      ? '<a href="' + post.postUrl + '" target="_blank" rel="noopener">🌐 Obrir</a>'
-      : '<a href="https://www.instagram.com/explore/tags/' + encodeURIComponent(query.replace(/\s+/g,'')) + '/" target="_blank" rel="noopener">🌐 Instagram</a>';
-    // Imatge via proxy del servidor (evita CORS i hotlink blocking)
-    var proxiedImg = SCRAPER_URL + '?action=proxy&url=' + encodeURIComponent(post.imageUrl);
+
+    // Boto Obrir: nomes si tenim URL directa al post (conte /p/)
+    var openBtn = (post.postUrl && post.postUrl.includes('/p/'))
+      ? '<a href="' + post.postUrl + '" target="_blank" rel="noopener">🌐 Obrir post</a>'
+      : '<a href="https://www.instagram.com/explore/tags/' + encodeURIComponent(query.replace(/\s+/g,'')) + '/" target="_blank" rel="noopener" style="opacity:.6">🔍 Cercar</a>';
+
+    // Imatge: si tenim shortcode, carregarem la CDN real (mateixa estrategia libreria)
+    // Sino, usar proxy per la thumbnailUrl
+    var imgId = 'ig-img-' + idx;
+    var proxiedThumb = SCRAPER_URL + '?action=proxy&url=' + encodeURIComponent(post.imageUrl);
+
     return '<div class="ig-post-card">'
-      + '<img class="ig-post-img" src="' + proxiedImg + '" alt="" loading="lazy" onerror="this.src=this.dataset.orig" data-orig="' + post.imageUrl + '">'
+      + '<img class="ig-post-img" id="' + imgId + '" src="' + proxiedThumb + '" alt="" loading="lazy">'
       + '<div class="ig-post-meta">'
       + '<div class="ig-post-user">' + avatarHtml + usernameHtml + '</div>'
       + infoLine
@@ -2722,6 +2728,29 @@ function renderIgSearchResults(posts, query) {
       + '</div>'
       + '</div>';
   }).join('');
+
+  // Per cada post amb shortcode, carregarem la imatge CDN real (mateixa estrategia que libreria)
+  posts.forEach(function(post, idx) {
+    if (post.shortcode) {
+      fetchPostCdnImage(post.shortcode, idx);
+    }
+  });
+}
+
+// Obte la URL CDN real d'un post via el mateix sistema que la libreria (Imginn/Picnob)
+async function fetchPostCdnImage(shortcode, idx) {
+  var imgEl = document.getElementById('ig-img-' + idx);
+  if (!imgEl) return;
+  try {
+    var res = await fetch(SCRAPER_URL + '?action=post_image&shortcode=' + encodeURIComponent(shortcode));
+    if (!res.ok) return;
+    var data = await res.json();
+    if (data.success && data.imageUrl && imgEl) {
+      imgEl.src = data.imageUrl;
+    }
+  } catch(e) {
+    // Deixem la thumbnailUrl que ja tenim
+  }
 }
 
 async function analyzeIgPost(btn, post) {
