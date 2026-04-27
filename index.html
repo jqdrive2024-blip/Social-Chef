@@ -987,6 +987,7 @@ const firebaseConfig = {
 };
 
 const SCRAPER_URL = 'https://jordiqterrassa.com/scraper.php';
+const LIKES_URL   = 'https://jordiqterrassa.com/likes.php';
 const PUBLISHER_URL = 'https://jordiqterrassa.com/publisher.php';
 const CRON_SECRET = 'social_chef_2025_secret'; // Ha de coincidir amb el publisher.php de Social Chef
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
@@ -2684,11 +2685,30 @@ async function searchIgPosts() {
   var btn = document.getElementById('igSearchBtn');
   var resultsDiv = document.getElementById('igSearchResults');
   btn.disabled = true;
-  btn.textContent = '⏳ Cercant...';
+  btn.innerHTML = '⏳ Cercant...';
   resultsDiv.style.display = 'grid';
   resultsDiv.innerHTML = '<div class="ig-search-spin"><div class="ispin"></div><span>Cercant publicacions de "' + query + '"...</span></div>';
 
   try {
+    // ── Mètode 1: Instagram Graph API (compte Business/Creator connectat) ────
+    var tok = localStorage.getItem('sc_ig_token') || igToken || '';
+    var uid = localStorage.getItem('sc_ig_user_id') || igUserId || '';
+    if (tok && uid) {
+      try {
+        var igPosts = await searchIgHashtag(query, tok, uid);
+        if (igPosts && igPosts.length > 0) {
+          renderIgSearchResults(igPosts, query);
+          toast('&#10003; ' + igPosts.length + " publicacions d'Instagram trobades per \"" + query + '"');
+          fetchLikesInBackground(igPosts);
+          return;
+        }
+      } catch(igErr) {
+        // 400 = compte personal, 403 = permisos insuficients → fallback silenciós
+        console.warn('IG Graph API no disponible (' + igErr.message + '), usant scraper...');
+      }
+    }
+
+    // ── Mètode 2: Scraper PHP (Picuki + Google + Bing) ───────────────────────
     var serperKey = localStorage.getItem('sc_serper_key') || '';
     var searchUrl = SCRAPER_URL + '?action=hashtag&query=' + encodeURIComponent(query);
     if (serperKey) searchUrl += '&serper_key=' + encodeURIComponent(serperKey);
@@ -2703,13 +2723,88 @@ async function searchIgPosts() {
 
     renderIgSearchResults(data.posts, query);
     toast('&#10003; ' + data.posts.length + ' publicacions trobades per "' + query + '"');
+    fetchLikesInBackground(data.posts);
 
   } catch(e) {
     resultsDiv.innerHTML = '<div class="ig-search-empty">&#10060; Error: ' + e.message + '</div>';
   } finally {
     btn.disabled = false;
-    btn.textContent = '🔍 Cercar';
+    btn.innerHTML = '🔍 Cercar';
   }
+}
+
+// ── Cerca via Instagram Graph API ────────────────────────────────────────────
+async function searchIgHashtag(query, token, userId) {
+  var BASE = 'https://graph.facebook.com/v21.0';
+  var hashtag = query.trim().replace(/^#/, '').replace(/\s+/g, '').toLowerCase();
+
+  var tagRes = await fetch(
+    BASE + '/ig_hashtag_search?user_id=' + encodeURIComponent(userId)
+    + '&q=' + encodeURIComponent(hashtag)
+    + '&access_token=' + encodeURIComponent(token)
+  );
+  if (!tagRes.ok) throw new Error('IG hashtag search error: ' + tagRes.status);
+  var tagData = await tagRes.json();
+  if (tagData.error) throw new Error(tagData.error.message || 'IG API error');
+  var tagId = tagData.data && tagData.data[0] && tagData.data[0].id;
+  if (!tagId) return [];
+
+  var mediaRes = await fetch(
+    BASE + '/' + tagId + '/top_media'
+    + '?user_id=' + encodeURIComponent(userId)
+    + '&fields=id,media_type,media_url,thumbnail_url,permalink,caption,timestamp'
+    + '&limit=24'
+    + '&access_token=' + encodeURIComponent(token)
+  );
+  if (!mediaRes.ok) throw new Error('IG media error: ' + mediaRes.status);
+  var mediaData = await mediaRes.json();
+  if (mediaData.error) throw new Error(mediaData.error.message || 'IG media error');
+  if (!mediaData.data || !mediaData.data.length) return [];
+
+  return mediaData.data.map(function(m) {
+    var imgUrl = (m.media_type === 'VIDEO') ? (m.thumbnail_url || m.media_url || '') : (m.media_url || '');
+    var sc = '';
+    if (m.permalink) { var pm = m.permalink.match(/\/p\/([^/]+)/); if (pm) sc = pm[1]; }
+    return {
+      postUrl: m.permalink || '', imageUrl: imgUrl, username: '',
+      avatar: '', likes: 0, caption: (m.caption || '').slice(0, 200),
+      shortcode: sc, source: 'instagram_api', timestamp: m.timestamp || ''
+    };
+  }).filter(function(p) { return p.imageUrl; });
+}
+
+// ── Fetch likes en background via likes.php ──────────────────────────────────
+async function fetchLikesInBackground(posts) {
+  var scs = posts
+    .filter(function(p) { return p.shortcode && !p.likes; })
+    .map(function(p) { return p.shortcode; })
+    .slice(0, 12);
+  if (!scs.length) return;
+  try {
+    var res = await fetch(LIKES_URL + '?shortcodes=' + scs.join(','));
+    if (!res.ok) return;
+    var data = await res.json();
+    Object.entries(data).forEach(function(entry) {
+      var sc = entry[0], likes = entry[1];
+      if (!likes || likes <= 0) return;
+      var lStr = likes >= 1000000 ? (likes/1000000).toFixed(1)+'M'
+               : likes >= 1000    ? Math.round(likes/1000)+'K'
+               : String(likes);
+      var card = document.querySelector('.ig-post-card[data-sc="' + sc + '"]');
+      if (!card) return;
+      var badge = card.querySelector('.ig-likes-badge');
+      if (badge) {
+        badge.textContent = '\u2764\uFE0F ' + lStr + ' likes';
+      } else {
+        var newBadge = document.createElement('span');
+        newBadge.className = 'ig-likes-badge';
+        newBadge.style.cssText = 'color:#e05a5a;font-weight:700;font-size:12px;display:block;margin-bottom:2px';
+        newBadge.textContent = '\u2764\uFE0F ' + lStr + ' likes';
+        var likesDiv = card.querySelector('.ig-post-likes');
+        if (likesDiv) likesDiv.prepend(newBadge);
+      }
+    });
+  } catch(e) { console.warn('fetchLikesInBackground:', e.message); }
 }
 
 function renderIgSearchResults(posts, query) {
@@ -2752,10 +2847,15 @@ function renderIgSearchResults(posts, query) {
     var imgId = 'ig-img-' + idx;
     var proxiedThumb = SCRAPER_URL + '?action=proxy&url=' + encodeURIComponent(post.imageUrl);
 
-    return '<div class="ig-post-card">'
+    var sourceMap = { instagram_api: '✅ IG API', picuki: '📸 Instagram', picuki_raw: '📸 Instagram', google: '🔍 Google', bing: '🔍 Bing', duckduckgo: '🦆 DDG' };
+    var srcLabel = sourceMap[post.source] || '🌐 Web';
+    var srcColor = (post.source === 'instagram_api' || post.source === 'picuki' || post.source === 'picuki_raw') ? '#e1306c' : 'var(--text3)';
+    var sourceBadge = '<span style="margin-left:auto;font-size:10px;color:' + srcColor + ';white-space:nowrap">' + srcLabel + '</span>';
+
+    return '<div class="ig-post-card" data-sc="' + (post.shortcode||'') + '">'
       + '<img class="ig-post-img" id="' + imgId + '" src="' + proxiedThumb + '" alt="" loading="lazy">'
       + '<div class="ig-post-meta">'
-      + '<div class="ig-post-user">' + avatarHtml + usernameHtml + '</div>'
+      + '<div class="ig-post-user" style="display:flex;align-items:center;width:100%">' + avatarHtml + usernameHtml + sourceBadge + '</div>'
       + infoLine
       + '<div class="ig-post-acts">'
       + openBtn
