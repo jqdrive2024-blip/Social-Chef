@@ -2547,13 +2547,6 @@ async function igTestConnect() {
     localStorage.setItem('sc_ig_account_name', igAccountName);
     updateIgConnectUI();
     toast('✓ Connectat com @' + igAccountName);
-    // Resoldre Instagram Business Account ID en background (necessari per ig_hashtag_search)
-    resolveIgBusinessId(token).then(function(bizId) {
-      if (bizId) {
-        localStorage.setItem('sc_ig_business_id', bizId);
-        console.log('Instagram Business ID resolt:', bizId);
-      }
-    }).catch(function(e) { console.warn('No s ha pogut resoldre el Business ID:', e.message); });
   } catch(e) {
     toast('❌ ' + e.message.slice(0,80));
   } finally {
@@ -2565,7 +2558,6 @@ function igDisconnect() {
   if (!confirm("Desconnectar el compte d'Instagram?")) return;
   igToken = igUserId = igAccountName = '';
   localStorage.removeItem('sc_ig_token');
-  localStorage.removeItem('sc_ig_business_id');
   localStorage.removeItem('sc_ig_user_id');
   localStorage.removeItem('sc_ig_account_name');
   const inp = document.getElementById('cfgIgToken');
@@ -2741,56 +2733,13 @@ async function searchIgPosts() {
   }
 }
 
-// ── Resol l'Instagram Business Account ID a partir del token ─────────────────
-// ig_hashtag_search necessita l'IG Business ID, no el Facebook user_id
-async function resolveIgBusinessId(token) {
-  var BASE = 'https://graph.facebook.com/v21.0';
-  // Pas 1: obtenir les pagines de Facebook associades al token
-  var accRes = await fetch(BASE + '/me/accounts?access_token=' + encodeURIComponent(token));
-  if (!accRes.ok) throw new Error('accounts HTTP ' + accRes.status);
-  var accData = await accRes.json();
-  if (accData.error) throw new Error(accData.error.message);
-  var pages = accData.data || [];
-  // Pas 2: per cada pagina, obtenir el compte IG Business associat
-  for (var p of pages) {
-    if (!p.id) continue;
-    var pageToken = p.access_token || token;
-    var igRes = await fetch(
-      BASE + '/' + p.id + '?fields=instagram_business_account&access_token=' + encodeURIComponent(pageToken)
-    );
-    if (!igRes.ok) continue;
-    var igData = await igRes.json();
-    var bizId = igData.instagram_business_account && igData.instagram_business_account.id;
-    if (bizId) return bizId;
-  }
-  // Fallback: provar /me?fields=instagram_business_account directament
-  var meRes = await fetch(BASE + '/me?fields=instagram_business_account&access_token=' + encodeURIComponent(token));
-  if (meRes.ok) {
-    var meData = await meRes.json();
-    var bizId2 = meData.instagram_business_account && meData.instagram_business_account.id;
-    if (bizId2) return bizId2;
-  }
-  return null;
-}
-
 // ── Cerca via Instagram Graph API ────────────────────────────────────────────
 async function searchIgHashtag(query, token, userId) {
   var BASE = 'https://graph.facebook.com/v21.0';
   var hashtag = query.trim().replace(/^#/, '').replace(/\s+/g, '').toLowerCase();
 
-  // Usar Instagram Business ID si disponible (necessari per ig_hashtag_search)
-  // Si no, intentar resoldre'l ara
-  var igBizId = localStorage.getItem('sc_ig_business_id') || '';
-  if (!igBizId) {
-    try {
-      igBizId = await resolveIgBusinessId(token) || '';
-      if (igBizId) localStorage.setItem('sc_ig_business_id', igBizId);
-    } catch(e) { console.warn('resolveIgBusinessId failed:', e.message); }
-  }
-  var effectiveUserId = igBizId || userId; // fallback al user_id si no tenim bizId
-
   var tagRes = await fetch(
-    BASE + '/ig_hashtag_search?user_id=' + encodeURIComponent(effectiveUserId)
+    BASE + '/ig_hashtag_search?user_id=' + encodeURIComponent(userId)
     + '&q=' + encodeURIComponent(hashtag)
     + '&access_token=' + encodeURIComponent(token)
   );
@@ -2802,7 +2751,7 @@ async function searchIgHashtag(query, token, userId) {
 
   var mediaRes = await fetch(
     BASE + '/' + tagId + '/top_media'
-    + '?user_id=' + encodeURIComponent(effectiveUserId)
+    + '?user_id=' + encodeURIComponent(userId)
     + '&fields=id,media_type,media_url,thumbnail_url,permalink,caption,timestamp'
     + '&limit=24'
     + '&access_token=' + encodeURIComponent(token)
