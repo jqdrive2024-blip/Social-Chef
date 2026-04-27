@@ -3080,24 +3080,56 @@ function updFavBadge() {
   if (b) b.textContent = favorites.length;
 }
 async function saveFavorite(post) {
-  if (!currentUser || !currentRestId) return;
-  var restId = currentRestId;
-  var existing = favorites.find(function(f) {
-    return f.schedId && post.schedId && f.schedId === post.schedId;
-  });
-  if (existing) return;
-  var fav = {
-    id: 'fav_' + Date.now() + '_' + Math.random().toString(36).slice(2,6),
-    title: post.title || '', type: post.type || 'post', caption: post.caption || '',
-    hashtags: post.hashtags || '', imageData: post.imageData || '', emoji: post.emoji || '',
-    igPostId: post.igPostId || '', publishedAt: post.publishedAt || '',
-    savedAt: new Date().toISOString(), source: post.igPostId ? 'published' : 'manual'
+  if (!currentUser || !currentRestId) {
+    toast('Error: No hi ha usuari o restaurant actiu');
+    return;
+  }
+
+  // Si és una imatge generada (base64), la pugem primer al servidor
+  let finalImageUrl = post.imageData || '';
+
+  if (finalImageUrl && finalImageUrl.startsWith('data:')) {
+    try {
+      toast('Pujant imatge al servidor...');
+      finalImageUrl = await uploadToServer(finalImageUrl);
+      post.imageData = finalImageUrl;   // actualitzem el post
+    } catch (uploadErr) {
+      console.warn('No s\'ha pogut pujar la imatge:', uploadErr);
+      toast('⚠️ La imatge no s\'ha pogut pujar al servidor. Es guardarà sense imatge.');
+      finalImageUrl = '';
+    }
+  }
+
+  const fav = {
+    id: 'fav_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
+    title: post.title || 'Sense títol',
+    type: post.type || 'post',
+    caption: post.caption || '',
+    hashtags: post.hashtags || '',
+    imageData: finalImageUrl,           // IMPORTANT: sempre URL pública o buida
+    emoji: post.emoji || '',
+    igPostId: post.igPostId || '',
+    publishedAt: post.publishedAt || '',
+    savedAt: new Date().toISOString(),
+    source: post.igPostId ? 'published' : 'manual',
+    restId: currentRestId
   };
+
   favorites.push(fav);
   updFavBadge();
-  await saveFavoritesToFirestore(restId, favorites.slice());
+
+  // Guardem a Firebase
+  try {
+    await db.collection('users').doc(currentUser.uid)
+      .collection('restaurants').doc(currentRestId)
+      .update({ favorites: favorites });
+    toast('✓ Guardat a Favorits!');
+  } catch (e) {
+    console.error('Error guardant favorit a Firebase:', e);
+    toast('Favorit guardat localment. Error a Firebase: ' + e.message.slice(0,60));
+  }
+
   renderFavorites();
-  toast('Guardat a Favorits!');
 }
 async function saveFavoritesToFirestore(restId, favSnapshot) {
   var rid = restId || currentRestId;
