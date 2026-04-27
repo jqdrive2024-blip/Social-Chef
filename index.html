@@ -2847,12 +2847,37 @@ function renderIgSearchResults(posts, query) {
     var imgId = 'ig-img-' + idx;
     var proxiedThumb = SCRAPER_URL + '?action=proxy&url=' + encodeURIComponent(post.imageUrl);
 
-    var sourceMap = { instagram_api: '✅ IG API', picuki: '📸 Instagram', picuki_raw: '📸 Instagram', google: '🔍 Google', bing: '🔍 Bing', duckduckgo: '🦆 DDG' };
-    var srcLabel = sourceMap[post.source] || '🌐 Web';
-    var srcColor = (post.source === 'instagram_api' || post.source === 'picuki' || post.source === 'picuki_raw') ? '#e1306c' : 'var(--text3)';
+    // Detecció de font: primer per camp source, si no per URL de la imatge/post
+    var srcLabel, srcColor;
+    var postUrl  = post.postUrl  || '';
+    var imgUrl   = post.imageUrl || '';
+    var srcField = (post.source  || '').toLowerCase();
+
+    var isIgContent = postUrl.includes('instagram.com') || imgUrl.includes('cdninstagram') || imgUrl.includes('scontent') || imgUrl.includes('fbcdn') || srcField === 'instagram_api' || srcField === 'picuki' || srcField === 'picuki_raw' || srcField === 'picnob' || srcField === 'imginn';
+    var isGoogle    = imgUrl.includes('googleusercontent') || imgUrl.includes('gstatic') || srcField === 'google';
+    var isBing      = postUrl.includes('bing.com') || srcField === 'bing';
+    var isDDG       = srcField === 'duckduckgo';
+    var isIgApi     = srcField === 'instagram_api';
+
+    if (isIgApi)        { srcLabel = '✅ IG API';      srcColor = '#e1306c'; }
+    else if (isIgContent) { srcLabel = '📸 Instagram'; srcColor = '#e1306c'; }
+    else if (isGoogle)  { srcLabel = '🔍 Google';      srcColor = 'var(--text3)'; }
+    else if (isBing)    { srcLabel = '🔍 Bing';        srcColor = 'var(--text3)'; }
+    else if (isDDG)     { srcLabel = '🦆 DDG';         srcColor = 'var(--text3)'; }
+    else                { srcLabel = '🌐 Web';          srcColor = 'var(--text3)'; }
+
+    // Extreure shortcode del postUrl si el camp shortcode és buit
+    // Ex: https://www.instagram.com/p/ABC123xyz/ → ABC123xyz
+    var sc = post.shortcode || '';
+    if (!sc && postUrl) {
+      var scm = postUrl.match(/instagram\.com\/p\/([a-zA-Z0-9_-]{5,20})/);
+      if (scm) sc = scm[1];
+    }
+    post.shortcode = sc; // actualitzar per fetchLikesInBackground
+
     var sourceBadge = '<span style="margin-left:auto;font-size:10px;color:' + srcColor + ';white-space:nowrap">' + srcLabel + '</span>';
 
-    return '<div class="ig-post-card" data-sc="' + (post.shortcode||'') + '">'
+    return '<div class="ig-post-card" data-sc="' + sc + '">'
       + '<img class="ig-post-img" id="' + imgId + '" src="' + proxiedThumb + '" alt="" loading="lazy">'
       + '<div class="ig-post-meta">'
       + '<div class="ig-post-user" style="display:flex;align-items:center;width:100%">' + avatarHtml + usernameHtml + sourceBadge + '</div>'
