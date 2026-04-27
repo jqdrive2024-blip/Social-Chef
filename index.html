@@ -2666,7 +2666,7 @@ async function searchIgPosts() {
       var igPosts = await searchIgHashtag(query, tok, uid);
       if (igPosts && igPosts.length > 0) {
         renderIgSearchResults(igPosts, query);
-        toast('&#10003; ' + igPosts.length + " publicacions d'Instagram trobades per \"" + query + '"');
+        toast('&#10003; ' + igPosts.length + ' publicacions d'Instagram trobades per "' + query + '"');
         return;
       }
     }
