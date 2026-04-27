@@ -2653,11 +2653,25 @@ async function searchIgPosts() {
   var btn = document.getElementById('igSearchBtn');
   var resultsDiv = document.getElementById('igSearchResults');
   btn.disabled = true;
-  btn.textContent = '⏳ Cercant...';
+  btn.innerHTML = '⏳ Cercant...';
   resultsDiv.style.display = 'grid';
   resultsDiv.innerHTML = '<div class="ig-search-spin"><div class="ispin"></div><span>Cercant publicacions de "' + query + '"...</span></div>';
 
   try {
+    // ── Mètode 1: Instagram Graph API (si el token de Meta està connectat) ──
+    var tok = localStorage.getItem('sc_ig_token') || igToken || '';
+    var uid = localStorage.getItem('sc_ig_user_id') || igUserId || '';
+
+    if (tok && uid) {
+      var igPosts = await searchIgHashtag(query, tok, uid);
+      if (igPosts && igPosts.length > 0) {
+        renderIgSearchResults(igPosts, query);
+        toast('&#10003; ' + igPosts.length + " publicacions d'Instagram trobades per \"" + query + '"');
+        return;
+      }
+    }
+
+    // ── Mètode 2: Scraper PHP (Google/Bing/Picuki) com a fallback ───────────
     var serperKey = localStorage.getItem('sc_serper_key') || '';
     var searchUrl = SCRAPER_URL + '?action=hashtag&query=' + encodeURIComponent(query);
     if (serperKey) searchUrl += '&serper_key=' + encodeURIComponent(serperKey);
@@ -2677,8 +2691,65 @@ async function searchIgPosts() {
     resultsDiv.innerHTML = '<div class="ig-search-empty">&#10060; Error: ' + e.message + '</div>';
   } finally {
     btn.disabled = false;
-    btn.textContent = '🔍 Cercar';
+    btn.innerHTML = '🔍 Cercar';
   }
+}
+
+// ── Cerca d'hashtag via Instagram Graph API ─────────────────────────────────
+// Retorna array de posts normalitzats igual que el scraper PHP
+async function searchIgHashtag(query, token, userId) {
+  var BASE = 'https://graph.facebook.com/v21.0';
+  var hashtag = query.trim().replace(/^#/, '').replace(/\s+/g, '').toLowerCase();
+
+  // Pas 1: obtenir l'ID de l'hashtag
+  var tagRes = await fetch(
+    BASE + '/ig_hashtag_search?user_id=' + encodeURIComponent(userId)
+    + '&q=' + encodeURIComponent(hashtag)
+    + '&access_token=' + encodeURIComponent(token)
+  );
+  if (!tagRes.ok) throw new Error('IG hashtag search error: ' + tagRes.status);
+  var tagData = await tagRes.json();
+  if (tagData.error) throw new Error(tagData.error.message || 'IG API error');
+  var tagId = tagData.data && tagData.data[0] && tagData.data[0].id;
+  if (!tagId) return [];
+
+  // Pas 2: obtenir top_media de l'hashtag
+  // Nota: Instagram no exposa like_count per hashtag media (restricció de Meta des del 2019)
+  // Sí retorna: id, media_type, media_url, thumbnail_url, permalink, caption, timestamp
+  var mediaRes = await fetch(
+    BASE + '/' + tagId + '/top_media'
+    + '?user_id=' + encodeURIComponent(userId)
+    + '&fields=id,media_type,media_url,thumbnail_url,permalink,caption,timestamp'
+    + '&limit=24'
+    + '&access_token=' + encodeURIComponent(token)
+  );
+  if (!mediaRes.ok) throw new Error('IG media error: ' + mediaRes.status);
+  var mediaData = await mediaRes.json();
+  if (mediaData.error) throw new Error(mediaData.error.message || 'IG media error');
+  if (!mediaData.data || !mediaData.data.length) return [];
+
+  // Normalitzar al format que espera renderIgSearchResults
+  return mediaData.data.map(function(m) {
+    var imgUrl = m.media_url || m.thumbnail_url || '';
+    // Per VIDEO, thumbnail_url és la miniatura; per IMAGE/CAROUSEL, media_url ja és la imatge
+    if (m.media_type === 'VIDEO') imgUrl = m.thumbnail_url || m.media_url || '';
+    var sc = '';
+    if (m.permalink) {
+      var pm = m.permalink.match(/\/p\/([^/]+)/);
+      if (pm) sc = pm[1];
+    }
+    return {
+      postUrl:   m.permalink || '',
+      imageUrl:  imgUrl,
+      username:  '',
+      avatar:    '',
+      likes:     0,  // Instagram no retorna likes per hashtag media (política de Meta)
+      caption:   (m.caption || '').slice(0, 200),
+      shortcode: sc,
+      source:    'instagram_api',
+      timestamp: m.timestamp || '',
+    };
+  }).filter(function(p) { return p.imageUrl; });
 }
 
 function renderIgSearchResults(posts, query) {
