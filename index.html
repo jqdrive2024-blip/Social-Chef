@@ -3081,55 +3081,53 @@ function updFavBadge() {
 }
 async function saveFavorite(post) {
   if (!currentUser || !currentRestId) {
-    toast('Error: No hi ha usuari o restaurant actiu');
+    toast('❌ No hi ha usuari o restaurant actiu');
     return;
   }
 
-  // Si és una imatge generada (base64), la pugem primer al servidor
   let finalImageUrl = post.imageData || '';
 
+  // === CRÍTIC: Si és una imatge generada per IA (base64), la pugem al teu servidor ===
   if (finalImageUrl && finalImageUrl.startsWith('data:')) {
+    toast('⏳ Pujant imatge generada al teu servidor...');
     try {
-      toast('Pujant imatge al servidor...');
-      finalImageUrl = await uploadToServer(finalImageUrl);
-      post.imageData = finalImageUrl;   // actualitzem el post
+      finalImageUrl = await uploadToServer(finalImageUrl);   // la teva funció existent
+      console.log('✓ Imatge pujada correctament:', finalImageUrl);
     } catch (uploadErr) {
-      console.warn('No s\'ha pogut pujar la imatge:', uploadErr);
-      toast('⚠️ La imatge no s\'ha pogut pujar al servidor. Es guardarà sense imatge.');
-      finalImageUrl = '';
+      console.error('Error pujant imatge al servidor:', uploadErr);
+      toast('⚠️ No s\'ha pogut pujar la imatge. Es guardarà sense imatge.');
+      finalImageUrl = '';   // evitem guardar base64 enorme
     }
   }
 
+  // Creem l'objecte favorit NOMÉS amb URL (mai base64)
   const fav = {
     id: 'fav_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
     title: post.title || 'Sense títol',
     type: post.type || 'post',
     caption: post.caption || '',
     hashtags: post.hashtags || '',
-    imageData: finalImageUrl,           // IMPORTANT: sempre URL pública o buida
+    imageData: finalImageUrl,        // ← SEMPRE URL o buida
     emoji: post.emoji || '',
-    igPostId: post.igPostId || '',
-    publishedAt: post.publishedAt || '',
-    savedAt: new Date().toISOString(),
     source: post.igPostId ? 'published' : 'manual',
+    savedAt: new Date().toISOString(),
     restId: currentRestId
   };
 
   favorites.push(fav);
   updFavBadge();
 
-  // Guardem a Firebase
   try {
     await db.collection('users').doc(currentUser.uid)
       .collection('restaurants').doc(currentRestId)
       .update({ favorites: favorites });
-    toast('✓ Guardat a Favorits!');
+
+    toast('✅ Guardat correctament a Favorits!');
+    renderFavorites();
   } catch (e) {
     console.error('Error guardant favorit a Firebase:', e);
-    toast('Favorit guardat localment. Error a Firebase: ' + e.message.slice(0,60));
+    toast('❌ Error a Firebase: ' + (e.message || '').slice(0, 80));
   }
-
-  renderFavorites();
 }
 async function saveFavoritesToFirestore(restId, favSnapshot) {
   var rid = restId || currentRestId;
