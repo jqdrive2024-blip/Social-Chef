@@ -2773,41 +2773,101 @@ async function searchIgHashtag(query, token, userId) {
   }).filter(function(p) { return p.imageUrl; });
 }
 
-// ── Fetch likes en background via likes.php ──────────────────────────────────
-async function fetchLikesInBackground(posts) {
-  var scs = posts
-    .filter(function(p) { return p.shortcode && !p.likes; })
-    .map(function(p) { return p.shortcode; })
-    .slice(0, 12);
-  if (!scs.length) return;
-  try {
-    var likesEndpoint = LIKES_URL + '?shortcodes=' + scs.join(',');
-    console.log('[likes] Petició:', likesEndpoint);
-    var res = await fetch(likesEndpoint);
-    if (!res.ok) { console.warn('[likes] HTTP error:', res.status); return; }
-    var data = await res.json();
-    console.log('[likes] Resposta:', data);
-    Object.entries(data).forEach(function(entry) {
-      var sc = entry[0], likes = entry[1];
-      if (!likes || likes <= 0) return;
-      var lStr = likes >= 1000000 ? (likes/1000000).toFixed(1)+'M'
-               : likes >= 1000    ? Math.round(likes/1000)+'K'
-               : String(likes);
-      var card = document.querySelector('.ig-post-card[data-sc="' + sc + '"]');
-      if (!card) return;
-      var badge = card.querySelector('.ig-likes-badge');
-      if (badge) {
-        badge.textContent = '\u2764\uFE0F ' + lStr + ' likes';
-      } else {
-        var newBadge = document.createElement('span');
-        newBadge.className = 'ig-likes-badge';
-        newBadge.style.cssText = 'color:#e05a5a;font-weight:700;font-size:12px;display:block;margin-bottom:2px';
-        newBadge.textContent = '\u2764\uFE0F ' + lStr + ' likes';
-        var likesDiv = card.querySelector('.ig-post-likes');
-        if (likesDiv) likesDiv.prepend(newBadge);
+// ── Aplica likes a una targeta del DOM ───────────────────────────────────────
+function applyLikesToCard(sc, likes) {
+  if (!likes || likes <= 0) return;
+  var lStr = likes >= 1000000 ? (likes/1000000).toFixed(1)+'M'
+           : likes >= 1000    ? Math.round(likes/1000)+'K'
+           : String(likes);
+  var card = document.querySelector('.ig-post-card[data-sc="' + sc + '"]');
+  if (!card) return;
+  var badge = card.querySelector('.ig-likes-badge');
+  if (badge) {
+    badge.textContent = '\u2764\uFE0F ' + lStr;
+  } else {
+    var newBadge = document.createElement('span');
+    newBadge.className = 'ig-likes-badge';
+    newBadge.style.cssText = 'color:#e05a5a;font-weight:700;font-size:12px;display:block;margin-bottom:2px';
+    newBadge.textContent = '\u2764\uFE0F ' + lStr;
+    var likesDiv = card.querySelector('.ig-post-likes');
+    if (likesDiv) likesDiv.prepend(newBadge);
+    else {
+      var metaDiv = card.querySelector('.ig-post-meta');
+      if (metaDiv) {
+        var d = document.createElement('div');
+        d.className = 'ig-post-likes';
+        d.style.cssText = 'display:flex;flex-direction:column;gap:2px';
+        d.appendChild(newBadge);
+        metaDiv.insertBefore(d, metaDiv.querySelector('.ig-post-acts'));
       }
-    });
-  } catch(e) { console.warn('fetchLikesInBackground:', e.message); }
+    }
+  }
+}
+
+// ── Extreu likes del HTML de l'embed d'Instagram (executa al navegador) ───────
+function extractLikesFromEmbed(html) {
+  // Patrons del JSON que Instagram embeu a la pàgina /embed/captioned/
+  var patterns = [
+    /"like_count"\s*:\s*(\d+)/i,
+    /"edge_media_preview_like"\s*:\s*\{[^}]*"count"\s*:\s*(\d+)/i,
+    /"likes"\s*:\s*\{\s*"count"\s*:\s*(\d+)/i,
+    /([0-9][0-9,.]*[KMkm]?)\s*(?:likes?|m'agrada)/i,
+  ];
+  for (var i = 0; i < patterns.length; i++) {
+    var m = html.match(patterns[i]);
+    if (m && m[1]) {
+      var s = m[1].toLowerCase().replace(/[,. ]/g,'');
+      if (/[kmb]$/.test(s)) {
+        var n = parseFloat(s);
+        if (s.endsWith('b')) return Math.round(n * 1e9);
+        if (s.endsWith('m')) return Math.round(n * 1e6);
+        if (s.endsWith('k')) return Math.round(n * 1e3);
+      }
+      return parseInt(s) || 0;
+    }
+  }
+  return 0;
+}
+
+// ── Fetch likes: primer navegador (embed directe), després PHP com fallback ───
+async function fetchLikesInBackground(posts) {
+  var postsNeedLikes = posts.filter(function(p) { return p.shortcode && !p.likes; });
+  if (!postsNeedLikes.length) return;
+
+  // Estratègia 1: El navegador fa fetch de l'embed d'Instagram directament.
+  // El navegador pot tenir cookies de sessió → més probabilitat que funcioni.
+  // Instagram retorna embed sense CORS headers → mode 'no-cors' → opaque response.
+  // Usem un iframe ocult per llegir el contingut via postMessage si cal.
+  // Alternativa simple: intentar fetch normal (funciona si Instagram no bloqueja cross-origin text)
+  var browserResults = {};
+  await Promise.allSettled(postsNeedLikes.slice(0, 8).map(async function(post) {
+    var sc = post.shortcode;
+    try {
+      // L'embed d'Instagram és pública i retorna HTML sense autenticació
+      var r = await fetch('https://www.instagram.com/p/' + sc + '/embed/captioned/', {
+        headers: { 'Accept': 'text/html' },
+        // No posem mode:'cors' → el navegador fa la petició normal
+      });
+      if (r.ok) {
+        var html = await r.text();
+        var likes = extractLikesFromEmbed(html);
+        if (likes > 0) { browserResults[sc] = likes; applyLikesToCard(sc, likes); }
+      }
+    } catch(e) { /* CORS blocat → fallback PHP */ }
+  }));
+
+  // Estratègia 2: PHP fallback per els que no hem pogut obtenir via navegador
+  var missing = postsNeedLikes
+    .filter(function(p) { return !browserResults[p.shortcode]; })
+    .map(function(p) { return p.shortcode; });
+
+  if (!missing.length) return;
+  try {
+    var res = await fetch(LIKES_URL + '?shortcodes=' + missing.join(','));
+    if (!res.ok) return;
+    var data = await res.json();
+    Object.entries(data).forEach(function(e) { applyLikesToCard(e[0], e[1]); });
+  } catch(e) { console.warn('likes PHP fallback:', e.message); }
 }
 
 function renderIgSearchResults(posts, query) {
