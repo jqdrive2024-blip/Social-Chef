@@ -2665,7 +2665,7 @@ async function searchIgPosts() {
     resultsDiv.innerHTML = '<div class="ig-search-empty">&#10060; Error: ' + e.message + '</div>';
   } finally {
     btn.disabled = false;
-    btn.innerHTML = '&#128269; Cercar';
+    btn.textContent = '&#128269; Cercar';
   }
 }
 
@@ -2708,50 +2708,26 @@ async function analyzeIgPost(btn, post) {
   btn.disabled = true;
   btn.textContent = '⏳';
   try {
-    var imageUrl = post.imageUrl || '';
-    var caption  = post.caption || '';
+    var caption  = post.caption  || '';
     var username = post.username || '';
+    var source   = post.source   || '';
     var lang = document.getElementById('cfgLang') ? document.getElementById('cfgLang').value : 'ca';
-    var sysPrompt = 'Ets un expert en marketing de restauracio. Analitzes publicacions d Instagram i generes context breu i util per crear contingut similar. Respon sempre en el idioma sol licitat.';
-    var basePrompt = 'Analitza aquesta publicacio d Instagram';
-    if (username) basePrompt += ' de @' + username;
-    if (caption) basePrompt += '. Text del post: ' + caption.slice(0, 200);
-    basePrompt += '. Extreu 2-3 frases concises de context i inspiracio per generar contingut similar per a un restaurant. Descriu el plat principal, l estil visual i el tipus de missatge. Respon en ' + lang + '. Respon NOMES amb el text de context, sense introduccions.';
-    var messages = [];
-    // Intentar obtenir imatge via proxy
-    var imageBase64 = '';
-    if (imageUrl) {
-      try {
-        var proxyUrl = SCRAPER_URL + '?action=proxy&url=' + encodeURIComponent(imageUrl);
-        var imgRes = await fetch(proxyUrl);
-        if (imgRes.ok) {
-          var blob = await imgRes.blob();
-          imageBase64 = await new Promise(function(res2) {
-            var reader = new FileReader();
-            reader.onload = function(e) { res2(e.target.result); };
-            reader.readAsDataURL(blob);
-          });
-        }
-      } catch(e2) { console.warn('Proxy image failed:', e2); }
-    }
-    if (imageBase64 && imageBase64.startsWith('data:image')) {
-      var mediaType = imageBase64.split(';')[0].split(':')[1];
-      var imgData = imageBase64.split(',')[1];
-      messages.push({ role: 'user', content: [
-        { type: 'image', source: { type: 'base64', media_type: mediaType, data: imgData } },
-        { type: 'text', text: basePrompt }
-      ]});
-    } else {
-      messages.push({ role: 'user', content: basePrompt });
-    }
-    var apiRes = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 300, system: sysPrompt, messages: messages })
-    });
-    if (!apiRes.ok) throw new Error('API error ' + apiRes.status);
-    var apiData = await apiRes.json();
-    var analysisText = (apiData.content || []).filter(function(b){ return b.type === 'text'; }).map(function(b){ return b.text; }).join('').trim();
+
+    var sysPrompt = 'Ets un expert en marketing de restauració. Analitzes imatges i publicacions de menjar i generes context breu i útil per crear contingut similar a Instagram. Respon sempre en l\'idioma sol·licitat.';
+    var userPrompt = 'Analitza aquesta publicació de menjar/restaurant';
+    if (username) userPrompt += ' de @' + username;
+    if (caption)  userPrompt += '. Títol o descripció: ' + caption.slice(0, 300);
+    userPrompt += '. Extreu 2-3 frases concises de context i inspiració per generar contingut similar per a un restaurant. Descriu el plat principal, l\'estil visual i el tipus de missatge. Respon en ' + lang + '. Respon NOMÉS amb el text de context, sense introduccions.';
+
+    // Usar puter.ai.chat com la resta de l'app (no requereix API key pròpia)
+    var puterMessages = [
+      { role: 'system', content: sysPrompt },
+      { role: 'user',   content: userPrompt }
+    ];
+
+    var resp = await puter.ai.chat(puterMessages, { model: 'gpt-4o-mini' });
+    var analysisText = (typeof resp === 'string' ? resp : resp?.message?.content || '').trim();
+
     if (analysisText) {
       var ctxEl = document.getElementById('ctx');
       if (ctxEl) {
@@ -2759,7 +2735,7 @@ async function analyzeIgPost(btn, post) {
         ctxEl.style.borderColor = 'var(--accent)';
         setTimeout(function(){ ctxEl.style.borderColor = ''; }, 2000);
       }
-      toast('Context aplicat! Ara genera les propostes.');
+      toast('✓ Context aplicat! Ara genera les propostes.');
     } else {
       throw new Error('Resposta buida de la IA');
     }
@@ -2767,7 +2743,7 @@ async function analyzeIgPost(btn, post) {
     toast('Error analitzant: ' + (e.message || 'Error desconegut'));
   } finally {
     btn.disabled = false;
-    btn.textContent = '&#129302; Analitzar';
+    btn.innerHTML = '&#129302; Analitzar';
   }
 }
 
