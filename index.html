@@ -989,7 +989,7 @@ const firebaseConfig = {
 const SCRAPER_URL = 'https://jordiqterrassa.com/scraper.php';
 const LIKES_URL   = 'https://jordiqterrassa.com/likes.php';
 const PUBLISHER_URL = 'https://jordiqterrassa.com/publisher.php';
-const CRON_SECRET = 'social_chef_2025_secret'; // Ha de coincidir amb el publisher.php de Social Chef
+const CRON_SECRET = 'social_design_2025_secret'; // Ha de coincidir amb el publisher.php de Social Design
 const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
 let db, auth, currentUser, currentRestId;
@@ -3110,37 +3110,28 @@ async function saveFavorite(post) {
 
   let finalImageUrl = post.imageData || '';
 
-  console.log('🔄 saveFavorite iniciat - imageData tipus:', finalImageUrl ? finalImageUrl.substring(0, 50) + '...' : 'buida');
-
-  // Si és base64 (imatge IA), la pugem al teu servidor
+  // Si és imatge generada per IA (base64), la pugem al servidor
   if (finalImageUrl && finalImageUrl.startsWith('data:')) {
-    toast('⏳ Pujant imatge generada al servidor...');
+    toast('⏳ Pujant imatge al servidor...');
     try {
       finalImageUrl = await uploadToServer(finalImageUrl);
-      console.log('✅ uploadToServer va retornar:', finalImageUrl);
-      
-      if (!finalImageUrl || !finalImageUrl.startsWith('http')) {
-        throw new Error('uploadToServer no va retornar una URL vàlida');
-      }
+      console.log('URL rebuda del servidor:', finalImageUrl);
     } catch (e) {
-      console.error('❌ Error pujant imatge:', e);
-      toast('⚠️ No s\'ha pogut pujar la imatge (però el text es guardarà)');
-      finalImageUrl = ''; 
+      console.error('Error pujant imatge:', e);
+      toast('⚠️ No s\'ha pogut pujar la imatge. El text es guardarà igualment.');
+      finalImageUrl = '';
     }
-  } else if (finalImageUrl && finalImageUrl.startsWith('http')) {
-    console.log('✓ Ja és una URL http (imatge d\'Instagram o anterior)');
   }
 
-  // Creem l'objecte favorit
   const fav = {
     id: 'fav_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8),
     title: post.title || 'Sense títol',
     type: post.type || 'post',
     caption: post.caption || '',
     hashtags: post.hashtags || '',
-    imageData: finalImageUrl || '',     // Aquí guardem la URL final
+    imageData: finalImageUrl,           // ← Aquí va la URL del teu servidor
     emoji: post.emoji || '',
-    source: post.igPostId ? 'published' : 'manual',
+    source: 'manual',
     savedAt: new Date().toISOString(),
     restId: currentRestId
   };
@@ -3153,12 +3144,11 @@ async function saveFavorite(post) {
       .collection('restaurants').doc(currentRestId)
       .update({ favorites: favorites });
 
-    console.log('✅ Favorit guardat a Firebase amb imageData:', finalImageUrl ? 'SÍ' : 'NO');
-    toast(finalImageUrl ? '✅ Favorit guardat amb imatge!' : '✅ Favorit guardat (sense imatge)');
+    toast(finalImageUrl ? '✅ Favorit guardat amb imatge' : '✅ Favorit guardat (sense imatge)');
     renderFavorites();
   } catch (e) {
-    console.error('❌ Error guardant a Firebase:', e);
-    toast('❌ Error a Firebase: ' + (e.message || '').slice(0, 70));
+    console.error('Error Firebase:', e);
+    toast('❌ Error guardant favorit a Firebase');
   }
 }
 async function saveFavoritesToFirestore(restId, favSnapshot) {
