@@ -447,14 +447,19 @@ select option{background:var(--surface2)}
       </div>
 
       <!-- CERCA DE PUBLICACIONS D'INSTAGRAM -->
-      <div class="ig-search-box">
-        <h3>&#128269; Inspiració d'Instagram</h3>
-        <p>Cerca publicacions per temàtica per inspirar-te. Clica "Analitzar" per omplir automàticament el context.</p>
-        <div class="ig-search-row">
-          <input type="text" id="igSearchQuery" placeholder="Ex: bravas, paella, hamburguesa, sushi..." onkeydown="if(event.key==='Enter')searchIgPosts()">
-          <button class="bp" onclick="searchIgPosts()" id="igSearchBtn" style="padding:10px 18px">🔍 Cercar</button>
+      <div class="ig-search-box" id="igSearchBox">
+        <h3 onclick="toggleIgSection()" style="cursor:pointer;user-select:none;display:flex;align-items:center;justify-content:space-between">
+          <span>&#128269; Inspiració d'Instagram</span>
+          <span id="igToggleArrow" style="font-size:12px;color:var(--text3);transition:transform .25s">▼</span>
+        </h3>
+        <div id="igSearchBody">
+          <p style="margin-top:8px">Cerca publicacions per temàtica per inspirar-te. Clica "Analitzar" per omplir automàticament el context.</p>
+          <div class="ig-search-row">
+            <input type="text" id="igSearchQuery" placeholder="Ex: bravas, paella, hamburguesa, sushi..." onkeydown="if(event.key==='Enter')searchIgPosts()">
+            <button class="bp" onclick="searchIgPosts()" id="igSearchBtn" style="padding:10px 18px">🔍 Cercar</button>
+          </div>
+          <div id="igSearchResults" class="ig-results-grid" style="display:none"></div>
         </div>
-        <div id="igSearchResults" class="ig-results-grid" style="display:none"></div>
       </div>
 
       <div class="gform">
@@ -895,7 +900,8 @@ select option{background:var(--surface2)}
     <div class="fg" style="margin-bottom:14px"><label>Programar</label><div class="dtp"><input type="date" id="mpDate"><input type="time" id="mpTime" value="12:00"></div></div>
     <div class="mact">
       <button class="bs" onclick="closeOv('ovPrev')">Cancelar</button>
-      <button class="bp" onclick="confirmSched()">✓ Confirmar programación</button>
+      <button class="bs" onclick="saveProposalChanges()" style="border-color:var(--accent);color:var(--accent)">&#128190; Guardar canvis</button>
+      <button class="bp" onclick="confirmSched()">✓ Programar</button>
     </div>
   </div>
 </div>
@@ -915,6 +921,31 @@ select option{background:var(--surface2)}
     <div class="mact">
       <button class="bs" onclick="closeOv('ovBulk')">Cancelar</button>
       <button class="bp" onclick="confirmBulk()">✓ Programar todas</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- Modal editar favorit -->
+<div class="ov" id="ovEditFav" onclick="closeOvIf(event,'ovEditFav')">
+  <div class="modal">
+    <h3>&#9999; Editar favorit</h3>
+    <p class="msub" id="efSub">Edita el text i guarda els canvis</p>
+    <div class="fg" style="margin-bottom:14px">
+      <label>Títol</label>
+      <input type="text" id="efTitle" style="width:100%">
+    </div>
+    <div class="fg" style="margin-bottom:14px">
+      <label>Text de la publicació</label>
+      <textarea rows="5" id="efCaption"></textarea>
+    </div>
+    <div class="fg" style="margin-bottom:14px">
+      <label>Hashtags</label>
+      <input type="text" id="efHashtags" style="width:100%" placeholder="#hashtag1 #hashtag2">
+    </div>
+    <div class="mact">
+      <button class="bs" onclick="closeOv('ovEditFav')">Cancelar</button>
+      <button class="bp" onclick="confirmEditFav()">&#128190; Guardar canvis</button>
     </div>
   </div>
 </div>
@@ -2653,25 +2684,11 @@ async function searchIgPosts() {
   var btn = document.getElementById('igSearchBtn');
   var resultsDiv = document.getElementById('igSearchResults');
   btn.disabled = true;
-  btn.innerHTML = '⏳ Cercant...';
+  btn.textContent = '⏳ Cercant...';
   resultsDiv.style.display = 'grid';
   resultsDiv.innerHTML = '<div class="ig-search-spin"><div class="ispin"></div><span>Cercant publicacions de "' + query + '"...</span></div>';
 
   try {
-    // ── Mètode 1: Instagram Graph API (si el token de Meta està connectat) ──
-    var tok = localStorage.getItem('sc_ig_token') || igToken || '';
-    var uid = localStorage.getItem('sc_ig_user_id') || igUserId || '';
-
-    if (tok && uid) {
-      var igPosts = await searchIgHashtag(query, tok, uid);
-      if (igPosts && igPosts.length > 0) {
-        renderIgSearchResults(igPosts, query);
-        toast('&#10003; ' + igPosts.length + " publicacions d'Instagram trobades per \"" + query + '"');
-        return;
-      }
-    }
-
-    // ── Mètode 2: Scraper PHP (Google/Bing/Picuki) com a fallback ───────────
     var serperKey = localStorage.getItem('sc_serper_key') || '';
     var searchUrl = SCRAPER_URL + '?action=hashtag&query=' + encodeURIComponent(query);
     if (serperKey) searchUrl += '&serper_key=' + encodeURIComponent(serperKey);
@@ -2691,65 +2708,8 @@ async function searchIgPosts() {
     resultsDiv.innerHTML = '<div class="ig-search-empty">&#10060; Error: ' + e.message + '</div>';
   } finally {
     btn.disabled = false;
-    btn.innerHTML = '🔍 Cercar';
+    btn.textContent = '🔍 Cercar';
   }
-}
-
-// ── Cerca d'hashtag via Instagram Graph API ─────────────────────────────────
-// Retorna array de posts normalitzats igual que el scraper PHP
-async function searchIgHashtag(query, token, userId) {
-  var BASE = 'https://graph.facebook.com/v21.0';
-  var hashtag = query.trim().replace(/^#/, '').replace(/\s+/g, '').toLowerCase();
-
-  // Pas 1: obtenir l'ID de l'hashtag
-  var tagRes = await fetch(
-    BASE + '/ig_hashtag_search?user_id=' + encodeURIComponent(userId)
-    + '&q=' + encodeURIComponent(hashtag)
-    + '&access_token=' + encodeURIComponent(token)
-  );
-  if (!tagRes.ok) throw new Error('IG hashtag search error: ' + tagRes.status);
-  var tagData = await tagRes.json();
-  if (tagData.error) throw new Error(tagData.error.message || 'IG API error');
-  var tagId = tagData.data && tagData.data[0] && tagData.data[0].id;
-  if (!tagId) return [];
-
-  // Pas 2: obtenir top_media de l'hashtag
-  // Nota: Instagram no exposa like_count per hashtag media (restricció de Meta des del 2019)
-  // Sí retorna: id, media_type, media_url, thumbnail_url, permalink, caption, timestamp
-  var mediaRes = await fetch(
-    BASE + '/' + tagId + '/top_media'
-    + '?user_id=' + encodeURIComponent(userId)
-    + '&fields=id,media_type,media_url,thumbnail_url,permalink,caption,timestamp'
-    + '&limit=24'
-    + '&access_token=' + encodeURIComponent(token)
-  );
-  if (!mediaRes.ok) throw new Error('IG media error: ' + mediaRes.status);
-  var mediaData = await mediaRes.json();
-  if (mediaData.error) throw new Error(mediaData.error.message || 'IG media error');
-  if (!mediaData.data || !mediaData.data.length) return [];
-
-  // Normalitzar al format que espera renderIgSearchResults
-  return mediaData.data.map(function(m) {
-    var imgUrl = m.media_url || m.thumbnail_url || '';
-    // Per VIDEO, thumbnail_url és la miniatura; per IMAGE/CAROUSEL, media_url ja és la imatge
-    if (m.media_type === 'VIDEO') imgUrl = m.thumbnail_url || m.media_url || '';
-    var sc = '';
-    if (m.permalink) {
-      var pm = m.permalink.match(/\/p\/([^/]+)/);
-      if (pm) sc = pm[1];
-    }
-    return {
-      postUrl:   m.permalink || '',
-      imageUrl:  imgUrl,
-      username:  '',
-      avatar:    '',
-      likes:     0,  // Instagram no retorna likes per hashtag media (política de Meta)
-      caption:   (m.caption || '').slice(0, 200),
-      shortcode: sc,
-      source:    'instagram_api',
-      timestamp: m.timestamp || '',
-    };
-  }).filter(function(p) { return p.imageUrl; });
 }
 
 function renderIgSearchResults(posts, query) {
@@ -2761,14 +2721,19 @@ function renderIgSearchResults(posts, query) {
   resultsDiv.innerHTML = posts.map(function(post, idx) {
     // Info: likes si disponible, sino caption/title
     var infoLine = '';
+    var likesHtml = '', captionHtml = '';
     if (post.likes > 0) {
       var lStr = post.likes >= 1000000 ? (post.likes/1000000).toFixed(1)+'M'
                : post.likes >= 1000    ? Math.round(post.likes/1000)+'K'
-               : post.likes;
-      infoLine = '<div class="ig-post-likes">❤️ ' + lStr + ' likes</div>';
-    } else if (post.caption) {
-      var cap = post.caption.slice(0,65) + (post.caption.length>65?'...':'');
-      infoLine = '<div class="ig-post-likes" style="font-style:italic;color:var(--text3)">' + cap + '</div>';
+               : String(post.likes);
+      likesHtml = '<span style="color:#e05a5a;font-weight:600;font-size:12px">❤️ ' + lStr + ' likes</span>';
+    }
+    if (post.caption) {
+      var cap = post.caption.slice(0,70) + (post.caption.length>70?'…':'');
+      captionHtml = '<span style="color:var(--text3);font-size:11px;font-style:italic">' + cap + '</span>';
+    }
+    if (likesHtml || captionHtml) {
+      infoLine = '<div class="ig-post-likes" style="display:flex;flex-direction:column;gap:2px">' + (likesHtml||'') + (captionHtml||'') + '</div>';
     }
     var avatarHtml = post.avatar
       ? '<div class="ig-post-av"><img src="' + post.avatar + '" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%"></div>'
@@ -3056,10 +3021,73 @@ function renderFavorites() {
       + '</div>'
       + '<div class="cact">'
       + '<button class="bsel" data-fid="' + f.id + '" onclick="reuseFromFavorite(this.dataset.fid)">Reutilizar</button>'
+      + '<button class="bs" data-fid="' + f.id + '" onclick="openEditFav(this.dataset.fid)" style="flex:0;padding:7px 10px">&#9999;</button>'
       + '<button class="bs" data-fid="' + f.id + '" onclick="deleteFavorite(this.dataset.fid)" style="flex:0;padding:7px 10px;color:var(--red);border-color:rgba(232,126,126,.3)">&#128465;</button>'
       + '</div></div>';
   }).join('');
 }
+// ── Toggle secció Inspiració IG ────────────────────────────────────────────
+var _igOpen = true;
+function toggleIgSection() {
+  _igOpen = !_igOpen;
+  var body  = document.getElementById('igSearchBody');
+  var arrow = document.getElementById('igToggleArrow');
+  if (body)  body.style.display  = _igOpen ? '' : 'none';
+  if (arrow) arrow.style.transform = _igOpen ? 'rotate(0deg)' : 'rotate(-90deg)';
+}
+
+// ── Guardar canvis de la proposta sense programar ───────────────────────────
+function saveProposalChanges() {
+  if (!editP) return;
+  var newCap = document.getElementById('mpCap').value;
+  editP.caption = newCap;
+  // Actualitzar la targeta al grid
+  var cardCap = document.querySelector('#card-' + editP.id + ' .ccap');
+  if (cardCap) cardCap.textContent = newCap;
+  // Actualitzar la previsualització dins el modal
+  var igcatxt = document.querySelector('#mpPrev .igcatxt');
+  if (igcatxt) igcatxt.textContent = newCap;
+  closeOv('ovPrev');
+  toast('&#128190; Canvis guardats a la proposta!');
+}
+
+// ── Editar favorit ──────────────────────────────────────────────────────────
+var _editFavId = null;
+function openEditFav(favId) {
+  var f = favorites.find(function(x) { return x.id === favId; });
+  if (!f) return;
+  _editFavId = favId;
+  document.getElementById('efSub').textContent = f.title || 'Edita el text i guarda els canvis';
+  document.getElementById('efTitle').value    = f.title    || '';
+  document.getElementById('efCaption').value  = f.caption  || '';
+  document.getElementById('efHashtags').value = f.hashtags || '';
+  document.getElementById('ovEditFav').classList.add('open');
+}
+async function confirmEditFav() {
+  if (!_editFavId) return;
+  var f = favorites.find(function(x) { return x.id === _editFavId; });
+  if (!f) return;
+  f.title    = document.getElementById('efTitle').value.trim();
+  f.caption  = document.getElementById('efCaption').value.trim();
+  f.hashtags = document.getElementById('efHashtags').value.trim();
+  closeOv('ovEditFav');
+  renderFavorites();
+  var restId = localStorage.getItem('sc_active_restaurant');
+  if (restId && typeof db !== 'undefined' && currentUser) {
+    try {
+      await db.collection('users').doc(currentUser.uid)
+        .collection('restaurants').doc(restId)
+        .update({ favorites: favorites });
+      toast('&#128190; Favorit actualitzat!');
+    } catch(e) {
+      toast('Canvis desats localment. Error Firestore: ' + e.message.slice(0,50));
+    }
+  } else {
+    toast('&#128190; Favorit actualitzat!');
+  }
+  _editFavId = null;
+}
+
 function reuseFromFavorite(favId) {
   var f = favorites.find(function(x) { return x.id === favId; });
   if (!f) return;
