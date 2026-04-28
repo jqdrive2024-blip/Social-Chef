@@ -1286,65 +1286,81 @@ async function generateWithGemini(prompt, isStory) {
 }
 
 // ── Puter: gestió de sessió ─────────────────────────────────────────────────
-async function checkPuterStatus() {
+function setPuterUI(loggedIn, username) {
   var statusEl  = document.getElementById('puterStatus');
   var userEl    = document.getElementById('puterUserInfo');
   var loginBtn  = document.getElementById('puterLoginBtn');
   var logoutBtn = document.getElementById('puterLogoutBtn');
   if (!statusEl) return;
-
-  try {
-    // puter.auth.isLoggedIn() retorna true/false síncronament
-    var loggedIn = puter.auth.isLoggedIn();
-    if (loggedIn) {
-      // Obtenir info de l'usuari
-      var user = await puter.auth.getUser();
-      statusEl.textContent = '● Connectat';
-      statusEl.style.color = 'var(--green)';
-      if (userEl) {
-        userEl.textContent = user?.username ? '@' + user.username : 'Sessio activa';
-        userEl.style.display = 'block';
-      }
-      if (loginBtn)  loginBtn.style.display  = 'none';
-      if (logoutBtn) logoutBtn.style.display = 'inline-flex';
-    } else {
-      statusEl.textContent = '○ No connectat';
-      statusEl.style.color = 'var(--text3)';
-      if (userEl)    userEl.style.display    = 'none';
-      if (loginBtn)  loginBtn.style.display  = 'inline-flex';
-      if (logoutBtn) logoutBtn.style.display = 'none';
-    }
-  } catch(e) {
+  if (loggedIn) {
+    statusEl.textContent = '● Connectat';
+    statusEl.style.color = 'var(--green)';
+    if (userEl) { userEl.textContent = username ? '@' + username : 'Sessio activa'; userEl.style.display = 'block'; }
+    if (loginBtn)  { loginBtn.style.display = 'none'; loginBtn.disabled = false; loginBtn.textContent = 'Iniciar sessio'; }
+    if (logoutBtn) { logoutBtn.style.display = 'inline-flex'; logoutBtn.disabled = false; logoutBtn.textContent = 'Desconnectar Puter'; }
+  } else {
     statusEl.textContent = '○ No connectat';
     statusEl.style.color = 'var(--text3)';
-    if (loginBtn)  loginBtn.style.display  = 'inline-flex';
-    if (logoutBtn) logoutBtn.style.display = 'none';
-    console.warn('Puter status check:', e.message);
+    if (userEl)    { userEl.style.display = 'none'; }
+    if (loginBtn)  { loginBtn.style.display = 'inline-flex'; loginBtn.disabled = false; loginBtn.textContent = 'Iniciar sessio'; }
+    if (logoutBtn) { logoutBtn.style.display = 'none'; logoutBtn.disabled = false; }
+  }
+}
+
+async function checkPuterStatus() {
+  var statusEl = document.getElementById('puterStatus');
+  if (!statusEl) return;
+  if (typeof puter === 'undefined' || !puter.auth) {
+    statusEl.textContent = '○ Puter no disponible';
+    return;
+  }
+  try {
+    // isLoggedIn() es sincron pero pot llançar si el SDK no esta llest
+    var loggedIn = puter.auth.isLoggedIn();
+    if (loggedIn) {
+      var user = await puter.auth.getUser().catch(function() { return null; });
+      setPuterUI(true, user && user.username);
+    } else {
+      setPuterUI(false);
+    }
+  } catch(e) {
+    // SDK no llest encara — reintenta en 1s
+    setTimeout(checkPuterStatus, 1000);
+    console.warn('Puter status retry:', e.message);
   }
 }
 
 async function puterLogin() {
   var loginBtn = document.getElementById('puterLoginBtn');
-  if (loginBtn) { loginBtn.disabled = true; loginBtn.textContent = 'Connectant...'; }
+  if (loginBtn) { loginBtn.disabled = true; loginBtn.textContent = 'Obrint sessio...'; }
   try {
     await puter.auth.signIn();
     await checkPuterStatus();
-    toast('✓ Connectat a Puter! Ja pots generar imatges amb FLUX i GPT Image 2.');
+    toast('Connectat a Puter! Ja pots generar imatges amb FLUX i GPT Image 2.');
   } catch(e) {
-    toast('Error Puter: ' + (e.message || 'Inicia sessio manualment a puter.com'));
-    await checkPuterStatus();
+    toast('No s\'ha pogut connectar: ' + (e.message || 'tanca el popup i torna a provar'));
+  } finally {
+    // Sempre restaurar el boto — checkPuterStatus ja gestiona display/text si connectat
+    var lb = document.getElementById('puterLoginBtn');
+    if (lb && lb.style.display !== 'none') {
+      lb.disabled = false;
+      lb.textContent = 'Iniciar sessio';
+    }
   }
 }
 
 async function puterLogout() {
+  var logoutBtn = document.getElementById('puterLogoutBtn');
   if (!confirm('Desconnectar el compte Puter?')) return;
+  if (logoutBtn) { logoutBtn.disabled = true; logoutBtn.textContent = 'Desconnectant...'; }
   try {
     await puter.auth.signOut();
     toast('Puter desconnectat.');
   } catch(e) {
     console.warn('Puter logout:', e.message);
+  } finally {
+    await checkPuterStatus();
   }
-  await checkPuterStatus();
 }
 
 // ── Puter FLUX ───────────────────────────────────────────────
