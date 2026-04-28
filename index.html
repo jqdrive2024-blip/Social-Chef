@@ -735,7 +735,6 @@ select option{background:var(--surface2)}
                 <label>Model de generació</label>
                 <select id="cfgImgModel" onchange="saveImgModel()">
                   <option value="gemini">✨ Gemini Imagen (recomanat)</option>
-                  <option value="gpt-image-2">🤖 GPT Image 2 (gratuït via Puter)</option>
                   <option value="cloudflare">☁️ Cloudflare SDXL (alta qualitat)</option>
                   <option value="puter">⚡ Puter FLUX (gratuït)</option>
                 </select>
@@ -760,11 +759,12 @@ select option{background:var(--surface2)}
             </div>
             <div style="display:flex;flex-direction:column;gap:10px">
               <div style="padding:14px;background:var(--surface2);border-radius:var(--r);border:1px solid var(--border)">
-                <div style="font-size:12px;font-weight:500;margin-bottom:6px">Compte Puter (FLUX)</div>
-                <div id="puterStatus" style="font-size:11px;color:var(--text3);margin-bottom:8px">○ Estat desconegut</div>
+                <div style="font-size:12px;font-weight:500;margin-bottom:6px">Compte Puter (FLUX + GPT Image 2)</div>
+                <div id="puterStatus" style="font-size:11px;color:var(--text3);margin-bottom:8px">⏳ Comprovant...</div>
+                <div id="puterUserInfo" style="font-size:11px;color:var(--accent);margin-bottom:8px;display:none"></div>
                 <div style="display:flex;gap:6px">
-                  <button id="puterLoginBtn" onclick="puterLogin()" class="bp" style="font-size:11px;padding:6px 12px">Iniciar sessió</button>
-                  <button id="puterLogoutBtn" onclick="puterLogout()" class="bs" style="font-size:11px;padding:6px 12px;display:none">Desconnectar</button>
+                  <button id="puterLoginBtn" onclick="puterLogin()" class="bp" style="font-size:11px;padding:6px 12px;display:none">Iniciar sessió</button>
+                  <button id="puterLogoutBtn" onclick="puterLogout()" class="bs" style="font-size:11px;padding:6px 12px;display:none">Desconnectar Puter</button>
                 </div>
               </div>
             </div>
@@ -1083,10 +1083,9 @@ function saveImgModel() {
   updateModelUI(sel);
 }
 const MODEL_INFO = {
-  gemini:         '✨ Models Nano Banana i Imagen 4 · Requereix API Key gratuïta de Google · Imatges en base64',
-  'gpt-image-2':  '🤖 GPT Image 2 (OpenAI) via Puter · Alta qualitat fotorealista · 100% gratuit · Requereix sessio Puter',
-  cloudflare:     '☁️ Alta qualitat (SDXL) · 10.000 passes/dia gratis · Requereix compte Cloudflare',
-  puter:          '⚡ Gratuit sense configuracio · Qualitat basica (FLUX.1-schnell) · Requereix sessio Puter',
+  gemini:     '✨ Models Nano Banana i Imagen 4 · Requereix API Key gratuïta de Google · Imatges en base64',
+  cloudflare: '☁️ Alta qualitat (SDXL) · 10.000 passes/dia gratis · Requereix compte Cloudflare',
+  puter:      '⚡ Gratuït sense configuració · Qualitat bàsica (FLUX.1-schnell) · Requereix sessió Puter',
 };
 function updateModelUI(model) {
   const info = document.getElementById('modelInfo');
@@ -1101,6 +1100,8 @@ function loadImgModelUI() {
   const el = document.getElementById('cfgImgModel');
   if (el) el.value = model;
   updateModelUI(model);
+  // Comprovar estat Puter en carregar la UI
+  if (typeof puter !== 'undefined') checkPuterStatus();
   const accId = localStorage.getItem('sc_cf_account_id') || '';
   const tok   = localStorage.getItem('sc_cf_api_token')  || '';
   if (document.getElementById('cfAccountId')) document.getElementById('cfAccountId').value = accId;
@@ -1282,23 +1283,66 @@ async function generateWithGemini(prompt, isStory) {
   };
 }
 
-// ── GPT Image 2 via Puter (gratuit, alta qualitat) ───────────────────────────
-async function generateWithGptImage2(prompt, isStory) {
-  const fullPrompt = buildImagePrompt(prompt, isStory);
-  const size = isStory ? '1024x1536' : '1024x1024';
+// ── Puter: gestió de sessió ─────────────────────────────────────────────────
+async function checkPuterStatus() {
+  var statusEl  = document.getElementById('puterStatus');
+  var userEl    = document.getElementById('puterUserInfo');
+  var loginBtn  = document.getElementById('puterLoginBtn');
+  var logoutBtn = document.getElementById('puterLogoutBtn');
+  if (!statusEl) return;
+
   try {
-    const imgEl = await puter.ai.txt2img(fullPrompt, {
-      model: 'gpt-image-2',
-      quality: 'medium',
-      size,
-    });
-    if (imgEl?.src) return { url: imgEl.src, label: '🤖 GPT Image 2' };
-    throw new Error('Sense src');
+    // puter.auth.isLoggedIn() retorna true/false síncronament
+    var loggedIn = puter.auth.isLoggedIn();
+    if (loggedIn) {
+      // Obtenir info de l'usuari
+      var user = await puter.auth.getUser();
+      statusEl.textContent = '● Connectat';
+      statusEl.style.color = 'var(--green)';
+      if (userEl) {
+        userEl.textContent = user?.username ? '@' + user.username : 'Sessio activa';
+        userEl.style.display = 'block';
+      }
+      if (loginBtn)  loginBtn.style.display  = 'none';
+      if (logoutBtn) logoutBtn.style.display = 'inline-flex';
+    } else {
+      statusEl.textContent = '○ No connectat';
+      statusEl.style.color = 'var(--text3)';
+      if (userEl)    userEl.style.display    = 'none';
+      if (loginBtn)  loginBtn.style.display  = 'inline-flex';
+      if (logoutBtn) logoutBtn.style.display = 'none';
+    }
   } catch(e) {
-    if (/credit|quota|limit|session|login/i.test(e.message || ''))
-      throw new Error('Puter sense sessio o credits. Inicia sessio a puter.com i torna a provar.');
-    throw new Error('Error GPT Image 2: ' + (e.message || 'desconegut'));
+    statusEl.textContent = '○ No connectat';
+    statusEl.style.color = 'var(--text3)';
+    if (loginBtn)  loginBtn.style.display  = 'inline-flex';
+    if (logoutBtn) logoutBtn.style.display = 'none';
+    console.warn('Puter status check:', e.message);
   }
+}
+
+async function puterLogin() {
+  var loginBtn = document.getElementById('puterLoginBtn');
+  if (loginBtn) { loginBtn.disabled = true; loginBtn.textContent = 'Connectant...'; }
+  try {
+    await puter.auth.signIn();
+    await checkPuterStatus();
+    toast('✓ Connectat a Puter! Ja pots generar imatges amb FLUX i GPT Image 2.');
+  } catch(e) {
+    toast('Error Puter: ' + (e.message || 'Inicia sessio manualment a puter.com'));
+    await checkPuterStatus();
+  }
+}
+
+async function puterLogout() {
+  if (!confirm('Desconnectar el compte Puter?')) return;
+  try {
+    await puter.auth.signOut();
+    toast('Puter desconnectat.');
+  } catch(e) {
+    console.warn('Puter logout:', e.message);
+  }
+  await checkPuterStatus();
 }
 
 // ── Puter FLUX ───────────────────────────────────────────────
@@ -1327,13 +1371,6 @@ async function generateImageNb(prompt, isStory) {
       if (geminiKey) {
         try { return await generateWithGemini(prompt, isStory); } catch(e2) { console.warn(e2.message); }
       }
-      return await generateWithPuter(prompt, isStory);
-    }
-  }
-  if (model === 'gpt-image-2') {
-    try { return await generateWithGptImage2(prompt, isStory); }
-    catch(e) {
-      toast('⚠️ GPT Image 2: ' + e.message.slice(0, 80) + ' · Provant FLUX...');
       return await generateWithPuter(prompt, isStory);
     }
   }
@@ -2836,46 +2873,12 @@ async function searchIgPosts() {
 }
 
 // ── Cerca via Instagram Graph API ────────────────────────────────────────────
-var _igBusinessId = localStorage.getItem('sc_ig_business_id') || '';
-
-async function resolveIgBusinessId(token) {
-  if (_igBusinessId) return _igBusinessId;
-  var BASE = 'https://graph.facebook.com/v21.0';
-  var pagesRes = await fetch(BASE + '/me/accounts?fields=id,name,instagram_business_account&access_token=' + encodeURIComponent(token));
-  if (!pagesRes.ok) throw new Error('Error obtenint pagines FB: ' + pagesRes.status);
-  var pagesData = await pagesRes.json();
-  if (pagesData.error) throw new Error(pagesData.error.message);
-  var pages = pagesData.data || [];
-  for (var i = 0; i < pages.length; i++) {
-    var igId = pages[i].instagram_business_account && pages[i].instagram_business_account.id;
-    if (igId) {
-      _igBusinessId = igId;
-      localStorage.setItem('sc_ig_business_id', igId);
-      console.log('[IG] Business ID resolt:', igId, 'Pagina:', pages[i].name);
-      return igId;
-    }
-  }
-  var meRes = await fetch(BASE + '/me?fields=instagram_business_account&access_token=' + encodeURIComponent(token));
-  if (meRes.ok) {
-    var meData = await meRes.json();
-    var igId2 = meData.instagram_business_account && meData.instagram_business_account.id;
-    if (igId2) {
-      _igBusinessId = igId2;
-      localStorage.setItem('sc_ig_business_id', igId2);
-      return igId2;
-    }
-  }
-  throw new Error('No s\'ha trobat cap compte Instagram Professional associat a les pagines de Facebook.');
-}
-
 async function searchIgHashtag(query, token, userId) {
   var BASE = 'https://graph.facebook.com/v21.0';
   var hashtag = query.trim().replace(/^#/, '').replace(/\s+/g, '').toLowerCase();
 
-  var igBizId = await resolveIgBusinessId(token);
-
   var tagRes = await fetch(
-    BASE + '/ig_hashtag_search?user_id=' + encodeURIComponent(igBizId)
+    BASE + '/ig_hashtag_search?user_id=' + encodeURIComponent(userId)
     + '&q=' + encodeURIComponent(hashtag)
     + '&access_token=' + encodeURIComponent(token)
   );
@@ -2887,8 +2890,8 @@ async function searchIgHashtag(query, token, userId) {
 
   var mediaRes = await fetch(
     BASE + '/' + tagId + '/top_media'
-    + '?user_id=' + encodeURIComponent(igBizId)
-    + '&fields=id,media_type,media_url,thumbnail_url,permalink,caption,timestamp,like_count'
+    + '?user_id=' + encodeURIComponent(userId)
+    + '&fields=id,media_type,media_url,thumbnail_url,permalink,caption,timestamp'
     + '&limit=24'
     + '&access_token=' + encodeURIComponent(token)
   );
@@ -2903,7 +2906,7 @@ async function searchIgHashtag(query, token, userId) {
     if (m.permalink) { var pm = m.permalink.match(/\/p\/([^/]+)/); if (pm) sc = pm[1]; }
     return {
       postUrl: m.permalink || '', imageUrl: imgUrl, username: '',
-      avatar: '', likes: m.like_count || 0, caption: (m.caption || '').slice(0, 200),
+      avatar: '', likes: 0, caption: (m.caption || '').slice(0, 200),
       shortcode: sc, source: 'instagram_api', timestamp: m.timestamp || ''
     };
   }).filter(function(p) { return p.imageUrl; });
