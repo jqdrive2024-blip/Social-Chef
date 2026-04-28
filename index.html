@@ -2848,6 +2848,10 @@ function changeRestDrawer() {
 async function searchIgPosts() {
   var query = (document.getElementById('igSearchQuery').value || '').trim();
   if (!query) { toast('Entra una temat\u00edca per cercar'); document.getElementById('igSearchQuery').focus(); return; }
+  if (query.startsWith('@') || query.includes('.')) {
+    toast("⚠️ La cerca és per temàtica, no per comptes. Ex: bravas o paella. Per imatges d'un compte, usa Biblioteca > Instagram");
+    return;
+  }
   var minLikes = parseInt(document.getElementById('igMinLikes')?.value || '0') || 0;
 
   var btn = document.getElementById('igSearchBtn');
@@ -2931,7 +2935,8 @@ async function searchIgPosts() {
 // ── Cerca via Apify Instagram Hashtag Scraper ─────────────────────────────────
 async function searchWithApify(query, apiKey, minLikes) {
   var APIFY_BASE = 'https://api.apify.com/v2';
-  var hashtag = query.trim().replace(/^#/, '').replace(/[\s]+/g, '').toLowerCase();
+  var hashtag = query.trim().replace(/^[@#]+/, '').replace(/[^a-zA-Z0-9_]/g, '').toLowerCase();
+  if (!hashtag) throw new Error('Hashtag invalid. Usa paraules sense @, # ni punts.');
 
   var startRes = await fetch(APIFY_BASE + '/acts/apify~instagram-hashtag-scraper/runs?token=' + encodeURIComponent(apiKey), {
     method: 'POST',
@@ -2993,7 +2998,7 @@ async function searchWithApify(query, apiKey, minLikes) {
 // ── Cerca via Instagram Graph API ────────────────────────────────────────────
 async function searchIgHashtag(query, token, userId) {
   var BASE = 'https://graph.facebook.com/v21.0';
-  var hashtag = query.trim().replace(/^#/, '').replace(/\s+/g, '').toLowerCase();
+  var hashtag = query.trim().replace(/^[@#]+/, '').replace(/[^a-zA-Z0-9_]/g, '').toLowerCase();
 
   var tagRes = await fetch(
     BASE + '/ig_hashtag_search?user_id=' + encodeURIComponent(userId)
