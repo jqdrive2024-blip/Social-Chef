@@ -961,45 +961,44 @@ select option{background:var(--surface2)}
   </div>
 </div>
 
-<!-- Modal seleccionar imatge de la librería -->
 <!-- Modal variant IG -->
 <div class="ov ig-variant-modal" id="ovIgVariant" onclick="closeOvIf(event,'ovIgVariant')">
-  <div class="modal" style="width:420px;max-width:95vw">
+  <div class="modal" style="width:440px;max-width:95vw">
     <h3>✨ Generar variant</h3>
     <p class="msub" id="ovIgVariantSub">Genera una imatge inspirada en aquesta publicació</p>
-    <div id="igVarPreviewWrap" style="margin:12px 0;border-radius:var(--rs);overflow:hidden;height:140px;background:var(--surface2);display:flex;align-items:center;justify-content:center">
-      <img id="igVarPreview" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none">
-    </div>
-    <div class="mv-opt">
-      <button onclick="generateIgVariant('similar')">
-        <span class="mv-icon">🖼️</span>
-        <div class="mv-desc">
-          <span class="mv-title">Variant visual similar</span>
-          <span class="mv-sub">Genera una imatge amb el mateix estil i plat, adaptada al teu restaurant</span>
+
+    <!-- Preview + anàlisi en curs -->
+    <div style="display:flex;gap:12px;margin:14px 0;align-items:flex-start">
+      <div id="igVarPreviewWrap" style="border-radius:var(--rs);overflow:hidden;width:100px;height:100px;background:var(--surface2);flex-shrink:0;display:flex;align-items:center;justify-content:center">
+        <img id="igVarPreview" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none">
+      </div>
+      <div style="flex:1;min-width:0">
+        <div id="igVarAnalyzeStatus" style="font-size:12px;color:var(--text3);display:flex;align-items:center;gap:6px;margin-bottom:8px">
+          <div class="ispin" id="igVarAnalyzeSpin"></div>
+          <span id="igVarAnalyzeTxt">Analitzant publicació...</span>
         </div>
-      </button>
-      <button onclick="generateIgVariant('custom')">
-        <span class="mv-icon">✏️</span>
-        <div class="mv-desc">
-          <span class="mv-title">Personalitzar prompt</span>
-          <span class="mv-sub">Edita la descripció abans de generar</span>
-        </div>
-      </button>
+        <textarea id="igVarCustomPrompt" rows="4" style="width:100%;resize:vertical;font-size:13px;box-sizing:border-box" placeholder="Prompt per generar la imatge..."></textarea>
+      </div>
     </div>
+
+    <!-- Format -->
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px">
+      <label style="font-size:12px;color:var(--text3);white-space:nowrap">Format:</label>
+      <select id="igVarRatio" style="flex:1;padding:8px;font-size:13px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:var(--rs);font-family:inherit">
+        <option value="1:1">Post (1:1)</option>
+        <option value="9:16">Story (9:16)</option>
+      </select>
+    </div>
+
+    <!-- Progress generació -->
     <div class="ig-var-prog" id="igVarProgress">
       <div class="ispin"></div><span id="igVarProgressTxt">Generant imatge...</span>
     </div>
-    <div id="igVarCustomWrap" style="display:none;flex-direction:column;gap:8px;margin-top:4px">
-      <textarea id="igVarCustomPrompt" rows="3" style="resize:vertical;font-size:13px" placeholder="Descriu la imatge que vols generar..."></textarea>
-      <div style="display:flex;gap:8px">
-        <select id="igVarRatio" style="padding:8px;font-size:13px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:var(--rs);font-family:inherit">
-          <option value="1:1">Post (1:1)</option>
-          <option value="9:16">Story (9:16)</option>
-        </select>
-        <button class="bp" onclick="generateIgVariant('custom_confirm')" style="flex:1">🎨 Generar</button>
-      </div>
+
+    <div class="mact" style="margin-top:4px">
+      <button class="bs" onclick="closeOv('ovIgVariant')">Cancel·lar</button>
+      <button class="bp" id="igVarGenBtn" onclick="generateIgVariant('go')" disabled style="gap:6px">🎨 Generar variant</button>
     </div>
-    <div class="mact" style="margin-top:12px"><button class="bs" onclick="closeOv('ovIgVariant')">Cancel·lar</button></div>
   </div>
 </div>
 
@@ -2995,58 +2994,85 @@ async function fetchPostCdnImage(shortcode, idx) {
 var _igVariantPost = null;
 var _igVariantBasePrompt = '';
 
-function openIgVariantModal(post, imgEl) {
+async function openIgVariantModal(post, imgEl) {
   _igVariantPost = post;
-  // Construir prompt base a partir del caption/username
-  var restName = document.getElementById('restSel') ? document.getElementById('restSel').options[document.getElementById('restSel').selectedIndex]?.text || '' : '';
-  var base = '';
-  if (post.caption && post.caption.length > 5) {
-    // Extreure keywords del caption (primeres 60 chars, netejar hashtags)
-    base = post.caption.replace(/#\S+/g,'').replace(/\s+/g,' ').trim().slice(0,80);
-  } else if (post.username) {
-    base = 'food photo inspired by @' + post.username;
-  } else {
-    base = 'professional food photography, restaurant';
-  }
-  if (restName) base += ', served at ' + restName;
-  base += ', professional food photo, natural light, editorial style';
-  _igVariantBasePrompt = base;
 
   // Previsualitzar imatge
   var prev = document.getElementById('igVarPreview');
-  if (prev && imgEl && imgEl.src) {
-    prev.src = imgEl.src;
-    prev.style.display = 'block';
-  } else if (prev) {
-    prev.style.display = 'none';
-  }
-  // Reset estat modal
-  document.getElementById('igVarCustomWrap').style.display = 'none';
-  document.getElementById('igVarProgress').classList.remove('act');
-  document.querySelectorAll('.ig-variant-modal .mv-opt button').forEach(function(b){ b.disabled = false; });
+  if (prev && imgEl && imgEl.src && !imgEl.src.includes('undefined')) {
+    prev.src = imgEl.src; prev.style.display = 'block';
+  } else if (prev) { prev.style.display = 'none'; }
+
   // Info
   var sub = post.username ? 'Inspirat en @' + post.username : 'Genera una imatge similar per al teu restaurant';
   document.getElementById('ovIgVariantSub').textContent = sub;
 
+  // Reset estat
+  document.getElementById('igVarProgress').classList.remove('act');
+  document.getElementById('igVarCustomPrompt').value = '';
+  document.getElementById('igVarGenBtn').disabled = true;
+
+  // Obrir modal
   document.getElementById('ovIgVariant').classList.add('open');
+
+  var spinEl  = document.getElementById('igVarAnalyzeSpin');
+  var txtEl   = document.getElementById('igVarAnalyzeTxt');
+  var ta      = document.getElementById('igVarCustomPrompt');
+  var genBtn  = document.getElementById('igVarGenBtn');
+  var lang    = document.getElementById('cfgLang') ? document.getElementById('cfgLang').value : 'ca';
+  var restName = document.getElementById('restSel')
+    ? (document.getElementById('restSel').options[document.getElementById('restSel').selectedIndex]?.text || '')
+    : '';
+
+  if (post.caption && post.caption.trim().length > 5) {
+    // Tenim text: analitzar amb IA per generar prompt de qualitat
+    spinEl.style.display = 'inline-block';
+    txtEl.textContent = 'Analitzant text per generar el millor prompt...';
+    try {
+      var sysPrompt = 'You are an expert at writing prompts for AI image generation tools like FLUX and Stable Diffusion. Given a food/restaurant Instagram post caption, you extract the key visual elements and write a concise, descriptive English prompt suitable for image generation. Focus on: dish name, presentation style, lighting, mood, setting. Never mention people names or Instagram. Always end with: professional food photography, natural light, editorial style, high quality.';
+      var userP = 'Instagram caption: "' + post.caption.slice(0, 400) + '"';
+      if (restName) userP += '\nRestaurant name: ' + restName;
+      userP += '\n\nWrite a single English image generation prompt (max 100 words). Only the prompt, no explanation.';
+      var resp = await puter.ai.chat([
+        { role: 'system', content: sysPrompt },
+        { role: 'user',   content: userP }
+      ], { model: 'gpt-4o-mini' });
+      var analyzed = (typeof resp === 'string' ? resp : resp?.message?.content || '').trim();
+      if (analyzed) {
+        ta.value = analyzed;
+        _igVariantBasePrompt = analyzed;
+        spinEl.style.display = 'none';
+        txtEl.textContent = 'Prompt generat a partir del text de la publicació';
+      } else { throw new Error('buit'); }
+    } catch(e) {
+      // Fallback: prompt simple sense IA
+      var base = post.caption.replace(/#\S+/g,'').replace(/\s+/g,' ').trim().slice(0,80);
+      if (restName) base += ', served at ' + restName;
+      base += ', professional food photography, natural light, editorial style';
+      ta.value = base;
+      _igVariantBasePrompt = base;
+      spinEl.style.display = 'none';
+      txtEl.textContent = 'Prompt bàsic (sense anàlisi IA)';
+    }
+  } else {
+    // Sense text: prompt genèric
+    var base2 = post.username ? 'food photo inspired by @' + post.username : 'professional food photography, restaurant';
+    if (restName) base2 += ', served at ' + restName;
+    base2 += ', professional food photo, natural light, editorial style';
+    ta.value = base2;
+    _igVariantBasePrompt = base2;
+    spinEl.style.display = 'none';
+    txtEl.textContent = 'Prompt basat en el compte (sense text disponible)';
+  }
+
+  genBtn.disabled = false;
 }
 
 async function generateIgVariant(mode) {
   var post = _igVariantPost;
   if (!post) return;
 
-  if (mode === 'custom') {
-    // Mostrar textarea per editar
-    var ta = document.getElementById('igVarCustomPrompt');
-    ta.value = _igVariantBasePrompt;
-    document.getElementById('igVarCustomWrap').style.display = 'flex';
-    ta.focus();
-    return;
-  }
-
-  var prompt = (mode === 'custom_confirm')
-    ? document.getElementById('igVarCustomPrompt').value.trim()
-    : _igVariantBasePrompt;
+  var prompt = document.getElementById('igVarCustomPrompt').value.trim() || _igVariantBasePrompt;
 
   if (!prompt) { toast('Escriu una descripció per generar la imatge'); return; }
 
@@ -3057,8 +3083,7 @@ async function generateIgVariant(mode) {
   var prog = document.getElementById('igVarProgress');
   var progTxt = document.getElementById('igVarProgressTxt');
   prog.classList.add('act');
-  document.querySelectorAll('.ig-variant-modal .mv-opt button').forEach(function(b){ b.disabled = true; });
-  document.querySelectorAll('.ig-variant-modal .mv-opt > button.bp').forEach(function(b){ b.disabled = true; });
+  document.getElementById('igVarGenBtn').disabled = true;
 
   try {
     progTxt.textContent = 'Generant imatge amb IA...';
@@ -3094,7 +3119,7 @@ async function generateIgVariant(mode) {
     toast('Error generant: ' + (e.message || 'Error desconegut').slice(0,80));
   } finally {
     prog.classList.remove('act');
-    document.querySelectorAll('.ig-variant-modal .mv-opt button').forEach(function(b){ b.disabled = false; });
+    document.getElementById('igVarGenBtn').disabled = false;
   }
 }
 
