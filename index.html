@@ -708,12 +708,7 @@ select option{background:var(--surface2)}
             </div>
             <div class="fg"><label>Hashtags fijos</label><textarea rows="2" id="cfgTags"></textarea></div>
             <div class="fg"><label>CTA habitual</label><input type="text" id="cfgCTA"></div>
-            <div class="hdiv" style="margin:4px 0"></div>
-            <div class="fg">
-              <label>Google Gemini API Key</label>
-              <input type="password" id="cfgGeminiKey" placeholder="AIza..." autocomplete="off">
-              <span style="font-size:11px;color:var(--text3);margin-top:3px">Para Imagen 3 · Consiguela gratis en <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--accent)">aistudio.google.com</a></span>
-            </div>
+
             <div class="fg">
               <label>Serper.dev API Key <span style="font-weight:400;color:var(--green);font-size:11px">(recomanat)</span></label>
               <input type="password" id="cfgSerperKey" placeholder="clau..." autocomplete="off">
@@ -1072,7 +1067,7 @@ function buildImagePrompt(prompt, isStory) {
 
 // =====================================================
 function getGeminiKey() {
-  return localStorage.getItem('sc_gemini_key') || document.getElementById('cfgGeminiKey')?.value?.trim() || '';
+  return localStorage.getItem('sc_gemini_key') || '';
 }
 
 const GEMINI_PROXY_URL = 'https://jordiqterrassa.com/gemini-proxy.php';
@@ -1170,8 +1165,6 @@ function saveGeminiCfgImg() {
   localStorage.setItem('sc_gemini_key', key);
   if (workerUrl) localStorage.setItem('sc_gemini_worker_url', workerUrl);
   if (model) localStorage.setItem('sc_gemini_model', model);
-  const cfgEl = document.getElementById('cfgGeminiKey');
-  if (cfgEl) cfgEl.value = key;
   toast('✓ Gemini desat' + (workerUrl ? ' (amb Worker URL)' : '') + (model ? ' · Model: ' + model.split('/').pop() : ''));
 }
 function getGeminiWorkerUrl() {
@@ -1185,8 +1178,6 @@ async function testGeminiConnection() {
   const modelInput = document.getElementById('cfgGeminiModel')?.value?.trim();
   if (keyInput) {
     localStorage.setItem('sc_gemini_key', keyInput);
-    const cfgEl = document.getElementById('cfgGeminiKey');
-    if (cfgEl) cfgEl.value = keyInput;
   }
   if (workerInput) localStorage.setItem('sc_gemini_worker_url', workerInput);
   if (modelInput) localStorage.setItem('sc_gemini_model', modelInput);
@@ -2202,7 +2193,6 @@ async function initApp() {
         document.getElementById('mainApp').style.display = 'grid';
         renderCal();
         const geminiKey = localStorage.getItem('sc_gemini_key');
-        if (geminiKey && document.getElementById('cfgGeminiKey')) document.getElementById('cfgGeminiKey').value = geminiKey;
         const serperKey = localStorage.getItem('sc_serper_key');
         if (serperKey && document.getElementById('cfgSerperKey')) document.getElementById('cfgSerperKey').value = serperKey;
         loadImgModelUI();
@@ -2387,8 +2377,6 @@ async function addRest() {
 
 async function saveCfg() {
   if (!currentUser||!currentRestId) return;
-  const geminiKey = document.getElementById('cfgGeminiKey')?.value?.trim();
-  if (geminiKey) localStorage.setItem('sc_gemini_key', geminiKey);
   const serperKey2 = document.getElementById('cfgSerperKey')?.value?.trim();
   if (serperKey2 !== undefined) localStorage.setItem('sc_serper_key', serperKey2);
   const data = {
