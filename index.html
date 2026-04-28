@@ -735,6 +735,7 @@ select option{background:var(--surface2)}
                 <label>Model de generació</label>
                 <select id="cfgImgModel" onchange="saveImgModel()">
                   <option value="gemini">✨ Gemini Imagen (recomanat)</option>
+                  <option value="gpt-image-2">🤖 GPT Image 2 (gratuït via Puter)</option>
                   <option value="cloudflare">☁️ Cloudflare SDXL (alta qualitat)</option>
                   <option value="puter">⚡ Puter FLUX (gratuït)</option>
                 </select>
@@ -1083,9 +1084,10 @@ function saveImgModel() {
   updateModelUI(sel);
 }
 const MODEL_INFO = {
-  gemini:     '✨ Models Nano Banana i Imagen 4 · Requereix API Key gratuïta de Google · Imatges en base64',
-  cloudflare: '☁️ Alta qualitat (SDXL) · 10.000 passes/dia gratis · Requereix compte Cloudflare',
-  puter:      '⚡ Gratuït sense configuració · Qualitat bàsica (FLUX.1-schnell) · Requereix sessió Puter',
+  gemini:        '✨ Models Nano Banana i Imagen 4 · Requereix API Key gratuita de Google · Imatges en base64',
+  'gpt-image-2': '🤖 GPT Image 2 (OpenAI) via Puter · Alta qualitat · 100% gratuit · Requereix sessio Puter',
+  cloudflare:    '☁️ Alta qualitat (SDXL) · 10.000 passes/dia gratis · Requereix compte Cloudflare',
+  puter:         '⚡ Gratuit sense configuracio · Qualitat basica (FLUX.1-schnell) · Requereix sessio Puter',
 };
 function updateModelUI(model) {
   const info = document.getElementById('modelInfo');
@@ -1371,6 +1373,13 @@ async function generateImageNb(prompt, isStory) {
       if (geminiKey) {
         try { return await generateWithGemini(prompt, isStory); } catch(e2) { console.warn(e2.message); }
       }
+      return await generateWithPuter(prompt, isStory);
+    }
+  }
+  if (model === 'gpt-image-2') {
+    try { return await generateWithGptImage2(prompt, isStory); }
+    catch(e) {
+      toast('⚠️ GPT Image 2: ' + e.message.slice(0,80) + ' · Provant FLUX...');
       return await generateWithPuter(prompt, isStory);
     }
   }
