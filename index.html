@@ -205,6 +205,17 @@ select option{background:var(--surface2)}
 .ig-post-acts button{background:var(--accent-bg);border:1px solid var(--accent-border);color:var(--accent)}
 .ig-post-acts button:hover{background:var(--accent);color:#fff}
 .ig-post-acts button:disabled{opacity:.5;cursor:not-allowed}
+.ig-post-acts button.var-btn{background:rgba(126,201,142,.12);border-color:rgba(126,201,142,.4);color:var(--green)}
+.ig-post-acts button.var-btn:hover{background:var(--green);color:#fff}
+.ig-variant-modal .mv-opt{display:flex;flex-direction:column;gap:10px;margin:12px 0}
+.ig-variant-modal .mv-opt button{width:100%;padding:12px 16px;border-radius:var(--r);font-size:14px;font-family:inherit;cursor:pointer;text-align:left;display:flex;align-items:center;gap:12px;transition:all .15s;border:1px solid var(--border2);background:var(--surface2);color:var(--text)}
+.ig-variant-modal .mv-opt button:hover{border-color:var(--accent);background:var(--accent-bg)}
+.ig-variant-modal .mv-opt button span.mv-icon{font-size:22px;flex-shrink:0}
+.ig-variant-modal .mv-opt button .mv-desc{display:flex;flex-direction:column;gap:2px}
+.ig-variant-modal .mv-opt button .mv-title{font-weight:500}
+.ig-variant-modal .mv-opt button .mv-sub{font-size:12px;color:var(--text3)}
+.ig-var-prog{display:none;padding:16px;background:var(--surface2);border-radius:var(--r);text-align:center;font-size:13px;color:var(--text2);gap:8px;align-items:center;justify-content:center}
+.ig-var-prog.act{display:flex}
 .ig-search-empty{text-align:center;padding:32px;color:var(--text3);font-size:13px;grid-column:1/-1}
 .ig-search-spin{display:flex;align-items:center;justify-content:center;gap:10px;padding:24px;color:var(--text3);font-size:13px;grid-column:1/-1}
 /* Toast */
@@ -951,6 +962,47 @@ select option{background:var(--surface2)}
 </div>
 
 <!-- Modal seleccionar imatge de la librería -->
+<!-- Modal variant IG -->
+<div class="ov ig-variant-modal" id="ovIgVariant" onclick="closeOvIf(event,'ovIgVariant')">
+  <div class="modal" style="width:420px;max-width:95vw">
+    <h3>✨ Generar variant</h3>
+    <p class="msub" id="ovIgVariantSub">Genera una imatge inspirada en aquesta publicació</p>
+    <div id="igVarPreviewWrap" style="margin:12px 0;border-radius:var(--rs);overflow:hidden;height:140px;background:var(--surface2);display:flex;align-items:center;justify-content:center">
+      <img id="igVarPreview" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none">
+    </div>
+    <div class="mv-opt">
+      <button onclick="generateIgVariant('similar')">
+        <span class="mv-icon">🖼️</span>
+        <div class="mv-desc">
+          <span class="mv-title">Variant visual similar</span>
+          <span class="mv-sub">Genera una imatge amb el mateix estil i plat, adaptada al teu restaurant</span>
+        </div>
+      </button>
+      <button onclick="generateIgVariant('custom')">
+        <span class="mv-icon">✏️</span>
+        <div class="mv-desc">
+          <span class="mv-title">Personalitzar prompt</span>
+          <span class="mv-sub">Edita la descripció abans de generar</span>
+        </div>
+      </button>
+    </div>
+    <div class="ig-var-prog" id="igVarProgress">
+      <div class="ispin"></div><span id="igVarProgressTxt">Generant imatge...</span>
+    </div>
+    <div id="igVarCustomWrap" style="display:none;flex-direction:column;gap:8px;margin-top:4px">
+      <textarea id="igVarCustomPrompt" rows="3" style="resize:vertical;font-size:13px" placeholder="Descriu la imatge que vols generar..."></textarea>
+      <div style="display:flex;gap:8px">
+        <select id="igVarRatio" style="padding:8px;font-size:13px;background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:var(--rs);font-family:inherit">
+          <option value="1:1">Post (1:1)</option>
+          <option value="9:16">Story (9:16)</option>
+        </select>
+        <button class="bp" onclick="generateIgVariant('custom_confirm')" style="flex:1">🎨 Generar</button>
+      </div>
+    </div>
+    <div class="mact" style="margin-top:12px"><button class="bs" onclick="closeOv('ovIgVariant')">Cancel·lar</button></div>
+  </div>
+</div>
+
 <div class="ov" id="ovLibPick" onclick="closeOvIf(event,'ovLibPick')">
   <div class="modal" style="width:680px;max-width:95vw">
     <h3>Seleccionar imatge per a la proposta</h3>
@@ -2909,6 +2961,7 @@ function renderIgSearchResults(posts, query) {
       + '<div class="ig-post-acts">'
       + openBtn
       + '<button data-idx="' + idx + '" onclick="analyzeIgPost(this,JSON.parse(decodeURIComponent(this.dataset.post)))" data-post="' + encodeURIComponent(JSON.stringify(post)) + '" title="Analitzar text i aplicar al context">🤖 Analitzar</button>'
+      + '<button class="var-btn" data-idx="' + idx + '" onclick="openIgVariantModal(JSON.parse(decodeURIComponent(this.dataset.post)),document.getElementById(\'ig-img-\'+this.dataset.idx))" data-post="' + encodeURIComponent(JSON.stringify(post)) + '" title="Generar imatge variant amb IA">✨ Variant</button>'
       + '</div>'
       + '</div>'
       + '</div>';
@@ -2935,6 +2988,113 @@ async function fetchPostCdnImage(shortcode, idx) {
     }
   } catch(e) {
     // Deixem la thumbnailUrl que ja tenim
+  }
+}
+
+// ── Variable global per al post seleccionat al modal de variant ─────────────
+var _igVariantPost = null;
+var _igVariantBasePrompt = '';
+
+function openIgVariantModal(post, imgEl) {
+  _igVariantPost = post;
+  // Construir prompt base a partir del caption/username
+  var restName = document.getElementById('restSel') ? document.getElementById('restSel').options[document.getElementById('restSel').selectedIndex]?.text || '' : '';
+  var base = '';
+  if (post.caption && post.caption.length > 5) {
+    // Extreure keywords del caption (primeres 60 chars, netejar hashtags)
+    base = post.caption.replace(/#\S+/g,'').replace(/\s+/g,' ').trim().slice(0,80);
+  } else if (post.username) {
+    base = 'food photo inspired by @' + post.username;
+  } else {
+    base = 'professional food photography, restaurant';
+  }
+  if (restName) base += ', served at ' + restName;
+  base += ', professional food photo, natural light, editorial style';
+  _igVariantBasePrompt = base;
+
+  // Previsualitzar imatge
+  var prev = document.getElementById('igVarPreview');
+  if (prev && imgEl && imgEl.src) {
+    prev.src = imgEl.src;
+    prev.style.display = 'block';
+  } else if (prev) {
+    prev.style.display = 'none';
+  }
+  // Reset estat modal
+  document.getElementById('igVarCustomWrap').style.display = 'none';
+  document.getElementById('igVarProgress').classList.remove('act');
+  document.querySelectorAll('.ig-variant-modal .mv-opt button').forEach(function(b){ b.disabled = false; });
+  // Info
+  var sub = post.username ? 'Inspirat en @' + post.username : 'Genera una imatge similar per al teu restaurant';
+  document.getElementById('ovIgVariantSub').textContent = sub;
+
+  document.getElementById('ovIgVariant').classList.add('open');
+}
+
+async function generateIgVariant(mode) {
+  var post = _igVariantPost;
+  if (!post) return;
+
+  if (mode === 'custom') {
+    // Mostrar textarea per editar
+    var ta = document.getElementById('igVarCustomPrompt');
+    ta.value = _igVariantBasePrompt;
+    document.getElementById('igVarCustomWrap').style.display = 'flex';
+    ta.focus();
+    return;
+  }
+
+  var prompt = (mode === 'custom_confirm')
+    ? document.getElementById('igVarCustomPrompt').value.trim()
+    : _igVariantBasePrompt;
+
+  if (!prompt) { toast('Escriu una descripció per generar la imatge'); return; }
+
+  var ratio = document.getElementById('igVarRatio')?.value || '1:1';
+  var isStory = ratio === '9:16';
+
+  // Mostrar progress
+  var prog = document.getElementById('igVarProgress');
+  var progTxt = document.getElementById('igVarProgressTxt');
+  prog.classList.add('act');
+  document.querySelectorAll('.ig-variant-modal .mv-opt button').forEach(function(b){ b.disabled = true; });
+  document.querySelectorAll('.ig-variant-modal .mv-opt > button.bp').forEach(function(b){ b.disabled = true; });
+
+  try {
+    progTxt.textContent = 'Generant imatge amb IA...';
+    var result = await generateImageNb(prompt, isStory);
+    var url = result && result.url ? result.url : result;
+    var label = result && result.label ? result.label : 'IA';
+
+    // Pujar al servidor si es base64
+    if (url && url.startsWith('data:')) {
+      progTxt.textContent = 'Pujant al servidor...';
+      try { url = await uploadToServer(url); } catch(e) { console.warn('Upload failed:', e); }
+    }
+
+    // Afegir a la biblioteca
+    var imgData = { url: url, source: 'generated', prompt: prompt, type: isStory ? 'story' : 'post', restId: currentRestId, modelLabel: label };
+    addToLibrary(imgData);
+    await saveLibImagesToFirestore();
+    idbSaveImage(imgData);
+
+    // Tancar modal i navegar a la biblioteca
+    closeOv('ovIgVariant');
+    toast('✓ Imatge generada i afegida a la Biblioteca > Generades IA');
+
+    // Navegar a la biblioteca si no hi estem ja
+    showSec('library', document.querySelector('.ni'));
+    if (typeof switchLibTab === 'function') {
+      var genTab = document.querySelector('.bo-tab:nth-child(3)');
+      if (genTab) switchLibTab('generated', genTab);
+    }
+    renderGenGrid();
+
+  } catch(e) {
+    toast('Error generant: ' + (e.message || 'Error desconegut').slice(0,80));
+  } finally {
+    prog.classList.remove('act');
+    document.querySelectorAll('.ig-variant-modal .mv-opt button').forEach(function(b){ b.disabled = false; });
   }
 }
 
