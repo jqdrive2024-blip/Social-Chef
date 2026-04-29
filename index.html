@@ -2216,7 +2216,14 @@ async function initApp() {
         document.getElementById('loginBox').classList.remove('vis');
         document.getElementById('initSpinner').style.display = 'block';
         setSyncState('spin','Carregant...');
-        await loadUserData();
+        try {
+          await loadUserData();
+        } catch(loadErr) {
+          console.error('loadUserData error:', loadErr);
+          setInitMsg('Error carregant dades: ' + loadErr.message + '. Refresca la pagina.');
+          document.getElementById('initSpinner').style.display = 'none';
+          return;
+        }
         const displayName = user.displayName || user.email || user.uid.slice(0,8);
         setSyncState('ok', displayName);
         updateUserUI(user);
@@ -2224,6 +2231,7 @@ async function initApp() {
         document.getElementById('mainApp').style.display = 'grid';
         renderCal();
         const geminiKey = localStorage.getItem('sc_gemini_key');
+        if (geminiKey && document.getElementById('cfgGeminiKey')) document.getElementById('cfgGeminiKey').value = geminiKey;
         const serperKey = localStorage.getItem('sc_serper_key');
         if (serperKey && document.getElementById('cfgSerperKey')) document.getElementById('cfgSerperKey').value = serperKey;
         const apifyKey = localStorage.getItem('sc_apify_key');
@@ -2304,7 +2312,14 @@ function setSyncState(state,txt){
 }
 
 async function loadUserData() {
-  const snap = await db.collection('users').doc(currentUser.uid).collection('restaurants').orderBy('createdAt').get();
+  let snap;
+  try {
+    snap = await db.collection('users').doc(currentUser.uid).collection('restaurants').orderBy('createdAt').get();
+  } catch(e) {
+    // Si no hi ha index de createdAt (Firestore ho requereix), intentar sense orderBy
+    console.warn('orderBy createdAt failed, trying without:', e.message);
+    snap = await db.collection('users').doc(currentUser.uid).collection('restaurants').get();
+  }
   restaurants = snap.docs.map(d=>({id:d.id,...d.data()}));
   if (!restaurants.length) await createDefaultRestaurant();
   renderRestSelector();
