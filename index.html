@@ -722,7 +722,7 @@ select option{background:var(--surface2)}
             <div style="margin-top:16px">
               <label style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:6px">Retocs ràpids (clica per afegir)</label>
               <div class="tags">
-                <button type="button" class="tag" onclick="addEnhancePreset(this,'afegeix gent gaudint de l\'àpat de manera natural i discreta al fons')">👥 + Gent al fons</button>
+                <button type="button" class="tag" onclick="addEnhancePreset(this,'afegeix clarament 3 o 4 persones diferents asseient-se, conversant i gaudint de l\'àpat a les taules buides del fons; han de ser ben visibles, no només siluetes')">👥 + Gent al fons</button>
                 <button type="button" class="tag" onclick="addEnhancePreset(this,'millora la il·luminació perquè sigui càlida, natural i professional')">💡 Millorar llum</button>
                 <button type="button" class="tag" onclick="addEnhancePreset(this,'fes un retoc d\'estil editorial gastronòmic d\'alta qualitat')">✨ Retoc editorial</button>
                 <button type="button" class="tag" onclick="addEnhancePreset(this,'realça els colors i la nitidesa del plat sense alterar els ingredients')">🎨 Realçar colors</button>
@@ -736,9 +736,9 @@ select option{background:var(--surface2)}
             </div>
 
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px">
-              <select id="enhanceModel" style="padding:8px 12px;font-size:13px;width:240px">
-                <option value="gpt-image-2">🤖 GPT Image 2 (recomanat · realisme)</option>
-                <option value="gemini-3-pro-image-preview">✨ Gemini Nano Banana (manté identitat)</option>
+              <select id="enhanceModel" style="padding:8px 12px;font-size:13px;width:260px">
+                <option value="gpt-image-2">🤖 GPT Image 2 (via Puter · realisme)</option>
+                <option value="gemini-3-pro-image-preview">✨ Nano Banana (via Puter · manté identitat)</option>
               </select>
               <select id="enhanceFormat" style="padding:8px 12px;font-size:13px;width:170px">
                 <option value="">Mantenir original</option>
@@ -748,6 +748,9 @@ select option{background:var(--surface2)}
               <button class="bp" onclick="generateEnhancedPhoto().catch(e=>{console.error('generateEnhancedPhoto:',e);toast('Error inesperat: '+(e.message||'').slice(0,80));})" id="enhanceBtn">✨ Generar millora</button>
               <button class="bs" onclick="resetEnhanceFlow()" style="padding:10px 14px;font-size:13px">↺ Nova foto</button>
             </div>
+            <p style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.5">
+              💡 Aquests dos models es paguen amb <strong>crèdits de Puter</strong> (no amb la teva clau de Gemini de Configuració). Puter dona crèdits gratuïts inicials; si s'esgoten, recarrega des de <a href="https://puter.com" target="_blank" style="color:var(--accent)">puter.com</a> (cèntims per imatge) o canvia de compte a Configuració.
+            </p>
           </div>
         </div>
         <div id="enhanceGrid" class="bo-grid">
@@ -1304,11 +1307,16 @@ async function testGeminiConnection() {
     if (status) status.innerHTML = '<span style="color:var(--green)">✓ Funciona! ' + (usingWorker ? 'Worker · ' : '') + workingModel + '</span>';
     toast('✓ Gemini connectat!');
   } catch(e) {
-    let msg = e.message.slice(0, 120);
-    if (/403|billing|PERMISSION_DENIED/i.test(msg)) msg = 'Error de permisos/billing al projecte Google Cloud.';
-    else if (/401|API_KEY_INVALID/i.test(msg)) msg = 'API Key invàlida.';
-    if (status) status.innerHTML = '<span style="color:var(--red)">✗ ' + msg + '</span>';
-    toast('❌ Gemini: ' + e.message.slice(0, 60));
+    const fullMsg = e.message || 'Error desconegut';
+    let category = '';
+    if (/403|billing|PERMISSION_DENIED/i.test(fullMsg)) category = 'Error de permisos/billing al projecte Google Cloud';
+    else if (/401|API_KEY_INVALID/i.test(fullMsg)) category = 'API Key invàlida';
+    else if (/429|quota|RESOURCE_EXHAUSTED/i.test(fullMsg)) category = 'Quota exhaurida';
+    if (status) {
+      status.innerHTML = '<span style="color:var(--red)">✗ ' + (category ? category + ':' : 'Error:') + '</span>'
+        + '<br><span style="color:var(--text3);font-size:11px;word-break:break-word;display:block;margin-top:3px;user-select:text">' + fullMsg.slice(0, 300) + '</span>';
+    }
+    toast('❌ Gemini: ' + fullMsg.slice(0, 80));
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = '🔍 Provar connexió'; }
   }
@@ -1971,7 +1979,7 @@ async function generateEnhancedPhoto() {
       prompt: prompt,
       type: formatSel === '9:16' ? 'story' : 'post',
       restId: currentRestId,
-      modelLabel: model === 'gpt-image-2' ? '✨ Foto millorada (GPT Image 2)' : '✨ Foto millorada (Nano Banana)',
+      modelLabel: model === 'gpt-image-2' ? '✨ Foto millorada (GPT Image 2 · Puter)' : '✨ Foto millorada (Nano Banana · Puter)',
     };
     addToLibrary(imgData);
     await saveLibImagesToFirestore();
