@@ -737,10 +737,10 @@ select option{background:var(--surface2)}
             </div>
 
             <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px">
-              <select id="enhanceModel" style="padding:8px 12px;font-size:13px;width:260px">
-                <option value="gpt-image-2">🤖 GPT Image 2 (via Puter · realisme)</option>
-                <option value="gemini-3-pro-image-preview">✨ Nano Banana (via Puter · manté identitat)</option>
-                <option value="gemini-own-key">🔑 Nano Banana (clau pròpia · sense Puter)</option>
+              <select id="enhanceModel" style="padding:8px 12px;font-size:13px;width:280px">
+                <option value="gemini-own-key">🔑 Nano Banana (clau pròpia · recomanat)</option>
+                <option value="gemini-3-pro-image-preview">✨ Nano Banana (via Puter)</option>
+                <option value="gpt-image-2">🤖 GPT Image 2 (via Puter · ⚠️ pot ignorar la foto)</option>
               </select>
               <select id="enhanceFormat" style="padding:8px 12px;font-size:13px;width:170px">
                 <option value="">Mantenir original</option>
@@ -751,7 +751,7 @@ select option{background:var(--surface2)}
               <button class="bs" onclick="resetEnhanceFlow()" style="padding:10px 14px;font-size:13px">↺ Nova foto</button>
             </div>
             <p style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.5">
-              💡 <strong>GPT Image 2</strong> i <strong>Nano Banana (via Puter)</strong> es paguen amb crèdits de Puter (gratuïts al principi). <strong>Nano Banana (clau pròpia)</strong> usa la teva clau de Gemini de Configuració i no gasta crèdits de Puter — necessita facturació activa al teu projecte de Google Cloud.
+              💡 Els dos models <strong>Nano Banana</strong> editen de veritat la foto original. <strong>GPT Image 2 via Puter</strong> de vegades ignora la imatge de referència i en genera una de nova — útil només si vols inspiració, no per retocar la foto exacta. <strong>Nano Banana (clau pròpia)</strong> usa la teva clau de Gemini de Configuració i no gasta crèdits de Puter.
             </p>
           </div>
         </div>
@@ -2054,10 +2054,15 @@ function resetEnhanceFlow() {
 
 async function generateEnhancedPhoto() {
   if (!_enhanceOriginal) { toast('Puja primer una foto original'); return; }
-  const prompt = document.getElementById('enhancePrompt').value.trim();
-  if (!prompt) { toast('Escriu les instruccions de retoc'); return; }
+  const userPrompt = document.getElementById('enhancePrompt').value.trim();
+  if (!userPrompt) { toast('Escriu les instruccions de retoc'); return; }
   const model = document.getElementById('enhanceModel').value;
   const formatSel = document.getElementById('enhanceFormat').value;
+
+  // Reforçar explícitament que cal EDITAR la imatge adjunta, no crear-ne una de
+  // nova — alguns proveïdors (sobretot GPT Image 2 via Puter) tendeixen a
+  // ignorar la imatge de referència si el prompt no ho deixa molt clar.
+  const prompt = 'Edit the attached reference photo exactly as provided — do not generate a new or different dish/scene. Keep the same plate, food, framing and composition from the original image. Apply only these changes: ' + userPrompt;
 
   console.log('[enhance] start · model=' + model + ' format=' + (formatSel||'original') + ' imgBytes≈' + Math.round((_enhanceOriginal.base64.length*0.75)/1024) + 'KB');
 
@@ -2113,7 +2118,7 @@ async function generateEnhancedPhoto() {
     const imgData = {
       url: url,
       source: 'enhanced',
-      prompt: prompt,
+      prompt: userPrompt,
       type: formatSel === '9:16' ? 'story' : 'post',
       restId: currentRestId,
       modelLabel: resultLabel,
