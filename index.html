@@ -597,6 +597,7 @@ select option{background:var(--surface2)}
         <button class="bo-tab" onclick="switchLibTab('web',this)">&#127760; Web</button>
         <button class="bo-tab" onclick="switchLibTab('generated',this)">&#129302; Generades IA</button>
         <button class="bo-tab" onclick="switchLibTab('upload',this)">&#128193; Carregar</button>
+        <button class="bo-tab" onclick="switchLibTab('enhance',this)">&#10024; Millorar foto</button>
       </div>
 
       <!-- Instagram tab -->
@@ -675,6 +676,82 @@ select option{background:var(--surface2)}
         </div>
         <div id="uploadGrid" class="bo-grid">
           <div class="bo-empty"><p>Les imatges carregades apareixeran aqui</p></div>
+        </div>
+      </div>
+
+      <!-- Millorar foto (edició IA d'una foto del client) -->
+      <div id="lib-enhance" style="display:none">
+        <div class="bo-gen-area">
+          <h3 style="font-size:15px;font-weight:500;margin-bottom:4px">✨ Millorar foto del client</h3>
+          <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Puja una foto real (ex: feta pel client a la terrassa) i la IA la retoca: afegeix gent de fons, millora la llum i li dona un acabat professional, mantenint el plat i la composició originals.</p>
+
+          <!-- Dropzone original -->
+          <div id="enhanceDropZone" style="border:2px dashed var(--border2);border-radius:var(--r);padding:28px 20px;cursor:pointer;transition:all .2s;text-align:center"
+            ondragover="event.preventDefault();this.style.borderColor='var(--accent)';this.style.background='var(--accent-bg)'"
+            ondragleave="this.style.borderColor='var(--border2)';this.style.background='none'"
+            ondrop="handleEnhanceDrop(event)"
+            onclick="document.getElementById('enhanceFileInput').click()">
+            <div id="enhanceDropContent">
+              <div style="font-size:32px;margin-bottom:10px">📷</div>
+              <p style="font-size:14px;color:var(--text);font-weight:500;margin-bottom:4px">Arrossega la foto original aquí</p>
+              <p style="font-size:12px;color:var(--text3)">o clica per seleccionar · JPG, PNG, WebP</p>
+            </div>
+          </div>
+          <input type="file" id="enhanceFileInput" accept="image/*" style="display:none" onchange="handleEnhanceFileInput(event)">
+
+          <!-- Comparativa original / resultat -->
+          <div id="enhanceCompare" style="display:none;margin-top:16px">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+              <div>
+                <p style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.3px">Original</p>
+                <div style="border-radius:var(--r);overflow:hidden;background:var(--surface2);aspect-ratio:1">
+                  <img id="enhanceOriginalImg" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:block">
+                </div>
+              </div>
+              <div>
+                <p style="font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:.3px">Resultat</p>
+                <div style="border-radius:var(--r);overflow:hidden;background:var(--surface2);aspect-ratio:1;display:flex;align-items:center;justify-content:center;position:relative">
+                  <img id="enhanceResultImg" src="" alt="" style="width:100%;height:100%;object-fit:cover;display:none">
+                  <span id="enhanceResultPlaceholder" style="font-size:12px;color:var(--text3);text-align:center;padding:10px">Encara no generat</span>
+                  <div id="enhanceSpin" class="ispin" style="display:none"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Presets ràpids -->
+            <div style="margin-top:16px">
+              <label style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:6px">Retocs ràpids (clica per afegir)</label>
+              <div class="tags">
+                <button type="button" class="tag" onclick="addEnhancePreset(this,'afegeix gent gaudint de l\'àpat de manera natural i discreta al fons')">👥 + Gent al fons</button>
+                <button type="button" class="tag" onclick="addEnhancePreset(this,'millora la il·luminació perquè sigui càlida, natural i professional')">💡 Millorar llum</button>
+                <button type="button" class="tag" onclick="addEnhancePreset(this,'fes un retoc d\'estil editorial gastronòmic d\'alta qualitat')">✨ Retoc editorial</button>
+                <button type="button" class="tag" onclick="addEnhancePreset(this,'realça els colors i la nitidesa del plat sense alterar els ingredients')">🎨 Realçar colors</button>
+                <button type="button" class="tag" onclick="addEnhancePreset(this,'desenfoca lleugerament el fons per donar profunditat de camp professional')">📷 Profunditat de camp</button>
+              </div>
+            </div>
+
+            <div class="fg" style="margin-top:14px">
+              <label>Instruccions per a la IA</label>
+              <textarea id="enhancePrompt" rows="3" placeholder="Descriu els canvis que vols..."></textarea>
+            </div>
+
+            <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px">
+              <select id="enhanceModel" style="padding:8px 12px;font-size:13px;width:240px">
+                <option value="gpt-image-2">🤖 GPT Image 2 (recomanat · realisme)</option>
+                <option value="gemini-3-pro-image-preview">✨ Gemini Nano Banana (manté identitat)</option>
+              </select>
+              <select id="enhanceFormat" style="padding:8px 12px;font-size:13px;width:170px">
+                <option value="">Mantenir original</option>
+                <option value="1:1">Post (1:1)</option>
+                <option value="9:16">Story (9:16)</option>
+              </select>
+              <button class="bp" onclick="generateEnhancedPhoto()" id="enhanceBtn">✨ Generar millora</button>
+              <button class="bs" onclick="resetEnhanceFlow()" style="padding:10px 14px;font-size:13px">↺ Nova foto</button>
+            </div>
+          </div>
+        </div>
+        <div id="enhanceGrid" class="bo-grid">
+          <div class="bo-empty"><p>Les fotos millorades apareixeran aquí</p></div>
         </div>
       </div>
     </div>
@@ -1408,6 +1485,21 @@ async function puterLogout() {
   }
 }
 
+// ── GPT Image 2 via Puter ────────────────────────────────────────────────────
+async function generateWithGptImage2(prompt, isStory) {
+  const fullPrompt = buildImagePrompt(prompt, isStory);
+  const size = isStory ? '1024x1536' : '1024x1024';
+  try {
+    const imgEl = await puter.ai.txt2img(fullPrompt, { model: 'gpt-image-2', quality: 'high', size });
+    if (imgEl?.src) return { url: imgEl.src, label: '🤖 GPT Image 2' };
+    throw new Error('Sense src');
+  } catch(e) {
+    if (/credit|quota|limit/i.test(e.message||''))
+      throw new Error('Puter sense crèdits per GPT Image 2. Inicia sessió o canvia de model.');
+    throw new Error('Error GPT Image 2: ' + e.message);
+  }
+}
+
 // ── Puter FLUX ───────────────────────────────────────────────
 async function generateWithPuter(prompt, isStory) {
   const fullPrompt = buildImagePrompt(prompt, isStory);
@@ -1743,6 +1835,162 @@ function downloadImg(url) {
   document.body.appendChild(a); a.click(); document.body.removeChild(a);
 }
 
+// =====================================================
+// MILLORAR FOTO — edició d'imatge real via Puter (gpt-image-2 / Gemini)
+// =====================================================
+let _enhanceOriginal = null; // { dataUrl, mime, base64 (sense prefix) }
+
+function handleEnhanceDrop(e) {
+  e.preventDefault();
+  e.currentTarget.style.borderColor = 'var(--border2)';
+  e.currentTarget.style.background = 'none';
+  const file = Array.from(e.dataTransfer.files).find(f => f.type.startsWith('image/'));
+  if (file) loadEnhanceOriginal(file);
+}
+function handleEnhanceFileInput(e) {
+  const file = e.target.files[0];
+  if (file) loadEnhanceOriginal(file);
+}
+function loadEnhanceOriginal(file) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const dataUrl = e.target.result;
+    const mime = (dataUrl.match(/^data:([^;]+);/) || [])[1] || file.type || 'image/jpeg';
+    const base64 = dataUrl.split(',')[1] || '';
+    _enhanceOriginal = { dataUrl, mime, base64 };
+
+    document.getElementById('enhanceOriginalImg').src = dataUrl;
+    document.getElementById('enhanceCompare').style.display = 'block';
+    document.getElementById('enhanceDropContent').innerHTML =
+      '<div style="font-size:24px;margin-bottom:6px">✓</div><p style="font-size:13px;color:var(--text2)">Foto carregada · clica per canviar-la</p>';
+
+    // Reset resultat anterior
+    const resImg = document.getElementById('enhanceResultImg');
+    resImg.style.display = 'none'; resImg.src = '';
+    document.getElementById('enhanceResultPlaceholder').style.display = 'block';
+
+    // Prompt per defecte amb el que l'usuari ha demanat
+    const ta = document.getElementById('enhancePrompt');
+    if (!ta.value.trim()) {
+      ta.value = "Afegeix més gent gaudint de l'àpat de manera natural i discreta al fons, millora la il·luminació perquè sigui càlida i professional, i fes un retoc d'estil editorial gastronòmic. Manté el plat, els ingredients i la composició original intactes.";
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function addEnhancePreset(btn, text) {
+  const ta = document.getElementById('enhancePrompt');
+  const current = ta.value.trim();
+  if (current.includes(text)) {
+    ta.value = current.replace(new RegExp(',?\\s*' + text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), '').trim();
+    btn.classList.remove('on');
+  } else {
+    ta.value = current ? current.replace(/\.\s*$/, '') + ', ' + text + '.' : text.charAt(0).toUpperCase() + text.slice(1) + '.';
+    btn.classList.add('on');
+  }
+}
+
+function resetEnhanceFlow() {
+  _enhanceOriginal = null;
+  document.getElementById('enhanceCompare').style.display = 'none';
+  document.getElementById('enhancePrompt').value = '';
+  document.getElementById('enhanceFileInput').value = '';
+  document.getElementById('enhanceDropContent').innerHTML =
+    '<div style="font-size:32px;margin-bottom:10px">📷</div><p style="font-size:14px;color:var(--text);font-weight:500;margin-bottom:4px">Arrossega la foto original aquí</p><p style="font-size:12px;color:var(--text3)">o clica per seleccionar · JPG, PNG, WebP</p>';
+  document.querySelectorAll('#lib-enhance .tag.on').forEach(t => t.classList.remove('on'));
+}
+
+async function generateEnhancedPhoto() {
+  if (!_enhanceOriginal) { toast('Puja primer una foto original'); return; }
+  const prompt = document.getElementById('enhancePrompt').value.trim();
+  if (!prompt) { toast('Escriu les instruccions de retoc'); return; }
+  const model = document.getElementById('enhanceModel').value;
+  const formatSel = document.getElementById('enhanceFormat').value;
+
+  if (typeof puter === 'undefined' || !puter.auth || !puter.auth.isLoggedIn()) {
+    toast('Cal iniciar sessió a Puter primer (gratuït). Obrint…');
+    try { await puterLogin(); } catch(e) {}
+    if (!puter.auth.isLoggedIn || !puter.auth.isLoggedIn()) return;
+  }
+
+  const btn = document.getElementById('enhanceBtn');
+  const spin = document.getElementById('enhanceSpin');
+  const resImg = document.getElementById('enhanceResultImg');
+  const placeholder = document.getElementById('enhanceResultPlaceholder');
+  btn.disabled = true; btn.textContent = '⏳ Generant...';
+  spin.style.display = 'block'; placeholder.style.display = 'none'; resImg.style.display = 'none';
+
+  try {
+    const opts = {
+      model: model,
+      input_image: _enhanceOriginal.base64,
+      input_image_mime_type: _enhanceOriginal.mime,
+    };
+    // size només té sentit per als models OpenAI; Gemini infereix l'aspecte sol
+    if (model === 'gpt-image-2') {
+      opts.quality = 'high';
+      if (formatSel === '1:1') opts.size = '1024x1024';
+      else if (formatSel === '9:16') opts.size = '1024x1536';
+    }
+
+    const imgEl = await puter.ai.txt2img(prompt, opts);
+    if (!imgEl || !imgEl.src) throw new Error('No s\'ha rebut cap imatge.');
+
+    let url = imgEl.src;
+    if (url.startsWith('data:')) {
+      try { url = await uploadToServer(url); } catch(e) { console.warn('Upload failed, using base64 local:', e); }
+    }
+
+    resImg.src = url; resImg.style.display = 'block';
+
+    const imgData = {
+      url: url,
+      source: 'enhanced',
+      prompt: prompt,
+      type: formatSel === '9:16' ? 'story' : 'post',
+      restId: currentRestId,
+      modelLabel: model === 'gpt-image-2' ? '✨ Foto millorada (GPT Image 2)' : '✨ Foto millorada (Nano Banana)',
+    };
+    addToLibrary(imgData);
+    await saveLibImagesToFirestore();
+    await idbSaveImage(imgData);
+    renderEnhanceGrid();
+    toast('✓ Foto millorada i guardada a la llibreria!');
+  } catch(e) {
+    placeholder.textContent = 'Error: ' + (e.message || 'no s\'ha pogut generar').slice(0,90);
+    placeholder.style.display = 'block';
+    toast('Error: ' + (e.message || 'Error generant la millora').slice(0,90));
+  } finally {
+    spin.style.display = 'none';
+    btn.disabled = false; btn.textContent = '✨ Generar millora';
+  }
+}
+
+function renderEnhanceGrid() {
+  const enhanced = libImages.filter(i => i.source === 'enhanced' && i.restId === currentRestId);
+  const grid = document.getElementById('enhanceGrid');
+  if (!enhanced.length) {
+    grid.innerHTML = '<div class="bo-empty"><p>Les fotos millorades apareixeran aquí</p></div>';
+    return;
+  }
+  grid.innerHTML = enhanced.map((img) => {
+    const idx = libImages.indexOf(img);
+    return `
+    <div class="bo-card" id="enhcard-${img.idbId||idx}">
+      <div style="position:relative;overflow:hidden">
+        <img src="${img.url}" alt="" loading="lazy" onerror="this.style.opacity='.2'" style="width:100%;aspect-ratio:1;object-fit:cover;display:block">
+        <button class="zoom-btn" onclick="openImgZoom('${img.url}',event)" title="Veure més gran">🔍</button>
+      </div>
+      <div class="bo-meta"><div class="bo-src">${img.modelLabel||'✨ Foto millorada'}</div><div class="bo-caption">${img.prompt||''}</div></div>
+      <div class="bo-act">
+        <button class="bo-use" onclick="event.stopPropagation();useLibImage(${idx})">Usar</button>
+        <button onclick="event.stopPropagation();downloadImg('${img.url}')">↓</button>
+        <button style="color:var(--red)" onclick="event.stopPropagation();deleteGenImage(${img.idbId||'null'},${idx})" title="Eliminar">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 // HTML helper per zona d'upload
 function uploadZoneHtml(source) {
   const id = source === 'instagram' ? 'igFileInput' : 'webFileInput';
@@ -1889,7 +2137,7 @@ async function uploadToServer(base64Data) {
 async function saveLibImagesToFirestore() {
   if (!currentUser || !currentRestId) return;
   const toSave = libImages
-    .filter(function(i) { return (i.source === 'generated' || i.source === 'upload') && i.restId === currentRestId && i.url && i.url.startsWith('http'); })
+    .filter(function(i) { return (i.source === 'generated' || i.source === 'upload' || i.source === 'enhanced') && i.restId === currentRestId && i.url && i.url.startsWith('http'); })
     .map(function(i) { return { url: i.url, source: i.source, caption: i.caption || '', prompt: i.prompt || '', type: i.type || 'post', modelLabel: i.modelLabel || '' }; });
   try {
     await db.collection('users').doc(currentUser.uid).collection('restaurants').doc(currentRestId).update({ libImages: toSave });
@@ -1935,8 +2183,10 @@ function switchLibTab(tab, btn) {
   document.getElementById('lib-web').style.display = tab === 'web' ? 'block' : 'none';
   document.getElementById('lib-generated').style.display = tab === 'generated' ? 'block' : 'none';
   document.getElementById('lib-upload').style.display = tab === 'upload' ? 'block' : 'none';
+  document.getElementById('lib-enhance').style.display = tab === 'enhance' ? 'block' : 'none';
   if (tab === 'generated') renderGenGrid();
   if (tab === 'upload') renderUploadGrid();
+  if (tab === 'enhance') { renderEnhanceGrid(); if (typeof puter !== 'undefined') checkPuterStatus(); }
 }
 
 // =====================================================
@@ -2390,7 +2640,7 @@ async function loadRestaurant(id) {
   // Restaurar imatges dels posts programats des d'IndexedDB
   restoreSchedImages();
   // Carregar imatges de biblioteca sincronitzades (generades + carregades)
-  libImages = libImages.filter(function(i){ return i.source !== 'generated' && i.source !== 'upload'; });
+  libImages = libImages.filter(function(i){ return i.source !== 'generated' && i.source !== 'upload' && i.source !== 'enhanced'; });
   if (d.libImages && d.libImages.length) {
     d.libImages.forEach(function(img) { addToLibrary(Object.assign({}, img, { restId: id })); });
   }
@@ -2705,10 +2955,10 @@ async function loadPersistedImages(restId) {
   const saved = await idbLoadImages(restId);
   saved.forEach(img => {
     if (!libImages.find(i => i.idbId === img.id)) {
-      libImages.push({ ...img, source: 'generated', idbId: img.id });
+      libImages.push({ ...img, source: img.source || 'generated', idbId: img.id });
     }
   });
-  if (saved.length) renderGenGrid();
+  if (saved.length) { renderGenGrid(); renderEnhanceGrid(); }
 }
 
 function openIgProfile() {
