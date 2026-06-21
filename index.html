@@ -598,6 +598,7 @@ select option{background:var(--surface2)}
         <button class="bo-tab" onclick="switchLibTab('generated',this)">&#129302; Generades IA</button>
         <button class="bo-tab" onclick="switchLibTab('upload',this)">&#128193; Carregar</button>
         <button class="bo-tab" onclick="switchLibTab('enhance',this)">&#10024; Millorar foto</button>
+        <button class="bo-tab" onclick="switchLibTab('video',this)">&#127909; Generar vídeo</button>
       </div>
 
       <!-- Instagram tab -->
@@ -756,6 +757,76 @@ select option{background:var(--surface2)}
         </div>
         <div id="enhanceGrid" class="bo-grid">
           <div class="bo-empty"><p>Les fotos millorades apareixeran aquí</p></div>
+        </div>
+      </div>
+
+      <!-- Generar vídeo (anima una foto existent o crea un clip des de zero) -->
+      <div id="lib-video" style="display:none">
+        <div class="bo-gen-area">
+          <h3 style="font-size:15px;font-weight:500;margin-bottom:4px">🎬 Generar vídeo per a xarxes</h3>
+          <p style="font-size:13px;color:var(--text2);margin-bottom:16px">Anima una foto de la llibreria (fum, llum, gent de fons en moviment) o crea un clip curt des de zero. Es paga amb crèdits de Puter.</p>
+
+          <!-- Toggle Animar foto / Des de zero -->
+          <div style="display:flex;gap:0;margin-bottom:14px;border:1px solid var(--border2);border-radius:var(--rs);overflow:hidden;width:fit-content">
+            <button id="vidModeImage" onclick="setVidMode('image')" style="padding:6px 16px;font-size:12px;font-family:inherit;cursor:pointer;border:none;border-right:1px solid var(--border2);background:var(--accent);color:#fff;font-weight:500">📷 Animar foto</button>
+            <button id="vidModeText" onclick="setVidMode('text')" style="padding:6px 16px;font-size:12px;font-family:inherit;cursor:pointer;border:none;background:var(--surface2);color:var(--text3)">✍️ Des de zero</button>
+          </div>
+
+          <!-- Mode: animar foto existent -->
+          <div id="vidModeImagePanel">
+            <div id="vidImgPicker" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+              <button class="bs" onclick="openVideoImagePicker()" style="padding:9px 16px;font-size:13px">🖼️ Triar foto de la llibreria</button>
+              <input type="file" id="vidUploadInput" accept="image/*" style="display:none" onchange="handleVidUploadInput(event)">
+              <button class="bs" onclick="document.getElementById('vidUploadInput').click()" style="padding:9px 16px;font-size:13px">📁 Pujar foto nova</button>
+              <span id="vidImgSelStatus" style="font-size:12px;color:var(--text3)"></span>
+            </div>
+            <div id="vidImgPreviewWrap" style="display:none;margin-bottom:12px">
+              <img id="vidImgPreview" src="" alt="" style="max-width:220px;max-height:220px;border-radius:var(--r);object-fit:cover;display:block">
+            </div>
+          </div>
+
+          <!-- Presets de moviment ràpid -->
+          <div style="margin-top:6px;margin-bottom:6px">
+            <label style="font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:.3px;display:block;margin-bottom:6px">Moviment ràpid (clica per afegir)</label>
+            <div class="tags">
+              <button type="button" class="tag" onclick="addVidPreset(this,'steam rises gently from the dish')">💨 Fum/vapor</button>
+              <button type="button" class="tag" onclick="addVidPreset(this,'slow cinematic camera dolly-in')">🎥 Càmera lenta (zoom)</button>
+              <button type="button" class="tag" onclick="addVidPreset(this,'warm ambient light flickers softly, golden hour glow')">💡 Llum ambient càlida</button>
+              <button type="button" class="tag" onclick="addVidPreset(this,'people in the background talking and enjoying their meal naturally')">👥 Gent de fons</button>
+              <button type="button" class="tag" onclick="addVidPreset(this,'glass of wine being poured, liquid moving naturally')">🍷 Líquid servint-se</button>
+            </div>
+          </div>
+
+          <div class="fg" style="margin-top:10px">
+            <label>Descripció del moviment</label>
+            <textarea id="vidPrompt" rows="3" placeholder="Ex: steam rises gently from the dish, soft camera dolly-in, warm ambient light..."></textarea>
+          </div>
+
+          <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px">
+            <select id="vidModel" style="padding:8px 12px;font-size:13px;width:260px">
+              <option value="kwaivgi/kling-1.6-standard">🎬 Kling 1.6 Standard (recomanat)</option>
+              <option value="kwaivgi/kling-2.1-master">🎬 Kling 2.1 Master (millor qualitat)</option>
+              <option value="wan-ai/wan2.2-i2v-a14b">💰 Wan 2.2 (econòmic)</option>
+              <option value="bytedance/seedance-1.0-lite">⚡ Seedance Lite (ràpid)</option>
+              <option value="vidu/vidu-q1">🔊 Vidu Q1 (1080p + àudio)</option>
+              <option value="google/veo-3.1-fast">✨ Veo 3.1 Fast (premium)</option>
+            </select>
+            <select id="vidRatio" style="padding:8px 12px;font-size:13px;width:170px">
+              <option value="9:16">Story/Reel (9:16)</option>
+              <option value="1:1">Post (1:1)</option>
+              <option value="16:9">Horitzontal (16:9)</option>
+            </select>
+            <button class="bp" onclick="generateVideo().catch(e=>{console.error('generateVideo:',e);toast('Error inesperat: '+(e.message||'').slice(0,80));})" id="vidGenBtn">🎬 Generar vídeo</button>
+          </div>
+          <p style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.5">
+            ⏳ El vídeo pot trigar 1-3 minuts a generar-se. 💰 Consumeix més crèdits de Puter que les imatges — Kling/Wan són els més econòmics, Veo/Sora els més cars.
+          </p>
+          <div id="vidProgress" style="display:none;margin-top:10px;padding:14px;background:var(--surface2);border-radius:var(--r);text-align:center;font-size:13px;color:var(--text2);align-items:center;justify-content:center;gap:8px">
+            <div class="ispin"></div><span id="vidProgressTxt">Generant vídeo...</span>
+          </div>
+        </div>
+        <div id="videoGrid" class="bo-grid">
+          <div class="bo-empty"><p>Els vídeos generats apareixeran aquí</p></div>
         </div>
       </div>
     </div>
@@ -1133,6 +1204,16 @@ select option{background:var(--surface2)}
     <div id="useLibPrev" style="display:flex;gap:12px;align-items:center;padding:12px;background:var(--surface2);border-radius:var(--rs);margin-bottom:20px"></div>
     <div id="useLibPropList" style="max-height:320px;overflow-y:auto"></div>
     <div class="mact"><button class="bs" onclick="closeOv('ovUseLib')">Cancelar</button></div>
+  </div>
+</div>
+
+<!-- Modal triar foto per animar a vídeo -->
+<div class="ov" id="ovVidImgPick" onclick="closeOvIf(event,'ovVidImgPick')">
+  <div class="modal" style="width:680px;max-width:95vw">
+    <h3>Triar foto per animar</h3>
+    <p class="msub">Selecciona una imatge de la librería del restaurant actiu</p>
+    <div id="vidImgPickGrid" class="bo-grid" style="max-height:400px;overflow-y:auto"></div>
+    <div class="mact"><button class="bs" onclick="closeOv('ovVidImgPick')">Cancelar</button></div>
   </div>
 </div>
 
@@ -2064,6 +2145,221 @@ function renderEnhanceGrid() {
   }).join('');
 }
 
+// =====================================================
+// GENERAR VÍDEO — anima una foto o crea un clip des de zero via Puter
+// =====================================================
+let _vidMode = 'image'; // 'image' | 'text'
+let _vidSourceImage = null; // { url } — ha de ser una URL pública (no base64)
+
+function setVidMode(mode) {
+  _vidMode = mode;
+  const imgBtn = document.getElementById('vidModeImage');
+  const txtBtn = document.getElementById('vidModeText');
+  const imgPanel = document.getElementById('vidModeImagePanel');
+  if (mode === 'image') {
+    imgBtn.style.background = 'var(--accent)'; imgBtn.style.color = '#fff'; imgBtn.style.fontWeight = '500';
+    txtBtn.style.background = 'var(--surface2)'; txtBtn.style.color = 'var(--text3)'; txtBtn.style.fontWeight = '400';
+    imgPanel.style.display = 'block';
+  } else {
+    txtBtn.style.background = 'var(--accent)'; txtBtn.style.color = '#fff'; txtBtn.style.fontWeight = '500';
+    imgBtn.style.background = 'var(--surface2)'; imgBtn.style.color = 'var(--text3)'; imgBtn.style.fontWeight = '400';
+    imgPanel.style.display = 'none';
+  }
+}
+
+function openVideoImagePicker() {
+  renderVidImgPickGrid();
+  document.getElementById('ovVidImgPick').classList.add('open');
+}
+
+function renderVidImgPickGrid() {
+  const grid = document.getElementById('vidImgPickGrid');
+  if (!grid) return;
+  const avail = libImages.filter(i => i.restId === currentRestId && i.source !== 'video');
+  if (!avail.length) {
+    grid.innerHTML = '<div class="bo-empty" style="grid-column:1/-1"><p style="font-size:13px">No hi ha imatges a la librería per animar.</p></div>';
+    return;
+  }
+  grid.innerHTML = avail.map((img) => {
+    const idx = libImages.indexOf(img);
+    const displayUrl = getDisplayUrl(img);
+    return `
+    <div class="bo-card" onclick="selectVideoSourceImage(${idx})" style="cursor:pointer" title="Animar aquesta foto">
+      <div style="position:relative;aspect-ratio:1;background:var(--surface2);overflow:hidden">
+        <img src="${displayUrl}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.style.opacity='.2'">
+      </div>
+      <div class="bo-meta"><div class="bo-caption" style="font-size:11px;color:var(--text3)">${(img.caption||img.prompt||'').slice(0,60)}</div></div>
+    </div>`;
+  }).join('');
+}
+
+function selectVideoSourceImage(idx) {
+  const img = libImages[idx];
+  if (!img) return;
+  const displayUrl = getDisplayUrl(img);
+  if (displayUrl.startsWith('data:')) {
+    toast('Aquesta imatge encara no té URL pública. Tria\'n una altra o puja-la primer com a nova.');
+    return;
+  }
+  _vidSourceImage = { url: displayUrl };
+  document.getElementById('vidImgPreview').src = displayUrl;
+  document.getElementById('vidImgPreviewWrap').style.display = 'block';
+  document.getElementById('vidImgSelStatus').textContent = '✓ Foto seleccionada';
+  closeOv('ovVidImgPick');
+}
+
+async function handleVidUploadInput(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const statusEl = document.getElementById('vidImgSelStatus');
+  statusEl.textContent = '⏳ Pujant...';
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const rawDataUrl = e.target.result;
+    const img = new Image();
+    img.onload = async () => {
+      // Redimensionar abans de pujar (fotos de mòbil poden ser molt grans)
+      const MAX_SIDE = 1568;
+      let { width, height } = img;
+      if (width > MAX_SIDE || height > MAX_SIDE) {
+        const scale = MAX_SIDE / Math.max(width, height);
+        width = Math.round(width * scale); height = Math.round(height * scale);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+      try {
+        const publicUrl = await uploadToServer(dataUrl);
+        if (!publicUrl) throw new Error('Sense URL retornada');
+        _vidSourceImage = { url: publicUrl };
+        document.getElementById('vidImgPreview').src = publicUrl;
+        document.getElementById('vidImgPreviewWrap').style.display = 'block';
+        statusEl.textContent = '✓ Foto pujada i preparada';
+      } catch(err) {
+        console.error('[video] error pujant imatge font:', err);
+        statusEl.textContent = '❌ Error pujant la foto';
+        toast('No s\'ha pogut pujar la foto al servidor. Prova amb una imatge de la librería.');
+      }
+    };
+    img.src = rawDataUrl;
+  };
+  reader.readAsDataURL(file);
+}
+
+function addVidPreset(btn, text) {
+  const ta = document.getElementById('vidPrompt');
+  const current = ta.value.trim();
+  if (current.includes(text)) {
+    ta.value = current.replace(new RegExp(',?\\s*' + text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), '').trim();
+    btn.classList.remove('on');
+  } else {
+    ta.value = current ? current.replace(/\.\s*$/, '') + ', ' + text + '.' : text.charAt(0).toUpperCase() + text.slice(1) + '.';
+    btn.classList.add('on');
+  }
+}
+
+async function generateVideo() {
+  const prompt = document.getElementById('vidPrompt').value.trim();
+  if (!prompt) { toast('Escriu una descripció del moviment'); return; }
+  if (_vidMode === 'image' && !_vidSourceImage) { toast('Tria o puja una foto per animar'); return; }
+
+  const model = document.getElementById('vidModel').value;
+  const ratio = document.getElementById('vidRatio').value;
+
+  console.log('[video] start · mode=' + _vidMode + ' model=' + model + ' ratio=' + ratio);
+
+  const btn = document.getElementById('vidGenBtn');
+  const prog = document.getElementById('vidProgress');
+  const progTxt = document.getElementById('vidProgressTxt');
+  btn.disabled = true; btn.textContent = '⏳ Generant...';
+  prog.style.display = 'flex';
+  progTxt.textContent = 'Generant vídeo (pot trigar 1-3 minuts)...';
+
+  try {
+    const opts = { model: model };
+    if (_vidMode === 'image') {
+      opts.image_url = _vidSourceImage.url;
+    } else if (ratio) {
+      opts.aspect_ratio = ratio; // només per a text-to-video; en I2V el model sol inferir-ho de la imatge
+    }
+
+    console.log('[video] cridant puter.ai.txt2vid...', opts);
+    const videoEl = await puter.ai.txt2vid(prompt, opts);
+    console.log('[video] resposta rebuda:', videoEl);
+    if (!videoEl) throw new Error('No s\'ha rebut cap vídeo de Puter.');
+
+    let url = videoEl.src || videoEl.currentSrc || videoEl.dataset?.source || '';
+    if (!url) throw new Error('No s\'ha pogut llegir la URL del vídeo generat.');
+
+    // Si és un blob/data URL ephemeral, intentem pujar-lo al servidor per persistir-lo
+    if (url.startsWith('blob:') || url.startsWith('data:')) {
+      progTxt.textContent = 'Pujant vídeo al servidor...';
+      try {
+        let dataUrl = url;
+        if (url.startsWith('blob:')) {
+          const blob = await (await fetch(url)).blob();
+          dataUrl = await new Promise((resolve, reject) => {
+            const r = new FileReader();
+            r.onload = () => resolve(r.result);
+            r.onerror = reject;
+            r.readAsDataURL(blob);
+          });
+        }
+        const uploaded = await uploadToServer(dataUrl);
+        if (uploaded) url = uploaded;
+      } catch(upErr) {
+        console.warn('[video] No s\'ha pogut pujar el vídeo al servidor, es queda local:', upErr);
+        toast('⚠️ El vídeo s\'ha generat però no s\'ha pogut pujar al servidor (potser per mida). Es guarda només en aquest dispositiu.');
+      }
+    }
+
+    const vidData = {
+      url: url,
+      source: 'video',
+      prompt: prompt,
+      type: ratio === '9:16' ? 'story' : 'post',
+      restId: currentRestId,
+      modelLabel: '🎬 ' + model.split('/').pop(),
+    };
+    addToLibrary(vidData);
+    if (url.startsWith('http')) { try { await saveLibImagesToFirestore(); } catch(e) {} }
+    try { await idbSaveImage(vidData); } catch(e) {}
+    renderVideoGrid();
+    toast('✓ Vídeo generat i guardat a la llibreria!');
+    console.log('[video] OK ✓');
+  } catch(e) {
+    console.error('[video] ERROR:', e);
+    toast('Error: ' + (e.message || 'no s\'ha pogut generar el vídeo').slice(0,100));
+  } finally {
+    prog.style.display = 'none';
+    btn.disabled = false; btn.textContent = '🎬 Generar vídeo';
+  }
+}
+
+function renderVideoGrid() {
+  const videos = libImages.filter(i => i.source === 'video' && i.restId === currentRestId);
+  const grid = document.getElementById('videoGrid');
+  if (!videos.length) {
+    grid.innerHTML = '<div class="bo-empty"><p>Els vídeos generats apareixeran aquí</p></div>';
+    return;
+  }
+  grid.innerHTML = videos.map((vid) => {
+    const idx = libImages.indexOf(vid);
+    return `
+    <div class="bo-card" id="vidcard-${vid.idbId||idx}">
+      <div style="position:relative;overflow:hidden;background:#000">
+        <video src="${vid.url}" controls preload="metadata" style="width:100%;aspect-ratio:9/16;object-fit:contain;display:block;background:#000"></video>
+      </div>
+      <div class="bo-meta"><div class="bo-src">${vid.modelLabel||'🎬 Vídeo'}</div><div class="bo-caption">${vid.prompt||''}</div></div>
+      <div class="bo-act">
+        <a href="${vid.url}" download="video_${Date.now()}.mp4" target="_blank">↓ Descarregar</a>
+        <button style="color:var(--red)" onclick="event.stopPropagation();deleteGenImage(${vid.idbId||'null'},${idx})" title="Eliminar">🗑</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
 // HTML helper per zona d'upload
 function uploadZoneHtml(source) {
   const id = source === 'instagram' ? 'igFileInput' : 'webFileInput';
@@ -2210,7 +2506,7 @@ async function uploadToServer(base64Data) {
 async function saveLibImagesToFirestore() {
   if (!currentUser || !currentRestId) return;
   const toSave = libImages
-    .filter(function(i) { return (i.source === 'generated' || i.source === 'upload' || i.source === 'enhanced') && i.restId === currentRestId && i.url && i.url.startsWith('http'); })
+    .filter(function(i) { return (i.source === 'generated' || i.source === 'upload' || i.source === 'enhanced' || i.source === 'video') && i.restId === currentRestId && i.url && i.url.startsWith('http'); })
     .map(function(i) { return { url: i.url, source: i.source, caption: i.caption || '', prompt: i.prompt || '', type: i.type || 'post', modelLabel: i.modelLabel || '' }; });
   try {
     await db.collection('users').doc(currentUser.uid).collection('restaurants').doc(currentRestId).update({ libImages: toSave });
@@ -2257,9 +2553,11 @@ function switchLibTab(tab, btn) {
   document.getElementById('lib-generated').style.display = tab === 'generated' ? 'block' : 'none';
   document.getElementById('lib-upload').style.display = tab === 'upload' ? 'block' : 'none';
   document.getElementById('lib-enhance').style.display = tab === 'enhance' ? 'block' : 'none';
+  document.getElementById('lib-video').style.display = tab === 'video' ? 'block' : 'none';
   if (tab === 'generated') renderGenGrid();
   if (tab === 'upload') renderUploadGrid();
   if (tab === 'enhance') { renderEnhanceGrid(); if (typeof puter !== 'undefined') checkPuterStatus(); }
+  if (tab === 'video') { renderVideoGrid(); if (typeof puter !== 'undefined') checkPuterStatus(); }
 }
 
 // =====================================================
@@ -2713,7 +3011,7 @@ async function loadRestaurant(id) {
   // Restaurar imatges dels posts programats des d'IndexedDB
   restoreSchedImages();
   // Carregar imatges de biblioteca sincronitzades (generades + carregades)
-  libImages = libImages.filter(function(i){ return i.source !== 'generated' && i.source !== 'upload' && i.source !== 'enhanced'; });
+  libImages = libImages.filter(function(i){ return i.source !== 'generated' && i.source !== 'upload' && i.source !== 'enhanced' && i.source !== 'video'; });
   if (d.libImages && d.libImages.length) {
     d.libImages.forEach(function(img) { addToLibrary(Object.assign({}, img, { restId: id })); });
   }
@@ -3031,7 +3329,7 @@ async function loadPersistedImages(restId) {
       libImages.push({ ...img, source: img.source || 'generated', idbId: img.id });
     }
   });
-  if (saved.length) { renderGenGrid(); renderEnhanceGrid(); }
+  if (saved.length) { renderGenGrid(); renderEnhanceGrid(); renderVideoGrid(); }
 }
 
 function openIgProfile() {
