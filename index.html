@@ -1940,11 +1940,26 @@ function renderGenGrid() {
 
 async function deleteGenImage(idbId, libIdx) {
   if (!confirm('¿Eliminar esta imagen de la librería?')) return;
+  const item = libImages[libIdx];
+  const itemSource = item ? item.source : null;
+
   // Eliminar de IndexedDB
   if (idbId) await idbDeleteImage(idbId);
   // Eliminar de libImages
   libImages.splice(libIdx, 1);
-  renderGenGrid();
+
+  // Re-renderitzar NOMÉS la graella corresponent a l'origen de l'element esborrat
+  // (abans sempre es feia renderGenGrid(), per això esborrar des de "Millorar foto"
+  // o "Generar vídeo" no actualitzava la graella visible)
+  if (itemSource === 'enhanced') renderEnhanceGrid();
+  else if (itemSource === 'video') renderVideoGrid();
+  else renderGenGrid();
+
+  // Sincronitzar l'eliminació amb Firestore — sense això, recarregar la pàgina
+  // feia "ressuscitar" les imatges esborrades perquè es tornaven a carregar
+  // des de les dades antigues guardades al núvol.
+  try { await saveLibImagesToFirestore(); } catch(e) { console.warn('Sync delete error:', e); }
+
   toast('✓ Imagen eliminada de la librería');
 }
 
