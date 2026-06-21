@@ -1854,26 +1854,45 @@ function handleEnhanceFileInput(e) {
 function loadEnhanceOriginal(file) {
   const reader = new FileReader();
   reader.onload = (e) => {
-    const dataUrl = e.target.result;
-    const mime = (dataUrl.match(/^data:([^;]+);/) || [])[1] || file.type || 'image/jpeg';
-    const base64 = dataUrl.split(',')[1] || '';
-    _enhanceOriginal = { dataUrl, mime, base64 };
+    const rawDataUrl = e.target.result;
+    const img = new Image();
+    img.onload = () => {
+      // Redimensionar fotos grans de mòbil (poden ser 8-12MB) per evitar
+      // pagloads excessius que fan fallar la crida a Puter en silenci.
+      const MAX_SIDE = 1568;
+      let { width, height } = img;
+      if (width > MAX_SIDE || height > MAX_SIDE) {
+        const scale = MAX_SIDE / Math.max(width, height);
+        width = Math.round(width * scale);
+        height = Math.round(height * scale);
+      }
+      const canvas = document.createElement('canvas');
+      canvas.width = width; canvas.height = height;
+      canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+      const mime = 'image/jpeg';
+      const base64 = dataUrl.split(',')[1] || '';
+      _enhanceOriginal = { dataUrl, mime, base64 };
+      console.log('[enhance] original carregat: ' + img.width + 'x' + img.height + ' → ' + width + 'x' + height + ' · ' + Math.round((base64.length*0.75)/1024) + 'KB');
 
-    document.getElementById('enhanceOriginalImg').src = dataUrl;
-    document.getElementById('enhanceCompare').style.display = 'block';
-    document.getElementById('enhanceDropContent').innerHTML =
-      '<div style="font-size:24px;margin-bottom:6px">✓</div><p style="font-size:13px;color:var(--text2)">Foto carregada · clica per canviar-la</p>';
+      document.getElementById('enhanceOriginalImg').src = dataUrl;
+      document.getElementById('enhanceCompare').style.display = 'block';
+      document.getElementById('enhanceDropContent').innerHTML =
+        '<div style="font-size:24px;margin-bottom:6px">✓</div><p style="font-size:13px;color:var(--text2)">Foto carregada · clica per canviar-la</p>';
 
-    // Reset resultat anterior
-    const resImg = document.getElementById('enhanceResultImg');
-    resImg.style.display = 'none'; resImg.src = '';
-    document.getElementById('enhanceResultPlaceholder').style.display = 'block';
+      // Reset resultat anterior
+      const resImg = document.getElementById('enhanceResultImg');
+      resImg.style.display = 'none'; resImg.src = '';
+      document.getElementById('enhanceResultPlaceholder').style.display = 'block';
 
-    // Prompt per defecte amb el que l'usuari ha demanat
-    const ta = document.getElementById('enhancePrompt');
-    if (!ta.value.trim()) {
-      ta.value = "Fes un retoc professional d'aquesta foto. Manté el plat, els ingredients i la composició original intactes.";
-    }
+      // Prompt per defecte amb el que l'usuari ha demanat
+      const ta = document.getElementById('enhancePrompt');
+      if (!ta.value.trim()) {
+        ta.value = "Fes un retoc professional d'aquesta foto. Manté el plat, els ingredients i la composició original intactes.";
+      }
+    };
+    img.onerror = () => toast('No s\'ha pogut llegir la imatge. Prova un altre fitxer.');
+    img.src = rawDataUrl;
   };
   reader.readAsDataURL(file);
 }
@@ -1907,21 +1926,7 @@ async function generateEnhancedPhoto() {
   const model = document.getElementById('enhanceModel').value;
   const formatSel = document.getElementById('enhanceFormat').value;
 
-  // Comprovació de sessió Puter — isLoggedIn() pot llançar si l'SDK no esta llest
-  let isLoggedIn = false;
-  try {
-    isLoggedIn = (typeof puter !== 'undefined' && puter.auth && puter.auth.isLoggedIn());
-  } catch(e) {
-    console.warn('Puter isLoggedIn check failed:', e.message);
-  }
-  if (!isLoggedIn) {
-    toast('Cal iniciar sessió a Puter primer (gratuït). Obrint…');
-    try { await puterLogin(); } catch(e) { console.warn('puterLogin error:', e.message); }
-    try {
-      isLoggedIn = (typeof puter !== 'undefined' && puter.auth && puter.auth.isLoggedIn());
-    } catch(e) { isLoggedIn = false; }
-    if (!isLoggedIn) { toast('No s\'ha pogut connectar a Puter. Torna a provar.'); return; }
-  }
+  console.log('[enhance] start · model=' + model + ' format=' + (formatSel||'original') + ' imgBytes≈' + Math.round((_enhanceOriginal.base64.length*0.75)/1024) + 'KB');
 
   const btn = document.getElementById('enhanceBtn');
   const spin = document.getElementById('enhanceSpin');
@@ -1929,6 +1934,7 @@ async function generateEnhancedPhoto() {
   const placeholder = document.getElementById('enhanceResultPlaceholder');
   btn.disabled = true; btn.textContent = '⏳ Generant...';
   spin.style.display = 'block'; placeholder.style.display = 'none'; resImg.style.display = 'none';
+  placeholder.textContent = 'Encara no generat';
 
   try {
     const opts = {
@@ -1943,12 +1949,18 @@ async function generateEnhancedPhoto() {
       else if (formatSel === '9:16') opts.size = '1024x1536';
     }
 
+    // No fem cap comprovació manual de sessió: puter.ai.txt2img() gestiona
+    // l'autenticació internament (mostra el seu propi popup si cal i continua
+    // sol després del login), exactament igual que la resta de l'app.
+    console.log('[enhance] cridant puter.ai.txt2img...');
     const imgEl = await puter.ai.txt2img(prompt, opts);
-    if (!imgEl || !imgEl.src) throw new Error('No s\'ha rebut cap imatge.');
+    console.log('[enhance] resposta rebuda:', imgEl);
+    if (!imgEl || !imgEl.src) throw new Error('No s\'ha rebut cap imatge de Puter.');
 
     let url = imgEl.src;
     if (url.startsWith('data:')) {
-      try { url = await uploadToServer(url); } catch(e) { console.warn('Upload failed, using base64 local:', e); }
+      console.log('[enhance] pujant resultat al servidor...');
+      try { url = await uploadToServer(url); } catch(e) { console.warn('[enhance] Upload failed, using base64 local:', e); }
     }
 
     resImg.src = url; resImg.style.display = 'block';
@@ -1966,7 +1978,9 @@ async function generateEnhancedPhoto() {
     await idbSaveImage(imgData);
     renderEnhanceGrid();
     toast('✓ Foto millorada i guardada a la llibreria!');
+    console.log('[enhance] OK ✓');
   } catch(e) {
+    console.error('[enhance] ERROR:', e);
     placeholder.textContent = 'Error: ' + (e.message || 'no s\'ha pogut generar').slice(0,90);
     placeholder.style.display = 'block';
     toast('Error: ' + (e.message || 'Error generant la millora').slice(0,90));
