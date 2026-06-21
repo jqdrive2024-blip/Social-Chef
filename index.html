@@ -745,7 +745,7 @@ select option{background:var(--surface2)}
                 <option value="1:1">Post (1:1)</option>
                 <option value="9:16">Story (9:16)</option>
               </select>
-              <button class="bp" onclick="generateEnhancedPhoto()" id="enhanceBtn">✨ Generar millora</button>
+              <button class="bp" onclick="generateEnhancedPhoto().catch(e=>{console.error('generateEnhancedPhoto:',e);toast('Error inesperat: '+(e.message||'').slice(0,80));})" id="enhanceBtn">✨ Generar millora</button>
               <button class="bs" onclick="resetEnhanceFlow()" style="padding:10px 14px;font-size:13px">↺ Nova foto</button>
             </div>
           </div>
@@ -1872,7 +1872,7 @@ function loadEnhanceOriginal(file) {
     // Prompt per defecte amb el que l'usuari ha demanat
     const ta = document.getElementById('enhancePrompt');
     if (!ta.value.trim()) {
-      ta.value = "Afegeix més gent gaudint de l'àpat de manera natural i discreta al fons, millora la il·luminació perquè sigui càlida i professional, i fes un retoc d'estil editorial gastronòmic. Manté el plat, els ingredients i la composició original intactes.";
+      ta.value = "Fes un retoc professional d'aquesta foto. Manté el plat, els ingredients i la composició original intactes.";
     }
   };
   reader.readAsDataURL(file);
@@ -1907,10 +1907,20 @@ async function generateEnhancedPhoto() {
   const model = document.getElementById('enhanceModel').value;
   const formatSel = document.getElementById('enhanceFormat').value;
 
-  if (typeof puter === 'undefined' || !puter.auth || !puter.auth.isLoggedIn()) {
+  // Comprovació de sessió Puter — isLoggedIn() pot llançar si l'SDK no esta llest
+  let isLoggedIn = false;
+  try {
+    isLoggedIn = (typeof puter !== 'undefined' && puter.auth && puter.auth.isLoggedIn());
+  } catch(e) {
+    console.warn('Puter isLoggedIn check failed:', e.message);
+  }
+  if (!isLoggedIn) {
     toast('Cal iniciar sessió a Puter primer (gratuït). Obrint…');
-    try { await puterLogin(); } catch(e) {}
-    if (!puter.auth.isLoggedIn || !puter.auth.isLoggedIn()) return;
+    try { await puterLogin(); } catch(e) { console.warn('puterLogin error:', e.message); }
+    try {
+      isLoggedIn = (typeof puter !== 'undefined' && puter.auth && puter.auth.isLoggedIn());
+    } catch(e) { isLoggedIn = false; }
+    if (!isLoggedIn) { toast('No s\'ha pogut connectar a Puter. Torna a provar.'); return; }
   }
 
   const btn = document.getElementById('enhanceBtn');
